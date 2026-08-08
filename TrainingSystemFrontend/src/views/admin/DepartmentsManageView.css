@@ -1,0 +1,47 @@
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.dept-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dept-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-heading);
+}
+
+.dept-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.dept-stat-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.dept-stat-value {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.dept-actions {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .dept-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

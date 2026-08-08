@@ -1,0 +1,64 @@
+.certmg-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1.4fr 1fr 2.2fr;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.certmg-row {
+  display: grid;
+  grid-template-columns: 2fr 1.4fr 1fr 2.2fr;
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-border);
+  align-items: center;
+}
+
+.certmg-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.certmg-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.certmg-date {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--color-text);
+}
+
+.certmg-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.certmg-empty {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.certmg-upload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.certmg-upload input[type="file"] {
+  font-size: 11px;
+  max-width: 160px;
+}
+
+.certmg-uploading {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}

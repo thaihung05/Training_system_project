@@ -1,0 +1,101 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.tlh.repository.impl;
+
+import com.tlh.pojo.Certificate;
+import com.tlh.repository.CertificateRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.List;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ *
+ * @author LENOVO
+ */
+@Repository
+@Transactional
+public class CertificateRepositoryImpl implements CertificateRepository{
+
+    @Autowired
+    private LocalSessionFactoryBean factory;
+    
+    @Override
+    public List<Certificate> getByUser(long userId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Certificate> q = b.createQuery(Certificate.class);
+        Root<Certificate> root = q.from(Certificate.class);
+
+        q.select(root).where(b.equal(root.get("userId").get("id"), userId));
+        q.orderBy(b.desc(root.get("id")));
+
+        return s.createQuery(q).getResultList();
+    }
+
+    @Override
+    public List<Certificate> getByCourse(long courseId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Certificate> q = b.createQuery(Certificate.class);
+        Root<Certificate> root = q.from(Certificate.class);
+
+        q.select(root).where(b.equal(root.get("courseId").get("id"), courseId));
+        q.orderBy(b.desc(root.get("id")));
+
+        return s.createQuery(q).getResultList();
+    }
+
+    @Override
+    public Certificate getById(long id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.get(Certificate.class, id);
+    }
+
+    @Override
+    public Certificate getByUserAndCourse(long userId, long courseId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Certificate> q = b.createQuery(Certificate.class);
+        Root<Certificate> root = q.from(Certificate.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.equal(root.get("userId").get("id"), userId));
+        predicates.add(b.equal(root.get("courseId").get("id"), courseId));
+
+        q.select(root).where(predicates.toArray(Predicate[]::new));
+
+        List<Certificate> results = s.createQuery(q).getResultList();
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    @Override
+    public long countByUser(long userId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Certificate> root = q.from(Certificate.class);
+
+        q.select(b.count(root)).where(b.equal(root.get("userId").get("id"), userId));
+        return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
+    public void saveOrUpdate(Certificate c) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (c.getId() == null)
+            s.persist(c);
+        else
+            s.merge(c);
+    }
+    
+}

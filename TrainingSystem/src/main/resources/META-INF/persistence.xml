@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
-    <!-- Define Persistence Unit -->
-    <persistence-unit name="my_persistence_unit">
-        
-    </persistence-unit>
+  <!-- Define Persistence Unit -->
+  <persistence-unit name="my_persistence_unit">
+    <class>com.tlh.pojo.Notification</class>
+    <class>com.tlh.pojo.UserBadge</class>
+    <class>com.tlh.pojo.User</class>
+    <class>com.tlh.pojo.Certificate</class>
+    <class>com.tlh.pojo.TestAttempt</class>
+    <class>com.tlh.pojo.AttemptAnswer</class>
+    <class>com.tlh.pojo.LessonProgress</class>
+    <class>com.tlh.pojo.Enrollment</class>
+    <class>com.tlh.pojo.Question</class>
+    <class>com.tlh.pojo.PointTransaction</class>
+    <class>com.tlh.pojo.Department</class>
+    <class>com.tlh.pojo.ChatHistory</class>
+    <class>com.tlh.pojo.Course</class>
+    <class>com.tlh.pojo.PointRule</class>
+    <class>com.tlh.pojo.Test</class>
+    <class>com.tlh.pojo.Lesson</class>
+    <class>com.tlh.pojo.QuestionOption</class>
+    <class>com.tlh.pojo.Badge</class>
+  </persistence-unit>
 </persistence>

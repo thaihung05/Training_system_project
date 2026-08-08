@@ -1,0 +1,94 @@
+.home-page {
+  max-width: 1216px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.home-greeting h1 {
+  margin-bottom: 4px;
+}
+
+.home-date {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.home-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.home-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.course-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.course-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.course-thumb {
+  width: 64px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: repeating-linear-gradient(135deg, var(--color-border), var(--color-border) 8px, var(--color-bg) 8px, var(--color-bg) 16px);
+}
+
+.course-progress-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.course-progress-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.course-progress-meta {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+  margin: 2px 0 8px;
+}
+
+.course-progress-percent {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.home-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+@media (max-width: 900px) {
+  .home-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+}

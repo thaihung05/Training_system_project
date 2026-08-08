@@ -1,0 +1,44 @@
+.attempt-header {
+  margin-bottom: var(--space-6);
+}
+
+.attempt-progress {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.attempt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.attempt-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attempt-question {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.attempt-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.attempt-submit {
+  width: 100%;
+}

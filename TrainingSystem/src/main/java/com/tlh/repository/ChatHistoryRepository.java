@@ -1,0 +1,20 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
+ */
+package com.tlh.repository;
+
+import com.tlh.pojo.ChatHistory;
+import java.util.List;
+
+/**
+ *
+ * @author LENOVO
+ */
+public interface ChatHistoryRepository {
+    List<ChatHistory> getByUser(long userId);
+    List<ChatHistory> getBySession(String sessionId);
+    List<ChatHistory> getPending();
+    ChatHistory getById(long id);
+    void saveOrUpdate(ChatHistory c);
+}

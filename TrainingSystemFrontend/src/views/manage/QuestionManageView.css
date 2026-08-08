@@ -1,0 +1,96 @@
+.qmg-import-input {
+  display: none;
+}
+
+.qmg-import-results {
+  margin-bottom: 16px;
+}
+
+.qmg-import-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--color-border);
+  font-size: 12.5px;
+}
+
+.qmg-import-row-num {
+  color: var(--color-text-muted);
+  min-width: 70px;
+}
+
+.qmg-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.qmg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.qmg-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qmg-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.qmg-card-actions {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.qmg-content {
+  font-size: 13.5px;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.qmg-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.qmg-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+}
+
+.qmg-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.qmg-option-text {
+  flex: 1;
+}
+
+.qmg-add-option {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.qmg-add-option .input {
+  flex: 1;
+}

@@ -1,0 +1,33 @@
+.profile-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.profile-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+.profile-info-row:first-of-type {
+  border-top: none;
+}
+
+.profile-info-label {
+  color: var(--color-text-muted);
+}
+
+.profile-info-value {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+@media (max-width: 800px) {
+  .profile-body {
+    grid-template-columns: 1fr;
+  }
+}
