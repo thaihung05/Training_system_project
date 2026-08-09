@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
+import { useLazyList } from '@/composables/useLazyList'
 import testService from '@/api/testService'
 import questionService from '@/api/questionService'
 import questionOptionService from '@/api/questionOptionService'
@@ -16,7 +17,10 @@ const testId = Number(route.params.testId)
 const { data: tests } = useAsyncData(() => testService.getByCourse(courseId))
 const currentTest = computed(() => (tests.value || []).find((t) => t.id === testId) || null)
 
-const { data: questions, loading, refresh } = useAsyncData(() => questionService.getForCompose(testId))
+const { items: questions, loading, loadingMore, hasMore, loadMore, reload: refresh } = useLazyList(
+  (page, size) => questionService.getForCompose(testId, page, size),
+  5,
+)
 
 const editingQuestionId = ref(null)
 const questionDraft = ref('')
@@ -189,6 +193,9 @@ async function onImportFileChange(e) {
             </div>
           </div>
         </div>
+        <button v-if="hasMore" class="btn btn-secondary qmg-load-more" :disabled="loadingMore" @click="loadMore">
+          {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
+        </button>
       </div>
 
       <div class="manage-form card">

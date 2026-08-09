@@ -55,12 +55,22 @@ public class CourseRepositoryImpl implements CourseRepository {
             q.where(predicates.toArray(Predicate[]::new));
         }
         q.orderBy(b.desc(root.get("id")));
+        
+        var query = s.createQuery(q);
+        String pageStr = params != null ? params.get("page") : null;
+        String sizeStr = params != null ? params.get("size") : null;
+        if (pageStr != null && sizeStr != null){
+            int page = Integer.parseInt(pageStr);
+            int size = Integer.parseInt(sizeStr);
+            query.setFirstResult((page-1) * size);
+            query.setMaxResults(size);
+        }
 
-        return s.createQuery(q).getResultList();
+        return query.getResultList();
     }
     
     @Override
-    public List<Course> getCoursesForEmployee(String kw, Long employeeDepartmentId) {
+    public List<Course> getCoursesForEmployee(String kw, Long employeeDepartmentId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Course> q = b.createQuery(Course.class);
@@ -83,7 +93,13 @@ public class CourseRepositoryImpl implements CourseRepository {
         q.select(root).where(predicates.toArray(Predicate[]::new));
         q.orderBy(b.desc(root.get("id")));
 
-        return s.createQuery(q).getResultList();
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+
+        return query.getResultList();
     }
 
     @Override
@@ -93,7 +109,7 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     @Override
-    public List<Course> getCoursesByCreator(long userId) {
+    public List<Course> getCoursesByCreator(long userId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Course> q = b.createQuery(Course.class);
@@ -102,7 +118,13 @@ public class CourseRepositoryImpl implements CourseRepository {
         q.select(root).where(b.equal(root.get("createdBy").get("id"), userId));
         q.orderBy(b.desc(root.get("id")));
 
-        return s.createQuery(q).getResultList();
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+
+        return query.getResultList();
     }
 
     @Override

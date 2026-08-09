@@ -30,16 +30,21 @@ public class QuestionRepositoryImpl implements QuestionRepository{
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<Question> getByTest(long testId) {
+    public List<Question> getByTest(long testId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Question> q = b.createQuery(Question.class);
         Root<Question> root = q.from(Question.class);
-        
+
         q.select(root).where(b.equal(root.get("testId").get("id"), testId));
         q.orderBy(b.asc(root.get("id")));
-        return s.createQuery(q).getResultList();
-        
+
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override

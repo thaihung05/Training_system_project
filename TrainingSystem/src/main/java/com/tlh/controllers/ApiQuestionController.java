@@ -121,7 +121,11 @@ public class ApiQuestionController {
     }
 
     @GetMapping("/tests/{id}/questions")
-    public ResponseEntity<?> getQuestionsForCompose(@PathVariable(value = "id") long id, Principal principal) {
+    public ResponseEntity<?> getQuestionsForCompose(
+            @PathVariable(value = "id") long id,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            Principal principal) {
         Test t = this.testService.getById(id);
         if (t == null) {
             return new ResponseEntity<>("Không tìm thấy bài kiểm tra", HttpStatus.NOT_FOUND);
@@ -130,6 +134,6 @@ public class ApiQuestionController {
         if (!this.courseService.canManage(caller, t.getCourseId())) {
             return new ResponseEntity<>("Bạn không có quyền xem câu hỏi của bài kiểm tra này", HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(this.questionService.getQuestionsForCompose(id), HttpStatus.OK);
+        return new ResponseEntity<>(this.questionService.getQuestionsForCompose(id, page, size), HttpStatus.OK);
     }
 }

@@ -55,8 +55,8 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
     }
 
     @Override
-    public List<ChatHistory> getMyHistory(long userId) {
-        return this.chatHistoryRepo.getByUser(userId);
+    public List<ChatHistory> getMyHistory(long userId, Integer page, Integer size) {
+        return this.chatHistoryRepo.getByUser(userId, page, size);
     }
 
     @Override
@@ -65,8 +65,12 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
     }
 
     @Override
-    public List<ChatHistory> getPending() {
-        return this.chatHistoryRepo.getPending();
+    public List<ChatHistory> getPending(User caller, Integer page, Integer size) {
+        Long departmentId = null;
+        if ("TRAINER".equals(caller.getRole()) && caller.getDepartmentId() != null) {
+            departmentId = caller.getDepartmentId().getId();
+        }
+        return this.chatHistoryRepo.getPending(departmentId, page, size);
     }
 
     @Override

@@ -1,14 +1,14 @@
 import http from '@/api/http'
 
 export default {
-    getMyEnrollments() {
-        return http.get('/api/secure/enrollments/my');
+    getMyEnrollments(page, size) {
+        return http.get('/api/secure/enrollments/my', { params: { page, size } });
     },
     getProgress(enrollmentId) {
         return http.get(`/api/secure/enrollments/${enrollmentId}/progress`);
     },
-    getRoster(courseId) {
-        return http.get(`/api/secure/courses/${courseId}/enrollments`);
+    getRoster(courseId, page, size) {
+        return http.get(`/api/secure/courses/${courseId}/enrollments`, { params: { page, size } });
     },
     enrollUsers(courseId, userIds) {
         return http.post(`/api/secure/courses/${courseId}/enrollments`, { userIds });

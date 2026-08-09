@@ -12,9 +12,9 @@ import java.util.List;
  * @author LENOVO
  */
 public interface CertificateService {
-    List<Certificate> getMyCertificates(long userId);
+    List<Certificate> getMyCertificates(long userId, Integer page, Integer size);
     Certificate getById(long id);
-    List<Certificate> getByCourse(long courseId);
+    List<Certificate> getByCourse(long courseId, Integer page, Integer size);
     Certificate updatePdfUrl(long id, String pdfUrl);
     Certificate checkAndIssue(Long userId, Long courseId);
 }

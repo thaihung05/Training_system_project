@@ -14,9 +14,9 @@ import java.util.List;
  */
 public interface ChatHistoryService {
     ChatHistory ask(User caller, String question, String sessionId);
-    List<ChatHistory> getMyHistory(long userId);
+    List<ChatHistory> getMyHistory(long userId, Integer page, Integer size);
     List<ChatHistory> getBySession(String sessionId);
-    List<ChatHistory> getPending();
+    List<ChatHistory> getPending(User caller, Integer page, Integer size);
     ChatHistory getById(long id);
     ChatHistory answer(long id, String answertext);
 }

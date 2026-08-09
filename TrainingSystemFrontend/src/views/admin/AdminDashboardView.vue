@@ -25,30 +25,22 @@ const trainerCount = computed(() => (users.value || []).filter((u) => u.role ===
         <h1>Tổng quan hệ thống</h1>
       </div>
 
-      <div class="admin-stats">
-        <div class="stat-card">
-          <div class="stat-body">
-            <div class="stat-subtitle">Tổng người dùng</div>
-            <div class="stat-mono">{{ users?.length ?? 0 }}</div>
-          </div>
+      <div class="stat-rail admin-stats">
+        <div class="stat-rail-item">
+          <div class="stat-rail-value">{{ users?.length ?? 0 }}</div>
+          <div class="stat-rail-label">Tổng người dùng</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-body">
-            <div class="stat-subtitle">Khoá học đang mở</div>
-            <div class="stat-mono">{{ activeCourses }}/{{ courses?.length ?? 0 }}</div>
-          </div>
+        <div class="stat-rail-item">
+          <div class="stat-rail-value">{{ activeCourses }}/{{ courses?.length ?? 0 }}</div>
+          <div class="stat-rail-label">Khoá học đang mở</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-body">
-            <div class="stat-subtitle">Phòng ban</div>
-            <div class="stat-mono">{{ departments?.length ?? 0 }}</div>
-          </div>
+        <div class="stat-rail-item">
+          <div class="stat-rail-value">{{ departments?.length ?? 0 }}</div>
+          <div class="stat-rail-label">Phòng ban</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-body">
-            <div class="stat-subtitle">Tổng điểm đã phát</div>
-            <div class="stat-mono stat-mono--gold">{{ pointsIssued?.totalPointsIssued ?? 0 }}</div>
-          </div>
+        <div class="stat-rail-item">
+          <div class="stat-rail-value stat-rail-value--gold">{{ pointsIssued?.totalPointsIssued ?? 0 }}</div>
+          <div class="stat-rail-label">Tổng điểm đã phát</div>
         </div>
       </div>
 

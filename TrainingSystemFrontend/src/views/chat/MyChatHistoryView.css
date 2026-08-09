@@ -1,0 +1,42 @@
+.mychat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mychat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mychat-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.mychat-question {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.mychat-answer {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  padding-left: 12px;
+  border-left: 2px solid var(--color-accent-light);
+}
+
+.mychat-pending {
+  font-size: 12.5px;
+  color: var(--color-warning);
+}
+
+.mychat-load-more {
+  width: 100%;
+  margin-top: 14px;
+}

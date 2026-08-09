@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -45,9 +46,12 @@ public class ApiCertificateController {
     }
     
     @GetMapping("/certificates/my")
-    public ResponseEntity<?> myCertificates(Principal principal) {
+    public ResponseEntity<?> myCertificates(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            Principal principal) {
         User caller = currentUser(principal);
-        return new ResponseEntity<>(this.certificateService.getMyCertificates(caller.getId()), HttpStatus.OK);
+        return new ResponseEntity<>(this.certificateService.getMyCertificates(caller.getId(), page, size), HttpStatus.OK);
     }
     
     @GetMapping("/certificates/{id}")
@@ -69,7 +73,9 @@ public class ApiCertificateController {
     
     @GetMapping("/courses/{courseId}/certificates")
     public ResponseEntity<?> getCertificatesOfCourse(
-            @PathVariable(value = "courseId") long courseId, 
+            @PathVariable(value = "courseId") long courseId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
             Principal principal) {
         Course course = this.courseService.getCourseById(courseId);
         if (course == null) {
@@ -79,7 +85,7 @@ public class ApiCertificateController {
         if (!this.courseService.canManage(caller, course)) {
             return new ResponseEntity<>("Bạn không có quyền xem danh sách này", HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(this.certificateService.getByCourse(courseId), HttpStatus.OK);
+        return new ResponseEntity<>(this.certificateService.getByCourse(courseId, page, size), HttpStatus.OK);
     }
     
     @PutMapping("/certificates/{id}/pdf-url")

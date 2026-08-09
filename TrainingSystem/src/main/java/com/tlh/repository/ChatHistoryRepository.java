@@ -12,9 +12,9 @@ import java.util.List;
  * @author LENOVO
  */
 public interface ChatHistoryRepository {
-    List<ChatHistory> getByUser(long userId);
+    List<ChatHistory> getByUser(long userId, Integer page, Integer size);
     List<ChatHistory> getBySession(String sessionId);
-    List<ChatHistory> getPending();
+    List<ChatHistory> getPending(Long departmentId, Integer page, Integer size);
     ChatHistory getById(long id);
     void saveOrUpdate(ChatHistory c);
 }

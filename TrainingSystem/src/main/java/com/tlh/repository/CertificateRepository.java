@@ -12,8 +12,8 @@ import java.util.List;
  * @author LENOVO
  */
 public interface CertificateRepository {
-    List<Certificate> getByUser(long userId);
-    List<Certificate> getByCourse(long courseId);
+    List<Certificate> getByUser(long userId, Integer page, Integer size);
+    List<Certificate> getByCourse(long courseId, Integer page, Integer size);
     Certificate getById(long id);
     Certificate getByUserAndCourse(long userId, long courseId);
     long countByUser(long userId);

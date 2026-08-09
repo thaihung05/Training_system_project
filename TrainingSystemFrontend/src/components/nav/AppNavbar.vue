@@ -16,6 +16,7 @@ const navItems = computed(() => {
     { name: 'my-courses', label: 'Khoá học của tôi' },
     { name: 'leaderboard', label: 'Thành tích' },
     { name: 'my-attempts', label: 'Lịch sử làm bài' },
+    { name: 'my-chat-history', label: 'Câu hỏi của tôi' },
   ]
   if (auth.isTrainerOrAdmin) {
     items.push({ name: 'manage-courses', label: 'Quản lý' })

@@ -30,29 +30,39 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository{
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<Enrollment> getByCourse(long courseId) {
+    public List<Enrollment> getByCourse(long courseId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Enrollment> q = b.createQuery(Enrollment.class);
         Root<Enrollment> root = q.from(Enrollment.class);
-        
+
         q.select(root).where(b.equal(root.get("courseId").get("id"), courseId));
         q.orderBy(b.desc(root.get("id")));
-        
-        return s.createQuery(q).getResultList();
+
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override
-    public List<Enrollment> getByUser(long userId) {
+    public List<Enrollment> getByUser(long userId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Enrollment> q = b.createQuery(Enrollment.class);
         Root<Enrollment> root = q.from(Enrollment.class);
-        
+
         q.select(root).where(b.equal(root.get("userId").get("id"), userId));
         q.orderBy(b.desc(root.get("id")));
-        
-        return s.createQuery(q).getResultList();
+
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override

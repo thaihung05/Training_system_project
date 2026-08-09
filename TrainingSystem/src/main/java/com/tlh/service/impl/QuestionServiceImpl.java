@@ -60,8 +60,8 @@ public class QuestionServiceImpl implements QuestionService{
     }
     
     @Override
-    public List<Question> getByTest(long testId) {
-        return this.questionRepo.getByTest(testId);
+    public List<Question> getByTest(long testId, Integer page, Integer size) {
+        return this.questionRepo.getByTest(testId, page, size);
     }
 
     @Override
@@ -101,8 +101,8 @@ public class QuestionServiceImpl implements QuestionService{
     }
 
     @Override
-    public List<Map<String, Object>> getQuestionsForCompose(long testId) {
-        List<Question> questions = this.questionRepo.getByTest(testId);
+    public List<Map<String, Object>> getQuestionsForCompose(long testId, Integer page, Integer size) {
+        List<Question> questions = this.questionRepo.getByTest(testId, page, size);
         List<Map<String, Object>> result = new ArrayList<>();
         for (Question q : questions) {
             Map<String, Object> qMap = new LinkedHashMap<>();

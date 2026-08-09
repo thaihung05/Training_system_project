@@ -34,6 +34,11 @@
   color: var(--color-text);
 }
 
+.roster-load-more {
+  width: 100%;
+  border-radius: 0;
+}
+
 .enroll-side {
   width: 340px;
   flex-shrink: 0;
@@ -50,6 +55,10 @@
 .enroll-side .btn {
   width: 100%;
   margin-top: 10px;
+}
+
+.employee-search {
+  margin-bottom: 10px;
 }
 
 .employee-picklist {

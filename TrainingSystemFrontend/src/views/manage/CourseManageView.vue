@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useLazyList } from '@/composables/useLazyList'
 import { useAsyncData } from '@/composables/useAsyncData'
 import courseService from '@/api/courseService'
 import departmentService from '@/api/departmentService'
@@ -8,7 +9,10 @@ import { confirmDialog } from '@/utils/alerts'
 
 const router = useRouter()
 
-const { data: courses, loading, refresh } = useAsyncData(() => courseService.getMyCourses())
+const { items: courses, loading, loadingMore, hasMore, loadMore, reload } = useLazyList(
+  (page, size) => courseService.getMyCourses(page, size),
+  15,
+)
 const { data: departments } = useAsyncData(() => departmentService.getAll())
 
 const editingId = ref(null)
@@ -52,7 +56,7 @@ async function submit() {
       await courseService.create(buildPayload())
     }
     resetForm()
-    refresh()
+    reload()
   } catch (err) {
     errorMsg.value = err.response?.data || 'Có lỗi xảy ra.'
   } finally {
@@ -63,7 +67,7 @@ async function submit() {
 async function deactivate(c) {
   if (!(await confirmDialog(`Ẩn khoá học "${c.title}"?`))) return
   await courseService.remove(c.id)
-  refresh()
+  reload()
 }
 
 async function reactivate(c) {
@@ -73,7 +77,7 @@ async function reactivate(c) {
     departmentId: c.departmentId ? { id: c.departmentId.id } : null,
     isActive: true,
   })
-  refresh()
+  reload()
 }
 
 function goEnroll(c) {
@@ -130,6 +134,9 @@ function goCertificates(c) {
             </div>
           </div>
         </template>
+        <button v-if="hasMore" class="btn btn-secondary courses-load-more" :disabled="loadingMore" @click="loadMore">
+          {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
+        </button>
       </div>
 
       <div class="manage-form card">

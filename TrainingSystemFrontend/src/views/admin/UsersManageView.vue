@@ -14,6 +14,7 @@ const auth = useAuthStore()
 const keyword = ref('')
 const { items: users, loading, loadingMore, hasMore, loadMore, reload } = useLazyList(
   (page, size) => userService.getAll(keyword.value, page, size),
+  20,
 )
 const { data: departments } = useAsyncData(() => departmentService.getAll())
 

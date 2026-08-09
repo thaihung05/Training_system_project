@@ -13,9 +13,9 @@ import java.util.List;
  * @author LENOVO
  */
 public interface CourseService {
-    List<Course> getCourses(String kw, Long departmentId, User caller);
+    List<Course> getCourses(String kw, Long departmentId, User caller, Integer page, Integer size);
     Course getCourseById(long id);
-    List<Course> getMyCourses(User caller);
+    List<Course> getMyCourses(User caller, Integer page, Integer size);
     Course addOrUpdate(Course c);
     void deactivateCourse(long id);
     boolean canManage(User caller, Course course);

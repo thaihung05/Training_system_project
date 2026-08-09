@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
+import { useLazyList } from '@/composables/useLazyList'
 import testService from '@/api/testService'
 import testAttemptService from '@/api/testAttemptService'
 import { ChevronLeft } from '@lucide/vue'
@@ -14,7 +15,10 @@ const testId = Number(route.params.testId)
 const { data: tests } = useAsyncData(() => testService.getByCourse(courseId))
 const currentTest = computed(() => (tests.value || []).find((t) => t.id === testId) || null)
 
-const { data: attempts, loading } = useAsyncData(() => testAttemptService.getByTest(testId))
+const { items: attempts, loading, loadingMore, hasMore, loadMore } = useLazyList(
+  (page, size) => testAttemptService.getByTest(testId, page, size),
+  20,
+)
 
 function formatDate(ms) {
   if (!ms) return 'Chưa nộp'
@@ -59,6 +63,9 @@ function formatDate(ms) {
         </div>
       </template>
     </div>
+    <button v-if="hasMore" class="btn btn-secondary attempts-load-more" :disabled="loadingMore" @click="loadMore">
+      {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
+    </button>
   </div>
 </template>
 

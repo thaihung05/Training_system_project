@@ -40,3 +40,8 @@
 .queue-answer-row input {
   flex: 1;
 }
+
+.queue-load-more {
+  width: 100%;
+  margin-top: 14px;
+}

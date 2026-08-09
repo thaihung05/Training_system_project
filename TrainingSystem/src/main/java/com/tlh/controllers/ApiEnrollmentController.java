@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -94,6 +95,8 @@ public class ApiEnrollmentController {
     @GetMapping("/courses/{courseId}/enrollments")
     public ResponseEntity<?> roster(
             @PathVariable(value = "courseId") long courseId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
             Principal principal){
         Course c = this.courseService.getCourseById(courseId);
         if (c==null)
@@ -101,13 +104,16 @@ public class ApiEnrollmentController {
         User caller = currentUser(principal);
         if (!this.courseService.canManage(caller, c))
             return new ResponseEntity<>("Bạn không có quyền xem danh sách ghi danh này", HttpStatus.FORBIDDEN);
-        return new ResponseEntity<>(this.enrollmentService.getRoster(courseId), HttpStatus.OK);
+        return new ResponseEntity<>(this.enrollmentService.getRoster(courseId, page, size), HttpStatus.OK);
     }
-    
+
     @GetMapping("/enrollments/my")
-    public ResponseEntity<?> myEnrollments(Principal principal){
+    public ResponseEntity<?> myEnrollments(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            Principal principal){
         User caller = currentUser(principal);
-        return new ResponseEntity<>(this.enrollmentService.getMyEnrollments(caller.getId()), HttpStatus.OK);
+        return new ResponseEntity<>(this.enrollmentService.getMyEnrollments(caller.getId(), page, size), HttpStatus.OK);
     }
     
     @DeleteMapping("/enrollments/{id}")

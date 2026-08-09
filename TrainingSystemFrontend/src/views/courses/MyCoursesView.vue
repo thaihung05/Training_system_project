@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useAsyncData } from '@/composables/useAsyncData'
+import { useLazyList } from '@/composables/useLazyList'
 import enrollmentService from '@/api/enrollmentService'
 
-const { data: enrollments, loading, error } = useAsyncData(() => enrollmentService.getMyEnrollments())
+const { items: enrollments, loading, loadingMore, hasMore, loadMore, error } = useLazyList(
+  (page, size) => enrollmentService.getMyEnrollments(page, size),
+  9,
+)
 
 const filter = ref('all')
 
@@ -31,26 +34,31 @@ const filtered = computed(() => {
     <p v-else-if="error" class="alert alert-error">{{ error.response?.data || 'Có lỗi xảy ra.' }}</p>
     <div v-else-if="filtered.length === 0" class="empty-state">Không có khoá học nào ở mục này.</div>
 
-    <div v-else class="mycourse-grid">
-      <div v-for="e in filtered" :key="e.id" class="mycourse-card">
-        <div class="mycourse-thumb">
-          <span class="mycourse-badge" :class="e.progressPercent >= 100 ? 'mycourse-badge--done' : 'mycourse-badge--progress'">
-            {{ e.progressPercent >= 100 ? 'Đã hoàn thành' : 'Đang học' }}
-          </span>
-        </div>
-        <div class="mycourse-body">
-          <div class="mycourse-dept">{{ e.courseId.departmentId ? e.courseId.departmentId.name : 'Toàn công ty' }}</div>
-          <div class="mycourse-title">{{ e.courseId.title }}</div>
-          <div class="progress-track">
-            <div class="progress-fill" :style="{ width: e.progressPercent + '%' }"></div>
+    <template v-else>
+      <div class="mycourse-grid">
+        <div v-for="e in filtered" :key="e.id" class="mycourse-card">
+          <div class="mycourse-thumb">
+            <span class="mycourse-badge" :class="e.progressPercent >= 100 ? 'mycourse-badge--done' : 'mycourse-badge--progress'">
+              {{ e.progressPercent >= 100 ? 'Đã hoàn thành' : 'Đang học' }}
+            </span>
           </div>
-          <div class="mycourse-percent">{{ e.progressPercent }}%</div>
-          <RouterLink :to="{ name: 'course-detail', params: { id: e.courseId.id } }" class="btn btn-primary">
-            {{ e.progressPercent >= 100 ? 'Xem lại' : 'Tiếp tục học' }}
-          </RouterLink>
+          <div class="mycourse-body">
+            <div class="mycourse-dept">{{ e.courseId.departmentId ? e.courseId.departmentId.name : 'Toàn công ty' }}</div>
+            <div class="mycourse-title">{{ e.courseId.title }}</div>
+            <div class="progress-track">
+              <div class="progress-fill" :style="{ width: e.progressPercent + '%' }"></div>
+            </div>
+            <div class="mycourse-percent">{{ e.progressPercent }}%</div>
+            <RouterLink :to="{ name: 'course-detail', params: { id: e.courseId.id } }" class="btn btn-primary">
+              {{ e.progressPercent >= 100 ? 'Xem lại' : 'Tiếp tục học' }}
+            </RouterLink>
+          </div>
         </div>
       </div>
-    </div>
+      <button v-if="hasMore" class="btn btn-secondary mycourse-load-more" :disabled="loadingMore" @click="loadMore">
+        {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
+      </button>
+    </template>
   </div>
 </template>
 

@@ -9,7 +9,7 @@ import lessonProgressService from '@/api/lessonProgressService'
 import testService from '@/api/testService'
 import testAttemptService from '@/api/testAttemptService'
 import { showError } from '@/utils/alerts'
-import { ChevronLeft, ChevronRight, Check, CheckCheck } from '@lucide/vue'
+import { ChevronLeft, ChevronRight, Check, CheckCheck, FileText, ExternalLink } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -136,13 +136,12 @@ function resumeTest(t) {
         <div v-if="activeLesson" class="lesson-main">
           <div class="lesson-viewer">
             <a v-if="activeLesson.slidePdfUrl" :href="activeLesson.slidePdfUrl" target="_blank" class="lesson-pdf-link">
-              Mở tài liệu bài học (PDF) ↗
+              <FileText :size="15" /> Mở tài liệu bài học <ExternalLink :size="13" />
             </a>
             <span v-else class="lesson-pdf-empty">Bài học chưa có tài liệu.</span>
           </div>
           <div class="lesson-info-card">
-            <div class="lesson-info-label">BÀI {{ activeIndex + 1 }}</div>
-            <div class="lesson-info-title">{{ activeLesson.title }}</div>
+            <div class="lesson-info-title">Bài {{ activeIndex + 1 }}: {{ activeLesson.title }}</div>
           </div>
           <div class="lesson-nav">
             <button class="btn btn-secondary" :disabled="activeIndex <= 0" @click="goPrev">

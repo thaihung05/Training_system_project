@@ -1,8 +1,8 @@
 import http from '@/api/http'
 
 export default {
-    getForCompose(testId) {
-        return http.get(`/api/secure/tests/${testId}/questions`);
+    getForCompose(testId, page, size) {
+        return http.get(`/api/secure/tests/${testId}/questions`, { params: { page, size } });
     },
     create(testId, question) {
         return http.post(`/api/secure/tests/${testId}/questions`, question);

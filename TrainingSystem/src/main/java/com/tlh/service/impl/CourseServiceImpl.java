@@ -33,10 +33,10 @@ public class CourseServiceImpl implements CourseService {
     private EnrollmentService enrollmentService;
 
     @Override
-    public List<Course> getCourses(String kw, Long departmentId, User caller) {
+    public List<Course> getCourses(String kw, Long departmentId, User caller, Integer page, Integer size) {
         if (caller != null && "EMPLOYEE".equals(caller.getRole())) {
             Long employeeDepartmentId = caller.getDepartmentId() != null ? caller.getDepartmentId().getId() : null;
-            return this.courseRepo.getCoursesForEmployee(kw, employeeDepartmentId);
+            return this.courseRepo.getCoursesForEmployee(kw, employeeDepartmentId, page, size);
         }
         Map<String, String> params = new HashMap<>();
         if (kw != null) {
@@ -46,6 +46,10 @@ public class CourseServiceImpl implements CourseService {
             params.put("departmentId", String.valueOf(departmentId));
         }
         params.put("activeOnly", "true");
+        if (page != null && size != null) {
+            params.put("page", String.valueOf(page));
+            params.put("size", String.valueOf(size));
+        }
         return this.courseRepo.getCourses(params);
     }
 
@@ -55,11 +59,16 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<Course> getMyCourses(User caller) {
+    public List<Course> getMyCourses(User caller, Integer page, Integer size) {
         if ("ADMIN".equals(caller.getRole())) {
-            return this.courseRepo.getCourses(new HashMap<>());
+            Map<String, String> params = new HashMap<>();
+            if (page != null && size != null) {
+                params.put("page", String.valueOf(page));
+                params.put("size", String.valueOf(size));
+            }
+            return this.courseRepo.getCourses(params);
         }
-        return this.courseRepo.getCoursesByCreator(caller.getId());
+        return this.courseRepo.getCoursesByCreator(caller.getId(), page, size);
     }
 
     @Override

@@ -1,13 +1,16 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { Trash2 } from '@lucide/vue'
 import { useLazyList } from '@/composables/useLazyList'
 import notificationService from '@/api/notificationService'
 
+const router = useRouter()
 const unreadOnly = ref(false)
 
 const { items: notifications, loading, loadingMore, hasMore, loadMore, reload } = useLazyList(
   (page, size) => notificationService.getMy(unreadOnly.value, page, size),
+  20,
 )
 
 function setFilter(value) {
@@ -19,6 +22,13 @@ async function markRead(n) {
   if (n.isRead) return
   await notificationService.markRead(n.id)
   n.isRead = true
+}
+
+function openNotification(n) {
+  markRead(n)
+  if (n.title === 'Câu hỏi đã được trả lời') {
+    router.push({ name: 'my-chat-history' })
+  }
 }
 
 async function markAllRead() {
@@ -59,7 +69,7 @@ function formatDate(ms) {
           :key="n.id"
           class="notif-row"
           :class="{ 'notif-row--unread': !n.isRead }"
-          @click="markRead(n)"
+          @click="openNotification(n)"
         >
           <span v-if="!n.isRead" class="notif-dot"></span>
           <div class="notif-body">

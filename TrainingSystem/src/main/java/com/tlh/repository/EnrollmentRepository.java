@@ -12,8 +12,8 @@ import java.util.List;
  * @author LENOVO
  */
 public interface EnrollmentRepository {
-    List<Enrollment> getByCourse(long courseId);
-    List<Enrollment> getByUser(long userId);
+    List<Enrollment> getByCourse(long courseId, Integer page, Integer size);
+    List<Enrollment> getByUser(long userId, Integer page, Integer size);
     Enrollment getById(long id);
     Enrollment getByCourseAndUser(long courseId, long userId);
     void saveOrUpdate(Enrollment e);

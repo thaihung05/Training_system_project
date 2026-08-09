@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
+import { useLazyList } from '@/composables/useLazyList'
 import { useAuthStore } from '@/stores/auth'
 import courseService from '@/api/courseService'
 import certificateService from '@/api/certificateService'
@@ -15,8 +16,9 @@ const auth = useAuthStore()
 const courseId = Number(route.params.courseId)
 
 const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
-const { data: certificates, loading, error, refresh } = useAsyncData(() =>
-  certificateService.getByCourse(courseId),
+const { items: certificates, loading, loadingMore, hasMore, loadMore, error, reload } = useLazyList(
+  (page, size) => certificateService.getByCourse(courseId, page, size),
+  15,
 )
 
 const uploadingId = ref(null)
@@ -28,7 +30,7 @@ async function handleFileChange(event, cert) {
   try {
     const res = await uploadService.uploadPdf(file)
     await certificateService.updatePdfUrl(cert.id, res.data.url)
-    refresh()
+    reload()
   } catch (err) {
     showError(err.response?.data || 'Tải file thất bại.')
   } finally {
@@ -83,6 +85,9 @@ function formatDate(ms) {
         </div>
       </template>
     </div>
+    <button v-if="hasMore" class="btn btn-secondary certmg-load-more" :disabled="loadingMore" @click="loadMore">
+      {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
+    </button>
   </div>
 </template>
 

@@ -20,6 +20,6 @@ public interface TestAttemptService {
     Map<String, Object> submit(long attemptId, List<Map<String, Object>> answers);
     Map<String, Object> getAttemptDetail(long attemptId);
     TestAttempt getById(long id);
-    List<TestAttempt> getMyAttempts(long userId, Long testId);
-    List<TestAttempt> getByTest(long testId);
+    List<TestAttempt> getMyAttempts(long userId, Long testId, Integer page, Integer size);
+    List<TestAttempt> getByTest(long testId, Integer page, Integer size);
 }

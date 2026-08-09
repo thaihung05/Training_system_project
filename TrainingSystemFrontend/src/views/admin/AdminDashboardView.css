@@ -1,7 +1,4 @@
 .admin-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
   margin-bottom: var(--space-6);
 }
 
@@ -31,9 +28,6 @@
 }
 
 @media (max-width: 900px) {
-  .admin-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .admin-hub {
     grid-template-columns: 1fr;
   }

@@ -30,7 +30,7 @@ public class CertificateRepositoryImpl implements CertificateRepository{
     private LocalSessionFactoryBean factory;
     
     @Override
-    public List<Certificate> getByUser(long userId) {
+    public List<Certificate> getByUser(long userId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Certificate> q = b.createQuery(Certificate.class);
@@ -39,11 +39,16 @@ public class CertificateRepositoryImpl implements CertificateRepository{
         q.select(root).where(b.equal(root.get("userId").get("id"), userId));
         q.orderBy(b.desc(root.get("id")));
 
-        return s.createQuery(q).getResultList();
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override
-    public List<Certificate> getByCourse(long courseId) {
+    public List<Certificate> getByCourse(long courseId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Certificate> q = b.createQuery(Certificate.class);
@@ -52,7 +57,12 @@ public class CertificateRepositoryImpl implements CertificateRepository{
         q.select(root).where(b.equal(root.get("courseId").get("id"), courseId));
         q.orderBy(b.desc(root.get("id")));
 
-        return s.createQuery(q).getResultList();
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override

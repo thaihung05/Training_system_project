@@ -12,7 +12,7 @@ import java.util.List;
  * @author LENOVO
  */
 public interface QuestionRepository {
-    List<Question> getByTest(long testId);
+    List<Question> getByTest(long testId, Integer page, Integer size);
     List<Question> getActiveByTest(long testId);
     Question getById(long id);
     void saveOrUpdate(Question q);

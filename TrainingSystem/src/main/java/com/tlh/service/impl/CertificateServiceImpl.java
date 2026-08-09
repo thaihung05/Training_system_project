@@ -55,8 +55,8 @@ public class CertificateServiceImpl implements CertificateService{
     private UserBadgeService userBadgeService;
     
     @Override
-    public List<Certificate> getMyCertificates(long userId) {
-        return this.certificateRepo.getByUser(userId);
+    public List<Certificate> getMyCertificates(long userId, Integer page, Integer size) {
+        return this.certificateRepo.getByUser(userId, page, size);
     }
 
     @Override
@@ -65,8 +65,8 @@ public class CertificateServiceImpl implements CertificateService{
     }
 
     @Override
-    public List<Certificate> getByCourse(long courseId) {
-        return this.certificateRepo.getByCourse(courseId);
+    public List<Certificate> getByCourse(long courseId, Integer page, Integer size) {
+        return this.certificateRepo.getByCourse(courseId, page, size);
     }
 
     @Override

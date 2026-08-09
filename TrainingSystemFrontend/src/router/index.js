@@ -147,6 +147,12 @@ const router = createRouter({
             component: () => import('@/views/ProfileView.vue'),
             meta: { requiresAuth: true },
         },
+        {
+            path: '/my-questions',
+            name: 'my-chat-history',
+            component: () => import('@/views/chat/MyChatHistoryView.vue'),
+            meta: { requiresAuth: true },
+        },
 
     ]
 })

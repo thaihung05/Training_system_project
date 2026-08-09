@@ -54,7 +54,7 @@ public class TestAttemptRepositoryImpl implements TestAttemptRepository{
     }
 
     @Override
-    public List<TestAttempt> getByTest(long testId) {
+    public List<TestAttempt> getByTest(long testId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<TestAttempt> q = b.createQuery(TestAttempt.class);
@@ -63,11 +63,16 @@ public class TestAttemptRepositoryImpl implements TestAttemptRepository{
         q.select(root).where(b.equal(root.get("testId").get("id"), testId));
         q.orderBy(b.desc(root.get("id")));
 
-        return s.createQuery(q).getResultList();
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override
-    public List<TestAttempt> getByUser(long userId) {
+    public List<TestAttempt> getByUser(long userId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<TestAttempt> q = b.createQuery(TestAttempt.class);
@@ -76,7 +81,12 @@ public class TestAttemptRepositoryImpl implements TestAttemptRepository{
         q.select(root).where(b.equal(root.get("userId").get("id"), userId));
         q.orderBy(b.desc(root.get("id")));
 
-        return s.createQuery(q).getResultList();
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override

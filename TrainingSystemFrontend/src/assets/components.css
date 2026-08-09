@@ -187,6 +187,59 @@ textarea.input {
   border-radius: var(--radius-lg);
 }
 
+.stat-rail {
+  display: flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.stat-rail-item {
+  flex: 1;
+  padding: var(--space-4) var(--space-5);
+  border-left: 1px solid var(--color-border);
+}
+
+.stat-rail-item:first-child {
+  border-left: none;
+}
+
+.stat-rail-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-heading);
+  line-height: 1.2;
+}
+
+.stat-rail-value--gold {
+  color: var(--color-warning);
+}
+
+.stat-rail-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+@media (max-width: 700px) {
+  .stat-rail {
+    flex-wrap: wrap;
+  }
+  .stat-rail-item {
+    flex: 1 1 50%;
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+  }
+  .stat-rail-item:nth-child(-n + 2) {
+    border-top: none;
+  }
+  .stat-rail-item:nth-child(even) {
+    border-left: 1px solid var(--color-border);
+  }
+}
+
 .stat-card {
   display: flex;
   align-items: center;

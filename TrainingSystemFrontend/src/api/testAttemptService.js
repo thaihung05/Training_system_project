@@ -13,10 +13,10 @@ export default {
     getById(attemptId) {
         return http.get(`/api/secure/attempts/${attemptId}`);
     },
-    getMy(testId) {
-        return http.get('/api/secure/attempts/my', { params: { testId } });
+    getMy(testId, page, size) {
+        return http.get('/api/secure/attempts/my', { params: { testId, page, size } });
     },
-    getByTest(testId) {
-        return http.get(`/api/secure/tests/${testId}/attempts`);
+    getByTest(testId, page, size) {
+        return http.get(`/api/secure/tests/${testId}/attempts`, { params: { page, size } });
     }
 }

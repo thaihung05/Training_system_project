@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -51,9 +52,12 @@ public class ApiChatHistoryController {
     }
     
     @GetMapping("/my")
-    public ResponseEntity<?> myHistory(Principal principal) {
+    public ResponseEntity<?> myHistory(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            Principal principal) {
         User caller = currentUser(principal);
-        return new ResponseEntity<>(this.chatHistoryService.getMyHistory(caller.getId()), HttpStatus.OK);
+        return new ResponseEntity<>(this.chatHistoryService.getMyHistory(caller.getId(), page, size), HttpStatus.OK);
     }
     
     @GetMapping("/session/{sessionId}")
@@ -71,12 +75,15 @@ public class ApiChatHistoryController {
     }
     
     @GetMapping("/pending")
-    public ResponseEntity<?> pending(Principal principal) {
+    public ResponseEntity<?> pending(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            Principal principal) {
         User caller = currentUser(principal);
         if (!"TRAINER".equals(caller.getRole()) && !"ADMIN".equals(caller.getRole())) {
             return new ResponseEntity<>("Bạn không có quyền xem danh sách này", HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(this.chatHistoryService.getPending(), HttpStatus.OK);
+        return new ResponseEntity<>(this.chatHistoryService.getPending(caller, page, size), HttpStatus.OK);
     }
     
     @PutMapping("/{id}/answer")

@@ -247,16 +247,16 @@ public class TestAttemptServiceImpl implements TestAttemptService{
     }
 
     @Override
-    public List<TestAttempt> getMyAttempts(long userId, Long testId) {
+    public List<TestAttempt> getMyAttempts(long userId, Long testId, Integer page, Integer size) {
         if (testId != null) {
             return this.testAttemptRepo.getByUserAndTest(userId, testId);
         }
-        return this.testAttemptRepo.getByUser(userId);
+        return this.testAttemptRepo.getByUser(userId, page, size);
     }
 
     @Override
-    public List<TestAttempt> getByTest(long testId) {
-        return this.testAttemptRepo.getByTest(testId);
+    public List<TestAttempt> getByTest(long testId, Integer page, Integer size) {
+        return this.testAttemptRepo.getByTest(testId, page, size);
     }
     
 }

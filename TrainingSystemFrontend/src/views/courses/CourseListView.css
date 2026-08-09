@@ -81,3 +81,8 @@
     grid-template-columns: 1fr;
   }
 }
+
+.course-load-more {
+  width: 100%;
+  margin-top: 20px;
+}

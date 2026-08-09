@@ -8,7 +8,9 @@ import com.tlh.pojo.ChatHistory;
 import com.tlh.repository.ChatHistoryRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +30,20 @@ public class ChatHistoryRepositoryImpl implements ChatHistoryRepository{
     private LocalSessionFactoryBean factory;
     
     @Override
-    public List<ChatHistory> getByUser(long userId) {
+    public List<ChatHistory> getByUser(long userId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<ChatHistory> q = b.createQuery(ChatHistory.class);
         Root<ChatHistory> root = q.from(ChatHistory.class);
         q.select(root).where(b.equal(root.get("userId").get("id"), userId));
         q.orderBy(b.desc(root.get("id")));
-        return s.createQuery(q).getResultList();
+
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override
@@ -50,14 +58,26 @@ public class ChatHistoryRepositoryImpl implements ChatHistoryRepository{
     }
 
     @Override
-    public List<ChatHistory> getPending() {
+    public List<ChatHistory> getPending(Long departmentId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<ChatHistory> q = b.createQuery(ChatHistory.class);
         Root<ChatHistory> root = q.from(ChatHistory.class);
-        q.select(root).where(b.isNull(root.get("answer")));
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.isNull(root.get("answer")));
+        if (departmentId != null) {
+            predicates.add(b.equal(root.get("userId").get("departmentId").get("id"), departmentId));
+        }
+        q.select(root).where(predicates.toArray(Predicate[]::new));
         q.orderBy(b.asc(root.get("id")));
-        return s.createQuery(q).getResultList();
+
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            query.setFirstResult((page - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
     }
 
     @Override

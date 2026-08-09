@@ -16,8 +16,8 @@ import java.util.Map;
 public interface EnrollmentService {
     Map<String, Object> enrollUsers(Course course, List<Long> userIds);
     Map<String, Object> enrollDepartment(Course course, long departmentId);
-    List<Enrollment> getRoster(long courseId);
-    List<Enrollment> getMyEnrollments(long userId);
+    List<Enrollment> getRoster(long courseId, Integer page, Integer size);
+    List<Enrollment> getMyEnrollments(long userId, Integer page, Integer size);
     Enrollment getById(long id);
     void unenroll(long id);
     void recalcProgress(long enrollmentId);

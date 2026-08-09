@@ -20,6 +20,10 @@
   min-width: 70px;
 }
 
+.qmg-load-more {
+  width: 100%;
+}
+
 .qmg-main {
   flex: 1;
   min-width: 0;

@@ -1,14 +1,14 @@
 import http from '@/api/http'
 
 export default {
-    getCourses(kw, departmentId) {
-        return http.get('/api/secure/courses', { params: { kw, departmentId } });
+    getCourses(kw, departmentId, page, size) {
+        return http.get('/api/secure/courses', { params: { kw, departmentId, page, size } });
     },
     getCourseById(id) {
         return http.get(`/api/secure/courses/${id}`);
     },
-    getMyCourses() {
-        return http.get('/api/secure/courses/my');
+    getMyCourses(page, size) {
+        return http.get('/api/secure/courses/my', { params: { page, size } });
     },
     create(course) {
         return http.post('/api/secure/courses', course);

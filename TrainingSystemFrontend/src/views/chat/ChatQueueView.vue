@@ -1,10 +1,13 @@
 <script setup>
 import { ref } from 'vue'
-import { useAsyncData } from '@/composables/useAsyncData'
+import { useLazyList } from '@/composables/useLazyList'
 import chatService from '@/api/chatService'
 import { showError } from '@/utils/alerts'
 
-const { data: pending, loading, refresh } = useAsyncData(() => chatService.getPending())
+const { items: pending, loading, loadingMore, hasMore, loadMore, reload } = useLazyList(
+  (page, size) => chatService.getPending(page, size),
+  10,
+)
 
 const answerDrafts = ref({})
 const submitting = ref(null)
@@ -16,7 +19,7 @@ async function submitAnswer(item) {
   try {
     await chatService.answer(item.id, text)
     answerDrafts.value[item.id] = ''
-    refresh()
+    reload()
   } catch (err) {
     showError(err.response?.data || 'Có lỗi xảy ra.')
   } finally {
@@ -38,31 +41,36 @@ function formatDate(ms) {
 
     <p v-if="loading" class="state-text">Đang tải...</p>
     <div v-else-if="pending.length === 0" class="empty-state">Không có câu hỏi nào đang chờ trả lời.</div>
-    <div v-else class="queue-list">
-      <div v-for="item in pending" :key="item.id" class="card queue-card">
-        <div class="queue-meta">
-          <span class="queue-user">{{ item.userId.name }}</span>
-          <span class="queue-date">{{ formatDate(item.createdAt) }}</span>
-        </div>
-        <div class="queue-question">{{ item.question }}</div>
-        <div class="queue-answer-row">
-          <input
-            v-model="answerDrafts[item.id]"
-            type="text"
-            class="input"
-            placeholder="Nhập câu trả lời..."
-            @keyup.enter="submitAnswer(item)"
-          />
-          <button
-            class="btn btn-primary btn-sm"
-            :disabled="submitting === item.id || !answerDrafts[item.id]?.trim()"
-            @click="submitAnswer(item)"
-          >
-            Trả lời
-          </button>
+    <template v-else>
+      <div class="queue-list">
+        <div v-for="item in pending" :key="item.id" class="card queue-card">
+          <div class="queue-meta">
+            <span class="queue-user">{{ item.userId.name }}</span>
+            <span class="queue-date">{{ formatDate(item.createdAt) }}</span>
+          </div>
+          <div class="queue-question">{{ item.question }}</div>
+          <div class="queue-answer-row">
+            <input
+              v-model="answerDrafts[item.id]"
+              type="text"
+              class="input"
+              placeholder="Nhập câu trả lời..."
+              @keyup.enter="submitAnswer(item)"
+            />
+            <button
+              class="btn btn-primary btn-sm"
+              :disabled="submitting === item.id || !answerDrafts[item.id]?.trim()"
+              @click="submitAnswer(item)"
+            >
+              Trả lời
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      <button v-if="hasMore" class="btn btn-secondary queue-load-more" :disabled="loadingMore" @click="loadMore">
+        {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
+      </button>
+    </template>
   </div>
 </template>
 

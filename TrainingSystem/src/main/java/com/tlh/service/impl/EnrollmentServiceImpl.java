@@ -103,13 +103,13 @@ public class EnrollmentServiceImpl implements EnrollmentService{
     }
 
     @Override
-    public List<Enrollment> getRoster(long courseId) {
-        return this.enrollmentRepo.getByCourse(courseId);
+    public List<Enrollment> getRoster(long courseId, Integer page, Integer size) {
+        return this.enrollmentRepo.getByCourse(courseId, page, size);
     }
 
     @Override
-    public List<Enrollment> getMyEnrollments(long userId) {
-        return this.enrollmentRepo.getByUser(userId);
+    public List<Enrollment> getMyEnrollments(long userId, Integer page, Integer size) {
+        return this.enrollmentRepo.getByUser(userId, page, size);
     }
 
     @Override

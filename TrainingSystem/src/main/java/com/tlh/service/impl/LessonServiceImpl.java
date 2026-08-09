@@ -58,7 +58,7 @@ public class LessonServiceImpl implements LessonService{
         l.setOrderIndex(maxOrder + 1);
         this.lessonRepo.saveOrUpdate(l);
         
-        for (Enrollment e : this.enrollmentRepo.getByCourse(c.getId())){
+        for (Enrollment e : this.enrollmentRepo.getByCourse(c.getId(), null, null)){
             if (e.getCompletedAt() != null)
                 continue;
             LessonProgress lp = new LessonProgress();

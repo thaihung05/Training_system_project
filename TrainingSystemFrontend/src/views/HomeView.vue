@@ -39,12 +39,10 @@ function initials(name) {
       <div class="home-date">{{ new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' }) }}</div>
     </div>
 
-    <div class="home-stats">
-      <div v-for="s in stats" :key="s.label" class="stat-card">
-        <div class="stat-body">
-          <div class="stat-subtitle">{{ s.label }}</div>
-          <div class="stat-mono">{{ s.value }}</div>
-        </div>
+    <div class="stat-rail home-stats">
+      <div v-for="s in stats" :key="s.label" class="stat-rail-item">
+        <div class="stat-rail-value">{{ s.value }}</div>
+        <div class="stat-rail-label">{{ s.label }}</div>
       </div>
     </div>
 

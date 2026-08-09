@@ -13,9 +13,9 @@ import java.util.Map;
  */
 public interface CourseRepository {
     List<Course> getCourses(Map<String, String> params);
-    List<Course> getCoursesForEmployee(String kw, Long employeeDepartmentId);
+    List<Course> getCoursesForEmployee(String kw, Long employeeDepartmentId, Integer page, Integer size);
     Course getCourseById(long id);
-    List<Course> getCoursesByCreator(long userId);
+    List<Course> getCoursesByCreator(long userId, Integer page, Integer size);
     void saveOrUpdate(Course c);
     void deactivateCourse(long id);
 }

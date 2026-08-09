@@ -108,14 +108,18 @@ public class ApiTestAttemptController {
     @GetMapping("/attempts/my")
     public ResponseEntity<?> myAttempts(
             @RequestParam(value = "testId", required = false) Long testId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
             Principal principal) {
         User caller = currentUser(principal);
-        return new ResponseEntity<>(this.testAttemptService.getMyAttempts(caller.getId(), testId), HttpStatus.OK);
+        return new ResponseEntity<>(this.testAttemptService.getMyAttempts(caller.getId(), testId, page, size), HttpStatus.OK);
     }
 
     @GetMapping("/tests/{testId}/attempts")
     public ResponseEntity<?> attemptsOfTest(
-            @PathVariable(value = "testId") long testId, 
+            @PathVariable(value = "testId") long testId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
             Principal principal) {
         Test t = this.testService.getById(testId);
         if (t == null) {
@@ -125,6 +129,6 @@ public class ApiTestAttemptController {
         if (!this.courseService.canManage(caller, t.getCourseId())) {
             return new ResponseEntity<>("Bạn không có quyền xem danh sách này", HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(this.testAttemptService.getByTest(testId), HttpStatus.OK);
+        return new ResponseEntity<>(this.testAttemptService.getByTest(testId, page, size), HttpStatus.OK);
     }
 }

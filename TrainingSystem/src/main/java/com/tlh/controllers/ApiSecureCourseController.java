@@ -47,9 +47,11 @@ public class ApiSecureCourseController {
     public ResponseEntity<List<Course>> getCourses(
             @RequestParam(value = "kw", required = false) String kw,
             @RequestParam(value = "departmentId", required = false) Long departmentId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
             Principal principal) {
         User caller = currentUser(principal);
-        return new ResponseEntity<>(this.courseService.getCourses(kw, departmentId, caller), HttpStatus.OK);
+        return new ResponseEntity<>(this.courseService.getCourses(kw, departmentId, caller, page, size), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -66,12 +68,15 @@ public class ApiSecureCourseController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<?> getMyCourses(Principal principal) {
+    public ResponseEntity<?> getMyCourses(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            Principal principal) {
         User caller = currentUser(principal);
         if (caller == null || !("TRAINER".equals(caller.getRole()) || "ADMIN".equals(caller.getRole()))) {
             return new ResponseEntity<>("Bạn không có quyền xem danh sách này", HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(this.courseService.getMyCourses(caller), HttpStatus.OK);
+        return new ResponseEntity<>(this.courseService.getMyCourses(caller, page, size), HttpStatus.OK);
     }
 
     @PostMapping
