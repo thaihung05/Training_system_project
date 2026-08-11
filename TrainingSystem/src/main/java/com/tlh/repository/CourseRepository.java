@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public interface CourseRepository {
     List<Course> getCourses(Map<String, String> params);
-    List<Course> getCoursesForEmployee(String kw, Long employeeDepartmentId, Integer page, Integer size);
+    List<Course> getCoursesForEmployee(String kw, Long employeeId, Integer page, Integer size);
     Course getCourseById(long id);
     List<Course> getCoursesByCreator(long userId, Integer page, Integer size);
     void saveOrUpdate(Course c);

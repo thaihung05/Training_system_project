@@ -80,7 +80,9 @@ async function sendQuestion() {
           <div v-for="m in messages" :key="m.id" class="chat-message-group">
             <div class="chat-bubble chat-bubble--user">{{ m.question }}</div>
             <div v-if="m.answer" class="chat-bubble chat-bubble--bot">{{ m.answer }}</div>
-            <div v-else class="chat-bubble chat-bubble--pending">Đang chờ trả lời...</div>
+            <div v-else class="chat-bubble chat-bubble--pending">
+              Trợ lý ảo chưa tìm thấy câu trả lời cho câu hỏi này. Câu hỏi của bạn đã được chuyển cho trainer, sẽ được phản hồi sớm nhất.
+            </div>
           </div>
         </template>
       </div>

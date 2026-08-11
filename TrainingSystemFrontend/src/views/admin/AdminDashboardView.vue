@@ -8,7 +8,7 @@ import departmentService from '@/api/departmentService'
 import pointService from '@/api/pointService'
 
 const { data: users } = useAsyncData(() => userService.getAll())
-const { data: courses } = useAsyncData(() => courseService.getCourses())
+const { data: courses } = useAsyncData(() => courseService.getCourses(undefined, undefined, undefined, undefined, false))
 const { data: departments } = useAsyncData(() => departmentService.getAll())
 const { data: pointsIssued } = useAsyncData(() => pointService.getTotalIssued())
 

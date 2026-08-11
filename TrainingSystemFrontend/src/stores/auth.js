@@ -4,8 +4,18 @@ import http from '@/api/http'
 import profileService from '@/api/profileService'
 
 export const useAuthStore = defineStore('auth', () => {
+    function readStoredUser() {
+        try {
+            const raw = localStorage.getItem('user')
+            return raw ? JSON.parse(raw) : null
+        } catch {
+            localStorage.removeItem('user')
+            return null
+        }
+    }
+
     const token = ref(localStorage.getItem('token') || null);
-    const user = ref(JSON.parse(localStorage.getItem('user') || null));
+    const user = ref(readStoredUser());
     const isLoggedIn = computed(() => !!token.value);
     const role = computed(() => user.value?.role || null);
     const isAdmin = computed(() => role.value === 'ADMIN');
@@ -17,9 +27,17 @@ export const useAuthStore = defineStore('auth', () => {
         const res = await http.post('/api/users/login', { username, password });
         token.value = res.data.token;
         localStorage.setItem('token', token.value);
-        const profileRes = await profileService.getMy()
-        user.value = profileRes.data;
-        localStorage.setItem('user', JSON.stringify(user.value));
+        try {
+            const profileRes = await profileService.getMy()
+            user.value = profileRes.data;
+            localStorage.setItem('user', JSON.stringify(user.value));
+        } catch (err) {
+            token.value = null;
+            user.value = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            throw err;
+        }
     }
 
     function logout() {

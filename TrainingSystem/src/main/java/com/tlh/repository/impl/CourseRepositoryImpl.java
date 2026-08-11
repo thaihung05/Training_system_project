@@ -5,11 +5,13 @@
 package com.tlh.repository.impl;
 
 import com.tlh.pojo.Course;
+import com.tlh.pojo.Enrollment;
 import com.tlh.repository.CourseRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +72,7 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
     
     @Override
-    public List<Course> getCoursesForEmployee(String kw, Long employeeDepartmentId, Integer page, Integer size) {
+    public List<Course> getCoursesForEmployee(String kw, Long employeeId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Course> q = b.createQuery(Course.class);
@@ -82,13 +84,11 @@ public class CourseRepositoryImpl implements CourseRepository {
             predicates.add(b.like(b.lower(root.get("title")), "%" + kw.trim().toLowerCase() + "%"));
         }
 
-        Predicate noDepartment = b.isNull(root.get("departmentId"));
-        if (employeeDepartmentId != null) {
-            Predicate sameDepartment = b.equal(root.get("departmentId").get("id"), employeeDepartmentId);
-            predicates.add(b.or(noDepartment, sameDepartment));
-        } else {
-            predicates.add(noDepartment);
-        }
+        Subquery<Long> enrolledCourseIds = q.subquery(Long.class);
+        Root<Enrollment> enrollRoot = enrolledCourseIds.from(Enrollment.class);
+        enrolledCourseIds.select(enrollRoot.get("courseId").get("id"))
+                .where(b.equal(enrollRoot.get("userId").get("id"), employeeId));
+        predicates.add(root.get("id").in(enrolledCourseIds));
 
         q.select(root).where(predicates.toArray(Predicate[]::new));
         q.orderBy(b.desc(root.get("id")));

@@ -70,7 +70,7 @@ public class ChatHistoryRepositoryImpl implements ChatHistoryRepository{
             predicates.add(b.equal(root.get("userId").get("departmentId").get("id"), departmentId));
         }
         q.select(root).where(predicates.toArray(Predicate[]::new));
-        q.orderBy(b.asc(root.get("id")));
+        q.orderBy(b.desc(root.get("id")));
 
         var query = s.createQuery(q);
         if (page != null && size != null) {

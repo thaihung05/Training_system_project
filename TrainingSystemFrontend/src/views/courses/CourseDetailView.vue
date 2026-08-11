@@ -21,8 +21,8 @@ const courseId = Number(route.params.id)
 const VALID_TABS = ['lessons', 'tests', 'forum']
 const activeTab = ref(VALID_TABS.includes(route.query.tab) ? route.query.tab : 'lessons')
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
-const { data: lessons, loading: lessonsLoading } = useAsyncData(() =>
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: lessons, loading: lessonsLoading, error: lessonsError } = useAsyncData(() =>
   lessonService.getByCourse(courseId),
 )
 const { data: myEnrollments, refresh: refreshEnrollments } = useAsyncData(() =>
@@ -81,7 +81,7 @@ async function markComplete() {
   }
 }
 
-const { data: tests, loading: testsLoading } = useAsyncData(() => testService.getByCourse(courseId))
+const { data: tests, loading: testsLoading, error: testsError } = useAsyncData(() => testService.getByCourse(courseId))
 const { data: myAttempts } = useAsyncData(() => testAttemptService.getMy())
 
 function attemptsForTest(testId) {
@@ -113,7 +113,7 @@ function resumeTest(t) {
 }
 
 const canAnswerForum = ref(false)
-const { items: forumQuestions, loading: forumLoading, loadingMore: forumLoadingMore, hasMore: forumHasMore, loadMore: loadMoreForum, reload: reloadForum } = useLazyList(
+const { items: forumQuestions, loading: forumLoading, loadingMore: forumLoadingMore, hasMore: forumHasMore, error: forumError, loadMore: loadMoreForum, reload: reloadForum } = useLazyList(
   async (page, size) => {
     const res = await forumService.getByCourse(courseId, page, size)
     canAnswerForum.value = res.data.canAnswer
@@ -166,6 +166,7 @@ async function submitAnswer(questionId) {
 
 <template>
   <div class="page">
+    <p v-if="courseError" class="alert alert-error">{{ courseError.response?.data || 'Không tải được thông tin khoá học.' }}</p>
     <div class="detail-header">
       <button class="back-btn" @click="router.back()"><ChevronLeft :size="18" /></button>
       <div class="detail-heading">
@@ -191,6 +192,7 @@ async function submitAnswer(questionId) {
 
     <template v-if="activeTab === 'lessons'">
       <p v-if="lessonsLoading" class="state-text">Đang tải...</p>
+      <p v-else-if="lessonsError" class="alert alert-error">{{ lessonsError.response?.data || 'Không tải được danh sách bài học.' }}</p>
       <div v-else class="detail-body">
         <div v-if="activeLesson" class="lesson-main">
           <div class="lesson-viewer">
@@ -250,6 +252,7 @@ async function submitAnswer(questionId) {
 
     <template v-else-if="activeTab === 'tests'">
       <p v-if="testsLoading" class="state-text">Đang tải...</p>
+      <p v-else-if="testsError" class="alert alert-error">{{ testsError.response?.data || 'Không tải được danh sách bài kiểm tra.' }}</p>
       <div v-else-if="tests.length === 0" class="empty-state">Khoá học chưa có bài kiểm tra nào.</div>
       <div v-else class="test-tab-list">
         <div v-for="t in tests" :key="t.id" class="card test-tab-card">
@@ -292,6 +295,7 @@ async function submitAnswer(questionId) {
       </div>
 
       <p v-if="forumLoading" class="state-text">Đang tải...</p>
+      <p v-else-if="forumError" class="alert alert-error">{{ forumError.response?.data || 'Không tải được diễn đàn.' }}</p>
       <div v-else-if="forumQuestions.length === 0" class="empty-state">Chưa có câu hỏi nào trong diễn đàn khoá học này.</div>
 
       <template v-else>

@@ -37,13 +37,13 @@ const navItems = computed(() => {
 
   const items = [
     { name: 'home', label: 'Trang chủ' },
-    { name: 'courses', label: 'Khoá học' },
     { name: 'my-courses', label: 'Khoá học của tôi' },
     { name: 'leaderboard', label: 'Thành tích' },
     { name: 'my-attempts', label: 'Lịch sử làm bài' },
     { name: 'my-chat-history', label: 'Câu hỏi của tôi' },
   ]
   if (auth.isAdmin) {
+    items.splice(1, 0, { name: 'courses', label: 'Khoá học' })
     items.push({ name: 'manage-courses', label: 'Quản lý' })
     items.push({ name: 'chat-queue', label: 'Hỏi & Đáp' })
     items.push({ name: 'admin-dashboard', label: 'Quản trị' })

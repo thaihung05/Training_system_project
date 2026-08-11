@@ -1,8 +1,8 @@
 import http from '@/api/http'
 
 export default {
-    getCourses(kw, departmentId, page, size) {
-        return http.get('/api/secure/courses', { params: { kw, departmentId, page, size } });
+    getCourses(kw, departmentId, page, size, activeOnly) {
+        return http.get('/api/secure/courses', { params: { kw, departmentId, page, size, activeOnly } });
     },
     getCourseById(id) {
         return http.get(`/api/secure/courses/${id}`);

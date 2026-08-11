@@ -49,7 +49,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
         try {
             String apiUrl = this.env.getProperty("chatbot.api.url");
             String answer = ChatbotClient.ask(apiUrl, question.trim());
-            ch.setAnswer(answer);
+            ch.setAnswer(isNotFoundAnswer(answer) ? null : answer);
         } catch (Exception e) {
             System.err.println("ChatbotClient.ask thất bại: " + e.getMessage());
             ch.setAnswer(null);
@@ -59,6 +59,14 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
             notifyTrainersOfPendingQuestion(caller);
         }
         return ch;
+    }
+
+    private boolean isNotFoundAnswer(String answer) {
+        if (answer == null) {
+            return true;
+        }
+        String normalized = answer.toLowerCase();
+        return normalized.contains("không tìm thấy thông tin");
     }
 
     private void notifyTrainersOfPendingQuestion(User asker) {

@@ -5,7 +5,9 @@
 package com.tlh.configs;
 
 import com.tlh.filters.JwtFilter;
+import com.tlh.repository.UserRepository;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +37,9 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
         })
 public class SecurityConfigs {
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Bean
     public HandlerMappingIntrospector mvcHandlerMappingIntrospector() {
         return new HandlerMappingIntrospector();
@@ -60,7 +65,7 @@ public class SecurityConfigs {
                     .requestMatchers("/api/secure/uploads/**").hasAnyRole("TRAINER", "ADMIN")
                     .requestMatchers("/api/secure/**").authenticated()
                     .anyRequest().permitAll()
-            ).addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
+            ).addFilterBefore(new JwtFilter(userRepository), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

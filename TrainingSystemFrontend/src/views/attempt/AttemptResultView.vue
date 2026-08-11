@@ -8,7 +8,7 @@ const router = useRouter()
 const attemptId = Number(route.params.attemptId)
 const courseId = route.query.courseId
 
-const { data: attempt, loading } = useAsyncData(() => testAttemptService.getById(attemptId))
+const { data: attempt, loading, error } = useAsyncData(() => testAttemptService.getById(attemptId))
 
 function goBackToCourse() {
   if (courseId) {
@@ -22,6 +22,7 @@ function goBackToCourse() {
 <template>
   <div class="page">
     <p v-if="loading" class="state-text">Đang tải...</p>
+    <p v-else-if="error" class="alert alert-error">{{ error.response?.data || 'Không tải được kết quả bài làm.' }}</p>
     <div v-else-if="attempt" class="result-wrap">
       <div class="card result-card" :class="attempt.passed ? 'result-card--pass' : 'result-card--fail'">
         <div class="result-score">{{ attempt.score }}%</div>

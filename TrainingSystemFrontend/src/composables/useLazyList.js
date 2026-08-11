@@ -26,12 +26,15 @@ export function useLazyList(fetcher, pageSize = 20) {
   async function loadMore() {
     if (!hasMore.value || loadingMore.value) return
     loadingMore.value = true
+    error.value = null
     try {
       const nextPage = page + 1
       const res = await fetcher(nextPage, pageSize)
       items.value = [...items.value, ...res.data]
       page = nextPage
       hasMore.value = res.data.length === pageSize
+    } catch (err) {
+      error.value = err
     } finally {
       loadingMore.value = false
     }

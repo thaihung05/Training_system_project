@@ -4,6 +4,8 @@
  */
 package com.tlh.filters;
 
+import com.tlh.pojo.User;
+import com.tlh.repository.UserRepository;
 import com.tlh.utils.JwtUtils;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -24,6 +26,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class JwtFilter implements Filter {
 
+    private final UserRepository userRepository;
+
+    public JwtFilter(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    private void unauthorized(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("text/plain;charset=UTF-8");
+        response.getWriter().write(message);
+    }
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
@@ -34,16 +48,22 @@ public class JwtFilter implements Filter {
             String header = httpRequest.getHeader("Authorization");
 
             if (header == null || !header.startsWith("Bearer ")) {
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header.");
+                unauthorized((HttpServletResponse) response, "Thiếu hoặc sai định dạng token xác thực.");
                 return;
             } else {
                 String token = header.substring(7);
                 try {
                     String username = JwtUtils.validateTokenAndGetUsername(token);
                     if (username != null) {
+                        User user = this.userRepository.getUserByUsername(username);
+                        if (user == null || !user.getIsActive()) {
+                            unauthorized((HttpServletResponse) response, "Tài khoản không còn hoạt động hoặc không tồn tại.");
+                            return;
+                        }
+
                         httpRequest.setAttribute("username", username);
 
-                        String role = JwtUtils.getRoleFromToken(token);
+                        String role = user.getRole();
                         List<SimpleGrantedAuthority> authorities = role != null
                                 ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
                                 : List.of();
@@ -59,8 +79,7 @@ public class JwtFilter implements Filter {
                 }
             }
 
-            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                    "Token không hợp lệ hoặc hết hạn");
+            unauthorized((HttpServletResponse) response, "Token không hợp lệ hoặc đã hết hạn.");
             return;
         }
 

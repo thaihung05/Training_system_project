@@ -10,7 +10,7 @@ import { Pencil, Trash2 } from '@lucide/vue'
 
 const { data: departments, loading, refresh } = useAsyncData(() => departmentService.getAll())
 const { data: users } = useAsyncData(() => userService.getAll())
-const { data: courses } = useAsyncData(() => courseService.getCourses())
+const { data: courses } = useAsyncData(() => courseService.getCourses(undefined, undefined, undefined, undefined, false))
 
 function employeeCountFor(deptId) {
   return (users.value || []).filter((u) => u.departmentId && u.departmentId.id === deptId).length

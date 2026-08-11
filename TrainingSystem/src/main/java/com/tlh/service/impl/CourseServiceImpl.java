@@ -33,10 +33,9 @@ public class CourseServiceImpl implements CourseService {
     private EnrollmentService enrollmentService;
 
     @Override
-    public List<Course> getCourses(String kw, Long departmentId, User caller, Integer page, Integer size) {
+    public List<Course> getCourses(String kw, Long departmentId, User caller, Integer page, Integer size, Boolean activeOnly) {
         if (caller != null && "EMPLOYEE".equals(caller.getRole())) {
-            Long employeeDepartmentId = caller.getDepartmentId() != null ? caller.getDepartmentId().getId() : null;
-            return this.courseRepo.getCoursesForEmployee(kw, employeeDepartmentId, page, size);
+            return this.courseRepo.getCoursesForEmployee(kw, caller.getId(), page, size);
         }
         Map<String, String> params = new HashMap<>();
         if (kw != null) {
@@ -45,7 +44,9 @@ public class CourseServiceImpl implements CourseService {
         if (departmentId != null) {
             params.put("departmentId", String.valueOf(departmentId));
         }
-        params.put("activeOnly", "true");
+        if (activeOnly == null || activeOnly) {
+            params.put("activeOnly", "true");
+        }
         if (page != null && size != null) {
             params.put("page", String.valueOf(page));
             params.put("size", String.valueOf(size));
@@ -124,16 +125,7 @@ public class CourseServiceImpl implements CourseService {
         if (!"EMPLOYEE".equals(caller.getRole())) {
             return true;
         }
-        if (!course.getIsActive() && !this.enrollmentService.isEnrolled(course.getId(), caller.getId())) {
-            return false;
-        }
-        if (course.getDepartmentId() == null) {
-            return true;
-        }
-        if (caller.getDepartmentId() == null) {
-            return false;
-        }
-        return course.getDepartmentId().getId().equals(caller.getDepartmentId().getId());
+        return this.enrollmentService.isEnrolled(course.getId(), caller.getId());
     }
 
     @Override

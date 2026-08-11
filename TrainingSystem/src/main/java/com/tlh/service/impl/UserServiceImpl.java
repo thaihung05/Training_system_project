@@ -202,10 +202,14 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User login(String username, String rawPassword) {
-        boolean ok = this.userRepo.authenticate(username, rawPassword);
-        if (!ok)
+        User u = this.userRepo.getUserByUsername(username);
+        if (u == null || !this.passwordEncoder.matches(rawPassword, u.getPassword())) {
             return null;
-        return this.userRepo.getUserByUsername(username);
+        }
+        if (!u.getIsActive()) {
+            throw new IllegalArgumentException("Tài khoản đã bị khoá. Vui lòng liên hệ quản trị viên để được hỗ trợ.");
+        }
+        return u;
     }
 
     @Override
