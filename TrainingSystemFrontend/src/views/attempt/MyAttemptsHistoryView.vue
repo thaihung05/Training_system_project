@@ -1,16 +1,13 @@
 <script setup>
 import { useLazyList } from '@/composables/useLazyList'
 import testAttemptService from '@/api/testAttemptService'
+import { formatDateTime as formatDate } from '@/utils/formatDate'
+import { Eye } from '@lucide/vue'
 
 const { items: attempts, loading, loadingMore, hasMore, loadMore } = useLazyList(
   (page, size) => testAttemptService.getMy(undefined, page, size),
   15,
 )
-
-function formatDate(ms) {
-  if (!ms) return ''
-  return new Date(ms).toLocaleString('vi-VN')
-}
 </script>
 
 <template>
@@ -48,9 +45,9 @@ function formatDate(ms) {
             <RouterLink
               v-if="a.submittedAt"
               :to="{ name: 'attempt-result', params: { attemptId: a.id }, query: { courseId: a.testId.courseId?.id } }"
-              class="manage-action"
+              class="row-action-btn"
             >
-              Xem chi tiết
+              <Eye :size="13" /> Xem chi tiết
             </RouterLink>
           </div>
         </div>

@@ -28,6 +28,11 @@ public class NotificationServiceImpl implements NotificationService{
     }
 
     @Override
+    public long countUnread(long userId) {
+        return this.notificationRepo.countUnread(userId);
+    }
+
+    @Override
     public Notification getById(long id) {
         return this.notificationRepo.getById(id);
     }
@@ -50,7 +55,7 @@ public class NotificationServiceImpl implements NotificationService{
     }
 
     @Override
-    public void create(Long userId, String title, String content) {
+    public void create(Long userId, String title, String content, String link) {
         try {
             if (userId == null)
                 return;
@@ -58,6 +63,7 @@ public class NotificationServiceImpl implements NotificationService{
             n.setUserId(new User(userId));
             n.setTitle(title);
             n.setContent(content);
+            n.setLink(link);
             n.setIsRead(false);
             this.notificationRepo.saveOrUpdate(n);
         } catch(Exception e) {

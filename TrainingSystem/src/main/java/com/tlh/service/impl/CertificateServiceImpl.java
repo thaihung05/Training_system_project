@@ -129,7 +129,7 @@ public class CertificateServiceImpl implements CertificateService{
             Course course = this.courseService.getCourseById(courseId);
             String courseTitle = course != null ? course.getTitle() : "";
             this.notificationService.create(userId, "Chứng chỉ mới",
-                    "Bạn đã hoàn thành khoá học " + courseTitle + " và nhận được chứng chỉ");
+                    "Bạn đã hoàn thành khoá học " + courseTitle + " và nhận được chứng chỉ", "/leaderboard");
             this.pointTransactionService.awardPoints(userId, "COURSE_COMPLETED", "Hoàn thành khoá học: " + courseTitle);
 
             long total = this.certificateRepo.countByUser(userId);

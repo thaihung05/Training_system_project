@@ -1,16 +1,12 @@
 <script setup>
 import { useLazyList } from '@/composables/useLazyList'
 import chatService from '@/api/chatService'
+import { formatDateTime as formatDate } from '@/utils/formatDate'
 
 const { items: history, loading, loadingMore, hasMore, loadMore } = useLazyList(
   (page, size) => chatService.getMy(page, size),
   15,
 )
-
-function formatDate(ms) {
-  if (!ms) return ''
-  return new Date(ms).toLocaleString('vi-VN')
-}
 </script>
 
 <template>

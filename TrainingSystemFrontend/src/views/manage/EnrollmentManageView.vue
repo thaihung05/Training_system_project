@@ -8,7 +8,7 @@ import departmentService from '@/api/departmentService'
 import userService from '@/api/userService'
 import enrollmentService from '@/api/enrollmentService'
 import { confirmDialog } from '@/utils/alerts'
-import { ChevronLeft } from '@lucide/vue'
+import { ChevronLeft, UserMinus } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -119,8 +119,8 @@ async function unenroll(e) {
             <div class="roster-row-name">{{ e.userId.name }}</div>
             <div class="roster-row-dept">{{ e.userId.departmentId ? e.userId.departmentId.name : '—' }}</div>
             <div class="roster-row-progress">{{ e.progressPercent }}%</div>
-            <div>
-              <span class="manage-action manage-action--danger" @click="unenroll(e)">Huỷ ghi danh</span>
+            <div class="row-action-group">
+              <button class="row-action-btn row-action-btn--danger" @click="unenroll(e)"><UserMinus :size="13" /> Huỷ ghi danh</button>
             </div>
           </div>
         </template>

@@ -18,5 +18,5 @@ public interface ChatHistoryService {
     List<ChatHistory> getBySession(String sessionId);
     List<ChatHistory> getPending(User caller, Integer page, Integer size);
     ChatHistory getById(long id);
-    ChatHistory answer(long id, String answertext);
+    ChatHistory answer(long id, User caller, String answertext);
 }

@@ -41,6 +41,18 @@ public class LessonProgressRepositoryImpl implements LessonProgressRepository{
     }
 
     @Override
+    public List<LessonProgress> getByLesson(long lessonId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<LessonProgress> q = b.createQuery(LessonProgress.class);
+        Root<LessonProgress> root = q.from(LessonProgress.class);
+
+        q.select(root).where(b.equal(root.get("lessonId").get("id"), lessonId));
+
+        return s.createQuery(q).getResultList();
+    }
+
+    @Override
     public LessonProgress getById(long id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.get(LessonProgress.class, id);

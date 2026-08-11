@@ -95,7 +95,7 @@ public class ApiChatHistoryController {
         if (!"TRAINER".equals(caller.getRole()) && !"ADMIN".equals(caller.getRole())) {
             return new ResponseEntity<>("Bạn không có quyền trả lời câu hỏi này", HttpStatus.FORBIDDEN);
         }
-        ChatHistory updated = this.chatHistoryService.answer(id, body.get("answer"));
+        ChatHistory updated = this.chatHistoryService.answer(id, caller, body.get("answer"));
         return new ResponseEntity<>(updated, HttpStatus.OK);
     }
 }

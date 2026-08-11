@@ -7,6 +7,12 @@
   font-weight: 700;
   color: var(--color-text-muted);
   letter-spacing: 0.04em;
+  align-items: center;
+}
+
+.attempts-table-header > div {
+  min-width: 0;
+  text-align: center;
 }
 
 .attempts-row {

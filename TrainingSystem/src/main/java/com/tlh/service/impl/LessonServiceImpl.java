@@ -12,8 +12,11 @@ import com.tlh.repository.EnrollmentRepository;
 import com.tlh.repository.LessonProgressRepository;
 import com.tlh.repository.LessonRepository;
 import com.tlh.service.CourseService;
+import com.tlh.service.EnrollmentService;
 import com.tlh.service.LessonService;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +38,9 @@ public class LessonServiceImpl implements LessonService{
 
     @Autowired
     private LessonProgressRepository lessonProgressRepo;
+
+    @Autowired
+    private EnrollmentService enrollmentService;
 
     @Override
     public List<Lesson> getLessonByCourse(long courseId) {
@@ -66,6 +72,7 @@ public class LessonServiceImpl implements LessonService{
             lp.setLessonId(l);
             lp.setIsCompleted(false);
             this.lessonProgressRepo.saveOrUpdate(lp);
+            this.enrollmentService.recalcProgress(e.getId());
         }
         return l;
     }
@@ -79,7 +86,16 @@ public class LessonServiceImpl implements LessonService{
 
     @Override
     public void deleteLesson(long id) {
+        Set<Long> affectedEnrollmentIds = new HashSet<>();
+        for (LessonProgress lp : this.lessonProgressRepo.getByLesson(id)) {
+            affectedEnrollmentIds.add(lp.getEnrollmentId().getId());
+        }
+
         this.lessonRepo.delete(id);
+
+        for (Long enrollmentId : affectedEnrollmentIds) {
+            this.enrollmentService.recalcProgress(enrollmentId);
+        }
     }
 
     @Override

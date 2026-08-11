@@ -5,5 +5,10 @@ export default {
         const formData = new FormData()
         formData.append('file', file)
         return http.post('/api/secure/uploads/pdf', formData)
+    },
+    uploadImage(file) {
+        const formData = new FormData()
+        formData.append('file', file)
+        return http.post('/api/secure/uploads/image', formData)
     }
 }

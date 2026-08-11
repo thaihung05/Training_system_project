@@ -8,6 +8,7 @@ import com.tlh.pojo.Question;
 import com.tlh.pojo.QuestionOption;
 import com.tlh.pojo.Test;
 import com.tlh.repository.QuestionRepository;
+import com.tlh.repository.TestAttemptRepository;
 import com.tlh.repository.TestRepository;
 import com.tlh.service.QuestionOptionService;
 import com.tlh.service.QuestionService;
@@ -43,6 +44,16 @@ public class QuestionServiceImpl implements QuestionService{
     @Autowired
     private TestRepository testRepo;
 
+    @Autowired
+    private TestAttemptRepository testAttemptRepo;
+
+    private void assertTestNotLocked(long testId) {
+        if (this.testAttemptRepo.hasAttempts(testId)) {
+            throw new IllegalArgumentException(
+                    "Bài kiểm tra này đã có người làm bài, không thể thêm/sửa/xoá câu hỏi. Hãy tạo bài kiểm tra mới nếu cần thay đổi nội dung.");
+        }
+    }
+
     private void validateContent(Question q) {
         if (q.getContent() == null || q.getContent().trim().isEmpty()) {
             throw new IllegalArgumentException("Nội dung câu hỏi không được để trống");
@@ -77,6 +88,7 @@ public class QuestionServiceImpl implements QuestionService{
     @Override
     public Question addQuestion(Question q) {
         validateContent(q);
+        assertTestNotLocked(q.getTestId().getId());
         q.setIsActive(true);
         this.questionRepo.saveOrUpdate(q);
         return q;
@@ -86,6 +98,7 @@ public class QuestionServiceImpl implements QuestionService{
     public Question updateQuestion(Question q) {
         validateContent(q);
         Question existing = this.questionRepo.getById(q.getId());
+        assertTestNotLocked(q.getTestId().getId());
         if (existing != null && existing.getIsActive() && !q.getIsActive())
             assertActiveQuestion(this.testRepo.getById(q.getTestId().getId()));
         this.questionRepo.saveOrUpdate(q);
@@ -95,8 +108,11 @@ public class QuestionServiceImpl implements QuestionService{
     @Override
     public void deleteQuestion(long id) {
         Question existing = this.questionRepo.getById(id);
-        if (existing != null && existing.getIsActive())
-            assertActiveQuestion(this.testRepo.getById(existing.getTestId().getId()));
+        if (existing != null) {
+            assertTestNotLocked(existing.getTestId().getId());
+            if (existing.getIsActive())
+                assertActiveQuestion(this.testRepo.getById(existing.getTestId().getId()));
+        }
         this.questionRepo.delete(id);
     }
 
@@ -131,6 +147,7 @@ public class QuestionServiceImpl implements QuestionService{
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Vui lòng chọn file Excel để nhập");
         }
+        assertTestNotLocked(test.getId());
         List<Map<String, Object>> results = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
         try (InputStream is = file.getInputStream(); Workbook wb = new XSSFWorkbook(is)) {

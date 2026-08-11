@@ -5,6 +5,7 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
 import testService from '@/api/testService'
 import testAttemptService from '@/api/testAttemptService'
+import { formatDateTime } from '@/utils/formatDate'
 import { ChevronLeft } from '@lucide/vue'
 
 const route = useRoute()
@@ -22,7 +23,7 @@ const { items: attempts, loading, loadingMore, hasMore, loadMore } = useLazyList
 
 function formatDate(ms) {
   if (!ms) return 'Chưa nộp'
-  return new Date(ms).toLocaleString('vi-VN')
+  return formatDateTime(ms)
 }
 </script>
 

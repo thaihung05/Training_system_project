@@ -1,12 +1,15 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAsyncData } from '@/composables/useAsyncData'
 import enrollmentService from '@/api/enrollmentService'
 import pointService from '@/api/pointService'
 import notificationService from '@/api/notificationService'
+import { thumbFor } from '@/utils/courseThumb'
 
 const auth = useAuthStore()
+const router = useRouter()
 
 const { data: enrollments } = useAsyncData(() => enrollmentService.getMyEnrollments())
 const { data: pointsData } = useAsyncData(() => pointService.getMy())
@@ -30,13 +33,23 @@ const stats = computed(() => [
 function initials(name) {
   return (name || '').split(' ').slice(-2).map((w) => w[0]).join('').toUpperCase()
 }
+
+async function openNotification(n) {
+  if (!n.isRead) {
+    await notificationService.markRead(n.id)
+    n.isRead = true
+  }
+  if (n.link) {
+    router.push(n.link)
+  }
+}
 </script>
 
 <template>
   <div class="home-page">
     <div class="home-greeting">
       <h1>Chào {{ auth.user?.name}}</h1>
-      <div class="home-date">{{ new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' }) }}</div>
+      <div class="home-date">{{ new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' }) }}</div>
     </div>
 
     <div class="stat-rail home-stats">
@@ -55,7 +68,10 @@ function initials(name) {
           </div>
           <div v-else class="course-progress-list">
             <div v-for="e in inProgressCourses" :key="e.id" class="course-progress-row">
-              <div class="course-thumb"></div>
+              <div class="course-thumb" :style="e.courseId.imageUrl ? {} : { background: thumbFor(e.courseId).bg }">
+                <img v-if="e.courseId.imageUrl" :src="e.courseId.imageUrl" class="course-thumb-img" />
+                <span v-else class="course-thumb-initials" :style="{ color: thumbFor(e.courseId).fg }">{{ thumbFor(e.courseId).initials }}</span>
+              </div>
               <div class="course-progress-info">
                 <div class="course-progress-title">{{ e.courseId.title }}</div>
                 <div class="course-progress-meta">
@@ -76,7 +92,7 @@ function initials(name) {
 
       <aside class="home-sidebar">
         <div class="card">
-          <h2>Bảng xếp hạng tuần</h2>
+          <h2>Bảng xếp hạng</h2>
           <div v-if="!leaderboard || leaderboard.length === 0" class="state-text">Chưa có dữ liệu.</div>
           <div v-else class="widget-list">
             <div v-for="(row, index) in leaderboard" :key="row.userId" class="list-item">
@@ -94,7 +110,13 @@ function initials(name) {
           <h2>Thông báo</h2>
           <div v-if="!notifications || notifications.length === 0" class="state-text">Không có thông báo.</div>
           <div v-else class="widget-list">
-            <div v-for="n in notifications.slice(0, 4)" :key="n.id" class="list-item">
+            <div
+              v-for="n in notifications.slice(0, 4)"
+              :key="n.id"
+              class="list-item home-notif-item"
+              :class="{ 'home-notif-item--unread': !n.isRead }"
+              @click="openNotification(n)"
+            >
               <span class="list-item-body">
                 <span class="list-item-title">{{ n.title }}</span>
               </span>

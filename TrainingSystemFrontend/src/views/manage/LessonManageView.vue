@@ -6,7 +6,7 @@ import courseService from '@/api/courseService'
 import lessonService from '@/api/lessonService'
 import uploadService from '@/api/uploadService'
 import { confirmDialog, showError } from '@/utils/alerts'
-import { ChevronLeft, ChevronUp, ChevronDown } from '@lucide/vue'
+import { ChevronLeft, ChevronUp, ChevronDown, Pencil, Trash2 } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +20,11 @@ const form = ref({ title: '', slidePdfUrl: '' })
 const uploading = ref(false)
 const saving = ref(false)
 const errorMsg = ref('')
+const pdfInput = ref(null)
+
+function openPdfPicker() {
+  pdfInput.value.click()
+}
 
 function resetForm() {
   editingId.value = null
@@ -35,6 +40,7 @@ function editLesson(l) {
 
 async function handleFileChange(event) {
   const file = event.target.files[0]
+  event.target.value = ''
   if (!file) return
   uploading.value = true
   errorMsg.value = ''
@@ -111,9 +117,9 @@ async function move(index, direction) {
               <div class="lessonmg-title">Bài {{ index + 1 }}: {{ l.title }}</div>
               <div class="lessonmg-pdf">{{ l.slidePdfUrl ? 'Đã có tài liệu PDF' : 'Chưa có tài liệu' }}</div>
             </div>
-            <div class="manage-row-actions">
-              <span class="manage-action" @click="editLesson(l)">Sửa</span>
-              <span class="manage-action manage-action--danger" @click="removeLesson(l)">Xoá</span>
+            <div class="row-action-group">
+              <button class="row-action-btn" @click="editLesson(l)"><Pencil :size="13" /> Sửa</button>
+              <button class="row-action-btn row-action-btn--danger" @click="removeLesson(l)"><Trash2 :size="13" /> Xoá</button>
             </div>
           </div>
         </template>
@@ -128,9 +134,11 @@ async function move(index, direction) {
         </div>
         <div class="form-field">
           <label>Tài liệu PDF</label>
-          <input type="file" accept="application/pdf" @change="handleFileChange" />
-          <div v-if="uploading" class="state-text">Đang tải file lên...</div>
-          <div v-else-if="form.slidePdfUrl" class="lessonmg-uploaded">Đã tải lên xong.</div>
+          <button type="button" class="btn btn-secondary btn-sm" :disabled="uploading" @click="openPdfPicker">
+            {{ uploading ? 'Đang tải lên...' : form.slidePdfUrl ? 'Đổi file khác' : 'Chọn file PDF' }}
+          </button>
+          <input ref="pdfInput" type="file" accept="application/pdf" class="hidden-file-input" @change="handleFileChange" />
+          <div v-if="form.slidePdfUrl && !uploading" class="lessonmg-uploaded">Đã tải lên xong.</div>
         </div>
         <div class="manage-form-actions">
           <button class="btn btn-primary" :disabled="saving || uploading" @click="submit">

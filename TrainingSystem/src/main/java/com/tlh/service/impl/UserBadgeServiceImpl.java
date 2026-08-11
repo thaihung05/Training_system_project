@@ -55,7 +55,7 @@ public class UserBadgeServiceImpl implements UserBadgeService{
             ub.setUserId(new User(userId));
             ub.setBadgeId(badge);
             this.userBadgeRepo.saveOrUpdate(ub);
-            this.notificationService.create(userId, "Huy hiệu mới", "Bạn vừa nhận được huy hiệu " + badge.getName());
+            this.notificationService.create(userId, "Huy hiệu mới", "Bạn vừa nhận được huy hiệu " + badge.getName(), "/leaderboard");
         } catch (Exception e) {
             System.err.println("UserBadgeService.checkAndAward that bai: " + e.getMessage());
         }

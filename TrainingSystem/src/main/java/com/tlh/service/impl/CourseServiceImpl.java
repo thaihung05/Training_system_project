@@ -81,6 +81,14 @@ public class CourseServiceImpl implements CourseService {
         }
         c.setTitle(c.getTitle().trim());
 
+        if (c.getImageUrl() != null) {
+            String trimmed = c.getImageUrl().trim();
+            if (trimmed.length() > 500) {
+                throw new IllegalArgumentException("Link ảnh tối đa 500 ký tự");
+            }
+            c.setImageUrl(trimmed.isEmpty() ? null : trimmed);
+        }
+
         if (c.getDepartmentId() != null && c.getDepartmentId().getId() != null
                 && this.departmentService.getDepartmentById(c.getDepartmentId().getId()) == null) {
             throw new IllegalArgumentException("Phòng ban không tồn tại");
@@ -126,5 +134,15 @@ public class CourseServiceImpl implements CourseService {
             return false;
         }
         return course.getDepartmentId().getId().equals(caller.getDepartmentId().getId());
+    }
+
+    @Override
+    public boolean canAnswerForum(User caller, Course course) {
+        if (this.canManage(caller, course)) {
+            return true;
+        }
+        return caller != null && course != null
+                && "TRAINER".equals(caller.getRole())
+                && course.getDepartmentId() == null;
     }
 }

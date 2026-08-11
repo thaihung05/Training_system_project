@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useLazyList } from '@/composables/useLazyList'
 import enrollmentService from '@/api/enrollmentService'
+import { formatDate } from '@/utils/formatDate'
+import { thumbFor } from '@/utils/courseThumb'
 
 const { items: enrollments, loading, loadingMore, hasMore, loadMore, error } = useLazyList(
   (page, size) => enrollmentService.getMyEnrollments(page, size),
@@ -9,6 +11,13 @@ const { items: enrollments, loading, loadingMore, hasMore, loadMore, error } = u
 )
 
 const filter = ref('all')
+
+watch(filter, async (val) => {
+  if (val === 'all') return
+  while (hasMore.value) {
+    await loadMore()
+  }
+})
 
 const filtered = computed(() => {
   const list = enrollments.value || []
@@ -37,7 +46,9 @@ const filtered = computed(() => {
     <template v-else>
       <div class="mycourse-grid">
         <div v-for="e in filtered" :key="e.id" class="mycourse-card">
-          <div class="mycourse-thumb">
+          <div class="mycourse-thumb" :style="e.courseId.imageUrl ? {} : { background: thumbFor(e.courseId).bg }">
+            <img v-if="e.courseId.imageUrl" :src="e.courseId.imageUrl" class="mycourse-thumb-img" />
+            <span v-else class="mycourse-thumb-initials" :style="{ color: thumbFor(e.courseId).fg }">{{ thumbFor(e.courseId).initials }}</span>
             <span class="mycourse-badge" :class="e.progressPercent >= 100 ? 'mycourse-badge--done' : 'mycourse-badge--progress'">
               {{ e.progressPercent >= 100 ? 'Đã hoàn thành' : 'Đang học' }}
             </span>
@@ -45,6 +56,9 @@ const filtered = computed(() => {
           <div class="mycourse-body">
             <div class="mycourse-dept">{{ e.courseId.departmentId ? e.courseId.departmentId.name : 'Toàn công ty' }}</div>
             <div class="mycourse-title">{{ e.courseId.title }}</div>
+            <div v-if="e.courseId.createdBy" class="mycourse-meta">
+              Tạo bởi <strong>{{ e.courseId.createdBy.name }}</strong> · {{ formatDate(e.courseId.createdAt) }}
+            </div>
             <div class="progress-track">
               <div class="progress-fill" :style="{ width: e.progressPercent + '%' }"></div>
             </div>

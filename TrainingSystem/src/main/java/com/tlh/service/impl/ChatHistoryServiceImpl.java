@@ -9,6 +9,7 @@ import com.tlh.pojo.User;
 import com.tlh.repository.ChatHistoryRepository;
 import com.tlh.service.ChatHistoryService;
 import com.tlh.service.NotificationService;
+import com.tlh.service.UserService;
 import com.tlh.utils.ChatbotClient;
 import java.util.Date;
 import java.util.List;
@@ -31,12 +32,15 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
 
     @Autowired
     private NotificationService notificationService;
-    
+
+    @Autowired
+    private UserService userService;
+
     @Override
     public ChatHistory ask(User caller, String question, String sessionId) {
         if (question == null || question.trim().isEmpty())
             throw new IllegalArgumentException("Câu hỏi không được để trống");
-        
+
         ChatHistory ch = new ChatHistory();
         ch.setUserId(caller);
         ch.setQuestion(question.trim());
@@ -51,7 +55,27 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
             ch.setAnswer(null);
         }
         this.chatHistoryRepo.saveOrUpdate(ch);
+        if (ch.getAnswer() == null) {
+            notifyTrainersOfPendingQuestion(caller);
+        }
         return ch;
+    }
+
+    private void notifyTrainersOfPendingQuestion(User asker) {
+        Long askerDeptId = asker.getDepartmentId() != null ? asker.getDepartmentId().getId() : null;
+        List<User> trainers = this.userService.getUsersByRole("TRAINER");
+        for (User t : trainers) {
+            if (!t.getIsActive()) {
+                continue;
+            }
+            boolean companyWide = t.getDepartmentId() == null;
+            boolean sameDept = askerDeptId != null && t.getDepartmentId() != null
+                    && t.getDepartmentId().getId().equals(askerDeptId);
+            if (companyWide || sameDept) {
+                this.notificationService.create(t.getId(), "Có câu hỏi mới cần trả lời",
+                        asker.getName() + " vừa đặt 1 câu hỏi đang chờ hỗ trợ trả lời", "/chat/queue");
+            }
+        }
     }
 
     @Override
@@ -79,7 +103,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
     }
 
     @Override
-    public ChatHistory answer(long id, String answertext) {
+    public ChatHistory answer(long id, User caller, String answertext) {
         ChatHistory ch = this.chatHistoryRepo.getById(id);
         if (ch == null)
             throw new IllegalArgumentException("Không tìm thấy câu hỏi");
@@ -87,11 +111,29 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
             throw new IllegalArgumentException("Câu hỏi này đã được trả lời");
         if (answertext == null || answertext.trim().isEmpty())
             throw new IllegalArgumentException("Câu trả lời không được để trống");
+        if (!canAnswer(caller, ch)) {
+            throw new IllegalArgumentException("Bạn không có quyền trả lời câu hỏi này");
+        }
         ch.setAnswer(answertext.trim());
         this.chatHistoryRepo.saveOrUpdate(ch);
         this.notificationService.create(ch.getUserId().getId(), "Câu hỏi đã được trả lời",
-                "Câu hỏi \"" + ch.getQuestion() + "\" của bạn đã có người hỗ trợ trả lời");
+                "Câu hỏi \"" + ch.getQuestion() + "\" của bạn đã có người hỗ trợ trả lời", "/my-questions");
         return ch;
     }
-    
+
+    private boolean canAnswer(User caller, ChatHistory ch) {
+        if ("ADMIN".equals(caller.getRole())) {
+            return true;
+        }
+        if (!"TRAINER".equals(caller.getRole())) {
+            return false;
+        }
+        if (caller.getDepartmentId() == null) {
+            return true;
+        }
+        User asker = ch.getUserId();
+        return asker.getDepartmentId() != null
+                && asker.getDepartmentId().getId().equals(caller.getDepartmentId().getId());
+    }
+
 }

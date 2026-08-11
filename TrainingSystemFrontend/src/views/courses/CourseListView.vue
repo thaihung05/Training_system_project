@@ -5,6 +5,8 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import { useAuthStore } from '@/stores/auth'
 import courseService from '@/api/courseService'
 import departmentService from '@/api/departmentService'
+import { formatDate } from '@/utils/formatDate'
+import { thumbFor } from '@/utils/courseThumb'
 
 const auth = useAuthStore()
 const keyword = ref('')
@@ -66,12 +68,17 @@ watch(selectedDeptId, reload)
     <template v-else>
       <div class="course-grid">
         <div v-for="c in courses" :key="c.id" class="course-card">
-          <div class="course-card-thumb">
+          <div class="course-card-thumb" :style="c.imageUrl ? {} : { background: thumbFor(c).bg }">
+            <img v-if="c.imageUrl" :src="c.imageUrl" class="course-card-thumb-img" />
+            <span v-else class="course-card-thumb-initials" :style="{ color: thumbFor(c).fg }">{{ thumbFor(c).initials }}</span>
             <span class="course-card-badge">{{ c.departmentId ? c.departmentId.name : 'Toàn công ty' }}</span>
           </div>
           <div class="course-card-body">
             <div class="course-card-title">{{ c.title }}</div>
             <div class="course-card-desc">{{ c.description }}</div>
+            <div v-if="c.createdBy" class="course-card-meta">
+              Tạo bởi <strong>{{ c.createdBy.name }}</strong> · {{ formatDate(c.createdAt) }}
+            </div>
             <RouterLink :to="{ name: 'course-detail', params: { id: c.id } }" class="btn btn-primary">
               Xem khoá học
             </RouterLink>

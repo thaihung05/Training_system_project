@@ -53,6 +53,18 @@ public class NotificationRepositoryImpl implements NotificationRepository{
     }
 
     @Override
+    public long countUnread(long userId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Notification> root = q.from(Notification.class);
+        q.select(b.count(root)).where(
+                b.equal(root.get("userId").get("id"), userId),
+                b.isFalse(root.get("isRead")));
+        return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
     public Notification getById(long id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.get(Notification.class, id);

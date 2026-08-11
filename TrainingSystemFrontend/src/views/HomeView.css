@@ -44,7 +44,26 @@
   height: 44px;
   flex-shrink: 0;
   border-radius: 6px;
-  background: repeating-linear-gradient(135deg, var(--color-border), var(--color-border) 8px, var(--color-bg) 8px, var(--color-bg) 16px);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.course-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.course-thumb-initials {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  opacity: 0.6;
 }
 
 .course-progress-info {
@@ -76,6 +95,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+}
+
+.home-notif-item {
+  cursor: pointer;
+}
+
+.home-notif-item--unread .list-item-title {
+  font-weight: 700;
+  color: var(--color-accent);
 }
 
 @media (max-width: 900px) {

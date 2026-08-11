@@ -35,9 +35,7 @@
 }
 
 .dept-actions {
-  display: flex;
-  gap: 14px;
-  font-size: 12px;
+  margin-top: 2px;
 }
 
 @media (max-width: 900px) {

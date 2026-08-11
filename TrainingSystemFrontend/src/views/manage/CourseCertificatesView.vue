@@ -8,7 +8,8 @@ import courseService from '@/api/courseService'
 import certificateService from '@/api/certificateService'
 import uploadService from '@/api/uploadService'
 import { showError } from '@/utils/alerts'
-import { ChevronLeft } from '@lucide/vue'
+import { formatDate } from '@/utils/formatDate'
+import { ChevronLeft, Download, Upload } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,10 +23,19 @@ const { items: certificates, loading, loadingMore, hasMore, loadMore, error, rel
 )
 
 const uploadingId = ref(null)
+const pdfInput = ref(null)
+const pendingCert = ref(null)
 
-async function handleFileChange(event, cert) {
+function openPdfPicker(cert) {
+  pendingCert.value = cert
+  pdfInput.value.click()
+}
+
+async function handleFileChange(event) {
   const file = event.target.files[0]
-  if (!file) return
+  event.target.value = ''
+  const cert = pendingCert.value
+  if (!file || !cert) return
   uploadingId.value = cert.id
   try {
     const res = await uploadService.uploadPdf(file)
@@ -36,11 +46,6 @@ async function handleFileChange(event, cert) {
   } finally {
     uploadingId.value = null
   }
-}
-
-function formatDate(ms) {
-  if (!ms) return ''
-  return new Date(ms).toLocaleDateString('vi-VN')
 }
 </script>
 
@@ -70,16 +75,12 @@ function formatDate(ms) {
           <div class="certmg-code">{{ c.certificateCode }}</div>
           <div class="certmg-date">{{ formatDate(c.issuedAt) }}</div>
           <div class="certmg-file">
-            <a v-if="c.pdfUrl" :href="c.pdfUrl" target="_blank" class="manage-action">Tải về</a>
+            <a v-if="c.pdfUrl" :href="c.pdfUrl" target="_blank" class="row-action-btn"><Download :size="13" /> Tải về</a>
             <span v-else class="certmg-empty">Chưa có file</span>
             <div v-if="auth.isAdmin" class="certmg-upload">
-              <input
-                type="file"
-                accept="application/pdf"
-                :disabled="uploadingId === c.id"
-                @change="handleFileChange($event, c)"
-              />
-              <span v-if="uploadingId === c.id" class="certmg-uploading">Đang tải...</span>
+              <button class="row-action-btn" :disabled="uploadingId === c.id" @click="openPdfPicker(c)">
+                <Upload :size="13" /> {{ uploadingId === c.id ? 'Đang tải...' : c.pdfUrl ? 'Đổi file' : 'Tải file lên' }}
+              </button>
             </div>
           </div>
         </div>
@@ -88,6 +89,7 @@ function formatDate(ms) {
     <button v-if="hasMore" class="btn btn-secondary certmg-load-more" :disabled="loadingMore" @click="loadMore">
       {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
     </button>
+    <input ref="pdfInput" type="file" accept="application/pdf" class="hidden-file-input" @change="handleFileChange" />
   </div>
 </template>
 

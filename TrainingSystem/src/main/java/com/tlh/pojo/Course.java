@@ -4,7 +4,6 @@
  */
 package com.tlh.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -54,6 +53,9 @@ public class Course implements Serializable {
     @Size(max = 65535)
     @Column(name = "description")
     private String description;
+    @Size(max = 500)
+    @Column(name = "image_url")
+    private String imageUrl;
     @Basic(optional = false)
     @NotNull
     @Column(name = "is_active")
@@ -67,7 +69,6 @@ public class Course implements Serializable {
     @JoinColumn(name = "department_id", referencedColumnName = "id")
     @ManyToOne
     private Department departmentId;
-    @JsonIgnore
     @JoinColumn(name = "created_by", referencedColumnName = "id")
     @ManyToOne
     private User createdBy;
@@ -107,6 +108,14 @@ public class Course implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public boolean getIsActive() {

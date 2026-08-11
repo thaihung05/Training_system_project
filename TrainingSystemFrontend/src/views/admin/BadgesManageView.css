@@ -43,10 +43,8 @@
 }
 
 .badge-manage-actions {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
   margin-top: 4px;
+  justify-content: center;
 }
 
 @media (max-width: 900px) {

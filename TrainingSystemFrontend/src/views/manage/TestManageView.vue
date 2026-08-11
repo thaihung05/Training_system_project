@@ -5,7 +5,7 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import courseService from '@/api/courseService'
 import testService from '@/api/testService'
 import { showError } from '@/utils/alerts'
-import { ChevronLeft } from '@lucide/vue'
+import { ChevronLeft, Pencil, ListChecks, BarChart3, Power } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -113,11 +113,11 @@ function goResults(t) {
                 {{ t.isActive ? 'Đang mở' : 'Nháp' }}
               </span>
             </div>
-            <div class="manage-row-actions">
-              <span class="manage-action" @click="editTest(t)">Sửa</span>
-              <span class="manage-action" @click="goQuestions(t)">Soạn câu hỏi</span>
-              <span class="manage-action" @click="goResults(t)">Kết quả</span>
-              <span class="manage-action" @click="toggleActive(t)">{{ t.isActive ? 'Tắt' : 'Kích hoạt' }}</span>
+            <div class="row-action-group">
+              <button class="row-action-btn" @click="editTest(t)"><Pencil :size="13" /> Sửa</button>
+              <button class="row-action-btn" @click="goQuestions(t)"><ListChecks :size="13" /> Soạn câu hỏi</button>
+              <button class="row-action-btn" @click="goResults(t)"><BarChart3 :size="13" /> Kết quả</button>
+              <button class="row-action-btn" @click="toggleActive(t)"><Power :size="13" /> {{ t.isActive ? 'Tắt' : 'Kích hoạt' }}</button>
             </div>
           </div>
         </template>

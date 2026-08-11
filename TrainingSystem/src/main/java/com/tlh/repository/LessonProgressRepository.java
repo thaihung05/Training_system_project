@@ -13,6 +13,7 @@ import java.util.List;
  */
 public interface LessonProgressRepository {
     List<LessonProgress> getByEnrollment(long enrollmentId);
+    List<LessonProgress> getByLesson(long lessonId);
     LessonProgress getById(long id);
     void saveOrUpdate(LessonProgress lp);
 }

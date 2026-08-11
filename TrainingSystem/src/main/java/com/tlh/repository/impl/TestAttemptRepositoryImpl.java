@@ -90,6 +90,16 @@ public class TestAttemptRepositoryImpl implements TestAttemptRepository{
     }
 
     @Override
+    public boolean hasAttempts(long testId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<TestAttempt> root = q.from(TestAttempt.class);
+        q.select(b.count(root)).where(b.equal(root.get("testId").get("id"), testId));
+        return s.createQuery(q).getSingleResult() > 0;
+    }
+
+    @Override
     public void saveOrUpdate(TestAttempt a) {
         Session s = this.factory.getObject().getCurrentSession();
         if (a.getId() == null)

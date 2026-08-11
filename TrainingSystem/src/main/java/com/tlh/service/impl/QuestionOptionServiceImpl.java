@@ -8,6 +8,7 @@ import com.tlh.pojo.Question;
 import com.tlh.pojo.QuestionOption;
 import com.tlh.pojo.Test;
 import com.tlh.repository.QuestionOptionRepository;
+import com.tlh.repository.TestAttemptRepository;
 import com.tlh.repository.TestRepository;
 import com.tlh.service.QuestionOptionService;
 import java.util.List;
@@ -27,6 +28,16 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
     @Autowired
     private TestRepository testRepo;
 
+    @Autowired
+    private TestAttemptRepository testAttemptRepo;
+
+    private void assertTestNotLocked(long testId) {
+        if (this.testAttemptRepo.hasAttempts(testId)) {
+            throw new IllegalArgumentException(
+                    "Bài kiểm tra này đã có người làm bài, không thể thay đổi đáp án. Hãy tạo bài kiểm tra mới nếu cần thay đổi nội dung.");
+        }
+    }
+
     @Override
     public List<QuestionOption> getByQuestion(long questionId) {
         return this.questionOptionRepo.getByQuestion(questionId);
@@ -40,6 +51,7 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
     @Override
     public QuestionOption addOption(QuestionOption o) {
         validateText(o);
+        assertTestNotLocked(o.getQuestionId().getTestId().getId());
         o.setIsCorrect(false);
         int maxOrder = this.questionOptionRepo.getMaxOrderIndex(o.getQuestionId().getId());
         o.setOrderIndex(maxOrder + 1);
@@ -50,6 +62,7 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
     @Override
     public QuestionOption updateOption(QuestionOption o) {
         validateText(o);
+        assertTestNotLocked(o.getQuestionId().getTestId().getId());
         this.questionOptionRepo.saveOrUpdate(o);
         return o;
     }
@@ -59,6 +72,9 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
         QuestionOption target = this.questionOptionRepo.getById(id);
         if (target != null) {
             Question question = target.getQuestionId();
+            if (question != null) {
+                assertTestNotLocked(question.getTestId().getId());
+            }
             if (question != null && question.getIsActive()) {
                 Test test = this.testRepo.getById(question.getTestId().getId());
                 if (test != null && test.getIsActive()) {
@@ -90,6 +106,7 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
                 || !target.getQuestionId().getId().equals(questionId)) {
             throw new IllegalArgumentException("Đáp án không thuộc câu hỏi này");
         }
+        assertTestNotLocked(target.getQuestionId().getTestId().getId());
         this.questionOptionRepo.clearCorrectForQuestion(questionId);
         target.setIsCorrect(true);
         this.questionOptionRepo.saveOrUpdate(target);

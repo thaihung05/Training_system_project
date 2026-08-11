@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { Trash2 } from '@lucide/vue'
 import { useLazyList } from '@/composables/useLazyList'
 import notificationService from '@/api/notificationService'
+import { formatDateTime as formatDate } from '@/utils/formatDate'
 
 const router = useRouter()
 const unreadOnly = ref(false)
@@ -26,8 +27,8 @@ async function markRead(n) {
 
 function openNotification(n) {
   markRead(n)
-  if (n.title === 'Câu hỏi đã được trả lời') {
-    router.push({ name: 'my-chat-history' })
+  if (n.link) {
+    router.push(n.link)
   }
 }
 
@@ -39,11 +40,6 @@ async function markAllRead() {
 async function remove(n) {
   await notificationService.remove(n.id)
   notifications.value = notifications.value.filter((x) => x.id !== n.id)
-}
-
-function formatDate(ms) {
-  if (!ms) return ''
-  return new Date(ms).toLocaleString('vi-VN')
 }
 </script>
 

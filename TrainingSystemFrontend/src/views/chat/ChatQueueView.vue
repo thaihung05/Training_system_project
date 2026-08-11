@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useLazyList } from '@/composables/useLazyList'
 import chatService from '@/api/chatService'
 import { showError } from '@/utils/alerts'
+import { formatDateTime as formatDate } from '@/utils/formatDate'
 
 const { items: pending, loading, loadingMore, hasMore, loadMore, reload } = useLazyList(
   (page, size) => chatService.getPending(page, size),
@@ -26,17 +27,16 @@ async function submitAnswer(item) {
     submitting.value = null
   }
 }
-
-function formatDate(ms) {
-  if (!ms) return ''
-  return new Date(ms).toLocaleString('vi-VN')
-}
 </script>
 
 <template>
   <div class="page">
     <div class="page-header">
       <h1>Câu hỏi chờ trả lời</h1>
+      <p class="page-subtitle">
+        Câu hỏi gửi cho trợ lý ảo chung của công ty (qua khung chat nổi ở góc màn hình) — không thuộc riêng khoá học nào.
+        Câu hỏi trong diễn đàn từng khoá học nằm ở tab "Diễn đàn" trong trang chi tiết khoá học đó.
+      </p>
     </div>
 
     <p v-if="loading" class="state-text">Đang tải...</p>

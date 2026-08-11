@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
@@ -8,6 +8,8 @@ import userService from '@/api/userService'
 import departmentService from '@/api/departmentService'
 import pointService from '@/api/pointService'
 import { confirmDialog, showError } from '@/utils/alerts'
+import { formatDateTime as formatDate } from '@/utils/formatDate'
+import { Coins, Pencil, Lock, Unlock } from '@lucide/vue'
 
 const auth = useAuthStore()
 
@@ -25,6 +27,14 @@ function onSearchInput() {
 }
 
 const deptFilter = ref(null)
+
+watch(deptFilter, async (val) => {
+  if (val === null) return
+  while (hasMore.value) {
+    await loadMore()
+  }
+})
+
 const filteredUsers = computed(() => {
   const list = users.value || []
   if (deptFilter.value === null) return list
@@ -146,11 +156,6 @@ async function viewPoints(u) {
     pointsLoading.value = false
   }
 }
-
-function formatDate(ms) {
-  if (!ms) return ''
-  return new Date(ms).toLocaleString('vi-VN')
-}
 </script>
 
 <template>
@@ -266,11 +271,11 @@ function formatDate(ms) {
                 {{ u.isActive ? 'Đang hoạt động' : 'Đã khoá' }}
               </span>
             </div>
-            <div class="manage-row-actions">
-              <span class="manage-action" @click="viewPoints(u)">Xem điểm</span>
-              <span v-if="auth.isAdmin && u.role !== 'ADMIN'" class="manage-action" @click="openEditForm(u)">Sửa</span>
-              <span v-if="auth.isAdmin && u.isActive" class="manage-action manage-action--danger" @click="deactivate(u)">Khoá</span>
-              <span v-if="auth.isAdmin && !u.isActive" class="manage-action" @click="reactivate(u)">Kích hoạt lại</span>
+            <div class="row-action-group">
+              <button class="row-action-btn" @click="viewPoints(u)"><Coins :size="13" /> Xem điểm</button>
+              <button v-if="auth.isAdmin && u.role !== 'ADMIN'" class="row-action-btn" @click="openEditForm(u)"><Pencil :size="13" /> Sửa</button>
+              <button v-if="auth.isAdmin && u.isActive" class="row-action-btn row-action-btn--danger" @click="deactivate(u)"><Lock :size="13" /> Khoá</button>
+              <button v-if="auth.isAdmin && !u.isActive" class="row-action-btn" @click="reactivate(u)"><Unlock :size="13" /> Kích hoạt lại</button>
             </div>
           </div>
         </template>

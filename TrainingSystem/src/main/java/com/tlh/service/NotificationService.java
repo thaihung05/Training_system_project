@@ -13,9 +13,10 @@ import java.util.List;
  */
 public interface NotificationService {
     List<Notification> getMyNotifications(long userId, boolean unreadOnly, Integer page, Integer size);
+    long countUnread(long userId);
     Notification getById(long id);
     Notification markRead(Notification n);
     int markAllRead(long userId);
     void delete(long id);
-    void create(Long userId, String title, String content);
+    void create(Long userId, String title, String content, String link);
 }

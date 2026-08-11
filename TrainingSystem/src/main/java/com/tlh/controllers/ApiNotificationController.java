@@ -51,6 +51,13 @@ public class ApiNotificationController {
         return new ResponseEntity<>(this.notificationService.getMyNotifications(caller.getId(), unreadOnly, page, size), HttpStatus.OK);
     }
     
+    @GetMapping("/unread-count")
+    public ResponseEntity<?> unreadCount(Principal principal){
+        User caller = currentUser(principal);
+        long count = this.notificationService.countUnread(caller.getId());
+        return new ResponseEntity<>(Collections.singletonMap("count", count), HttpStatus.OK);
+    }
+
     @PutMapping("/{id}/read")
     public ResponseEntity<?> markRead(@PathVariable(value = "id") long id,
             Principal principal){

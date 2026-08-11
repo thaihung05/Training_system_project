@@ -7,7 +7,7 @@ import testService from '@/api/testService'
 import questionService from '@/api/questionService'
 import questionOptionService from '@/api/questionOptionService'
 import { confirmDialog, showError } from '@/utils/alerts'
-import { ChevronLeft } from '@lucide/vue'
+import { ChevronLeft, Pencil, Power, Trash2 } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -152,10 +152,10 @@ async function onImportFileChange(e) {
               <span class="badge" :class="q.isActive ? 'badge-success' : 'badge-neutral'">
                 {{ q.isActive ? 'Đang hoạt động' : 'Tắt' }}
               </span>
-              <div class="qmg-card-actions">
-                <span class="manage-action" @click="startEditQuestion(q)">Sửa</span>
-                <span class="manage-action" @click="toggleQuestionActive(q)">{{ q.isActive ? 'Tắt' : 'Bật' }}</span>
-                <span class="manage-action manage-action--danger" @click="removeQuestion(q)">Xoá</span>
+              <div class="row-action-group">
+                <button class="row-action-btn" @click="startEditQuestion(q)"><Pencil :size="13" /> Sửa</button>
+                <button class="row-action-btn" @click="toggleQuestionActive(q)"><Power :size="13" /> {{ q.isActive ? 'Tắt' : 'Bật' }}</button>
+                <button class="row-action-btn row-action-btn--danger" @click="removeQuestion(q)"><Trash2 :size="13" /> Xoá</button>
               </div>
             </div>
 

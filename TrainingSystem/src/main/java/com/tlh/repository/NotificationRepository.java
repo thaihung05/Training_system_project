@@ -13,6 +13,7 @@ import java.util.List;
  */
 public interface NotificationRepository {
     List<Notification> getByUser(long userId, boolean unreadOnly, Integer page, Integer size);
+    long countUnread(long userId);
     Notification getById(long id);
     void saveOrUpdate(Notification n);
     int markAllRead(long userId);

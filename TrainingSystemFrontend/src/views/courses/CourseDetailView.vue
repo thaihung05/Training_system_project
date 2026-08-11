@@ -1,21 +1,25 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
+import { useLazyList } from '@/composables/useLazyList'
 import courseService from '@/api/courseService'
 import lessonService from '@/api/lessonService'
 import enrollmentService from '@/api/enrollmentService'
 import lessonProgressService from '@/api/lessonProgressService'
 import testService from '@/api/testService'
 import testAttemptService from '@/api/testAttemptService'
+import forumService from '@/api/forumService'
 import { showError } from '@/utils/alerts'
+import { formatDate, formatDateTime as formatForumDate } from '@/utils/formatDate'
 import { ChevronLeft, ChevronRight, Check, CheckCheck, FileText, ExternalLink } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
 const courseId = Number(route.params.id)
 
-const activeTab = ref('lessons')
+const VALID_TABS = ['lessons', 'tests', 'forum']
+const activeTab = ref(VALID_TABS.includes(route.query.tab) ? route.query.tab : 'lessons')
 
 const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: lessons, loading: lessonsLoading } = useAsyncData(() =>
@@ -107,6 +111,57 @@ function resumeTest(t) {
   const open = openAttemptFor(t.id)
   if (open) router.push({ name: 'attempt-take', params: { testId: t.id, attemptId: open.id }, query: { courseId } })
 }
+
+const canAnswerForum = ref(false)
+const { items: forumQuestions, loading: forumLoading, loadingMore: forumLoadingMore, hasMore: forumHasMore, loadMore: loadMoreForum, reload: reloadForum } = useLazyList(
+  async (page, size) => {
+    const res = await forumService.getByCourse(courseId, page, size)
+    canAnswerForum.value = res.data.canAnswer
+    return { data: res.data.questions }
+  },
+  8,
+)
+
+const questionDraft = ref('')
+const asking = ref(false)
+const askError = ref('')
+
+async function askQuestion() {
+  const content = questionDraft.value.trim()
+  if (!content) return
+  asking.value = true
+  askError.value = ''
+  try {
+    await forumService.ask(courseId, content)
+    questionDraft.value = ''
+    await reloadForum()
+  } catch (err) {
+    askError.value = err.response?.data || 'Không gửi được câu hỏi.'
+  } finally {
+    asking.value = false
+  }
+}
+
+const answerDrafts = reactive({})
+const answering = reactive({})
+const answerErrors = reactive({})
+
+async function submitAnswer(questionId) {
+  const content = (answerDrafts[questionId] || '').trim()
+  if (!content) return
+  answering[questionId] = true
+  answerErrors[questionId] = ''
+  try {
+    await forumService.answer(questionId, content)
+    answerDrafts[questionId] = ''
+    await reloadForum()
+  } catch (err) {
+    answerErrors[questionId] = err.response?.data || 'Không gửi được câu trả lời.'
+  } finally {
+    answering[questionId] = false
+  }
+}
+
 </script>
 
 <template>
@@ -117,6 +172,7 @@ function resumeTest(t) {
         <h1>{{ course?.title }}</h1>
         <div class="detail-meta">
           <span v-if="myEnrollment">{{ myEnrollment.progressPercent }}% hoàn thành · </span>{{ lessons?.length ?? 0 }} bài
+          <span v-if="course?.createdBy"> · Tạo bởi {{ course.createdBy.name }} ngày {{ formatDate(course.createdAt) }}</span>
         </div>
       </div>
     </div>
@@ -127,6 +183,9 @@ function resumeTest(t) {
       </div>
       <div class="detail-tab" :class="{ 'detail-tab--active': activeTab === 'tests' }" @click="activeTab = 'tests'">
         Bài kiểm tra
+      </div>
+      <div class="detail-tab" :class="{ 'detail-tab--active': activeTab === 'forum' }" @click="activeTab = 'forum'">
+        Diễn đàn
       </div>
     </div>
 
@@ -189,7 +248,7 @@ function resumeTest(t) {
       </div>
     </template>
 
-    <template v-else>
+    <template v-else-if="activeTab === 'tests'">
       <p v-if="testsLoading" class="state-text">Đang tải...</p>
       <div v-else-if="tests.length === 0" class="empty-state">Khoá học chưa có bài kiểm tra nào.</div>
       <div v-else class="test-tab-list">
@@ -216,6 +275,68 @@ function resumeTest(t) {
           <button v-else class="btn btn-secondary" disabled>Đã hết lượt làm bài</button>
         </div>
       </div>
+    </template>
+
+    <template v-if="activeTab === 'forum'">
+      <div class="forum-ask card">
+        <textarea
+          v-model="questionDraft"
+          class="input forum-ask-input"
+          rows="3"
+          placeholder="Đặt câu hỏi cho trainer về khoá học này..."
+        ></textarea>
+        <p v-if="askError" class="alert alert-error">{{ askError }}</p>
+        <button class="btn btn-primary" :disabled="asking || !questionDraft.trim()" @click="askQuestion">
+          {{ asking ? 'Đang gửi...' : 'Đặt câu hỏi' }}
+        </button>
+      </div>
+
+      <p v-if="forumLoading" class="state-text">Đang tải...</p>
+      <div v-else-if="forumQuestions.length === 0" class="empty-state">Chưa có câu hỏi nào trong diễn đàn khoá học này.</div>
+
+      <template v-else>
+        <div class="forum-list">
+          <div v-for="q in forumQuestions" :key="q.id" class="card forum-question-card">
+            <div class="forum-question-head">
+              <span class="forum-author">{{ q.userId.name }}</span>
+              <span class="forum-date">{{ formatForumDate(q.createdAt) }}</span>
+            </div>
+            <div class="forum-question-content">{{ q.content }}</div>
+
+            <div v-if="q.answers.length > 0" class="forum-answer-list">
+              <div v-for="a in q.answers" :key="a.id" class="forum-answer-row">
+                <div class="forum-answer-head">
+                  <span class="forum-author forum-author--trainer">{{ a.userId.name }}</span>
+                  <span class="forum-date">{{ formatForumDate(a.createdAt) }}</span>
+                </div>
+                <div class="forum-answer-content">{{ a.content }}</div>
+              </div>
+            </div>
+            <div v-else class="forum-pending">Chưa có câu trả lời.</div>
+
+            <div v-if="canAnswerForum" class="forum-answer-form">
+              <input
+                v-model="answerDrafts[q.id]"
+                type="text"
+                class="input"
+                placeholder="Trả lời câu hỏi này..."
+                @keyup.enter="submitAnswer(q.id)"
+              />
+              <button
+                class="btn btn-secondary btn-sm"
+                :disabled="answering[q.id] || !(answerDrafts[q.id] || '').trim()"
+                @click="submitAnswer(q.id)"
+              >
+                Trả lời
+              </button>
+            </div>
+            <p v-if="answerErrors[q.id]" class="alert alert-error">{{ answerErrors[q.id] }}</p>
+          </div>
+        </div>
+        <button v-if="forumHasMore" class="btn btn-secondary forum-load-more" :disabled="forumLoadingMore" @click="loadMoreForum">
+          {{ forumLoadingMore ? 'Đang tải...' : 'Tải thêm' }}
+        </button>
+      </template>
     </template>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { Award } from '@lucide/vue'
+import { Award, Pencil, Trash2 } from '@lucide/vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
 import badgeService from '@/api/badgeService'
@@ -105,9 +105,9 @@ async function remove(b) {
           <div class="badge-manage-name">{{ b.name }}</div>
           <div class="badge-manage-code">{{ b.code }}</div>
           <div class="badge-manage-desc">{{ b.description }}</div>
-          <div class="badge-manage-actions">
-            <span class="manage-action" @click="openEditForm(b)">Sửa</span>
-            <span class="manage-action manage-action--danger" @click="remove(b)">Xoá</span>
+          <div class="row-action-group badge-manage-actions">
+            <button class="row-action-btn" @click="openEditForm(b)"><Pencil :size="13" /> Sửa</button>
+            <button class="row-action-btn row-action-btn--danger" @click="remove(b)"><Trash2 :size="13" /> Xoá</button>
           </div>
         </div>
       </div>

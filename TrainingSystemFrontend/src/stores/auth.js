@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import http from '@/api/http'
+import profileService from '@/api/profileService'
 
 export const useAuthStore = defineStore('auth', () => {
     const token = ref(localStorage.getItem('token') || null);
@@ -16,7 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
         const res = await http.post('/api/users/login', { username, password });
         token.value = res.data.token;
         localStorage.setItem('token', token.value);
-        const profileRes = await http.get('/api/secure/profile')
+        const profileRes = await profileService.getMy()
         user.value = profileRes.data;
         localStorage.setItem('user', JSON.stringify(user.value));
     }

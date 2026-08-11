@@ -20,4 +20,5 @@ public interface CourseService {
     void deactivateCourse(long id);
     boolean canManage(User caller, Course course);
     boolean canView(User caller, Course course);
+    boolean canAnswerForum(User caller, Course course);
 }

@@ -80,7 +80,7 @@ public class EnrollmentServiceImpl implements EnrollmentService{
                 this.lessonProgressRepo.saveOrUpdate(lp);
             }
             
-            this.notificationService.create(userId, "Ghi danh khoá học", "Bạn được ghi danh khoá học "+course.getTitle());
+            this.notificationService.create(userId, "Ghi danh khoá học", "Bạn được ghi danh khoá học "+course.getTitle(), "/courses/" + course.getId());
             enrolled.add(e);
         }
         

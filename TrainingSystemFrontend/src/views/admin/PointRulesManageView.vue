@@ -4,6 +4,7 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
 import pointRuleService from '@/api/pointRuleService'
 import { confirmDialog } from '@/utils/alerts'
+import { Pencil, Trash2 } from '@lucide/vue'
 
 const { data: rules, loading, refresh } = useAsyncData(() => pointRuleService.getAll())
 
@@ -98,9 +99,9 @@ async function remove(r) {
             <div class="rules-row-action">{{ r.actionType }}</div>
             <div class="rules-row-points">+{{ r.points }}</div>
             <div class="rules-row-desc">{{ r.description }}</div>
-            <div class="manage-row-actions">
-              <span class="manage-action" @click="openEditForm(r)">Sửa</span>
-              <span class="manage-action manage-action--danger" @click="remove(r)">Xoá</span>
+            <div class="row-action-group">
+              <button class="row-action-btn" @click="openEditForm(r)"><Pencil :size="13" /> Sửa</button>
+              <button class="row-action-btn row-action-btn--danger" @click="remove(r)"><Trash2 :size="13" /> Xoá</button>
             </div>
           </div>
         </template>

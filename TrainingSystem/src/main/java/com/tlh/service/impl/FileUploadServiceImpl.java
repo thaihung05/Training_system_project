@@ -8,6 +8,8 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.tlh.service.FileUploadService;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,26 @@ public class FileUploadServiceImpl implements FileUploadService {
             return (String) result.get("secure_url");
         } catch (IOException e) {
             throw new IllegalArgumentException("Tải file lên thất bại: " + e.getMessage());
+        }
+    }
+
+    private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList("image/jpeg", "image/png", "image/webp");
+
+    @Override
+    public String uploadImage(MultipartFile file) {
+        if (file == null || file.isEmpty())
+            throw new IllegalArgumentException("Vui lòng chọn ảnh để tải lên");
+        if (!ALLOWED_IMAGE_TYPES.contains(file.getContentType()))
+            throw new IllegalArgumentException("Chỉ chấp nhận ảnh định dạng JPEG, PNG hoặc WEBP");
+        try {
+            String publicId = "training-system/courses/" + UUID.randomUUID();
+            Map<?, ?> result = this.cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                    "resource_type", "image",
+                    "public_id", publicId
+            ));
+            return (String) result.get("secure_url");
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Tải ảnh lên thất bại: " + e.getMessage());
         }
     }
 }

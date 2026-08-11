@@ -450,7 +450,7 @@ textarea.input {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .manage-action {
@@ -462,6 +462,47 @@ textarea.input {
 
 .manage-action--danger {
   color: var(--color-danger);
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.row-action-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.row-action-btn {
+  height: 28px;
+  padding: 0 10px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.row-action-btn:hover {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.row-action-btn--danger:hover {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
 @media (max-width: 900px) {
@@ -552,6 +593,12 @@ textarea.input {
 .admin-layout {
   display: flex;
   align-items: flex-start;
+}
+
+@media (max-width: 880px) {
+  .admin-layout {
+    flex-direction: column;
+  }
 }
 
 .admin-content {

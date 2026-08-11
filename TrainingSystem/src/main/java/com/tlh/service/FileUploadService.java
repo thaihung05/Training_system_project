@@ -12,4 +12,5 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface FileUploadService {
     String uploadPdf(MultipartFile file);
+    String uploadImage(MultipartFile file);
 }

@@ -132,3 +132,31 @@
 .admin-sidebar-logout:hover {
   background: var(--color-danger-light);
 }
+
+@media (max-width: 880px) {
+  .admin-sidebar {
+    width: 100%;
+    min-width: 0;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: 14px;
+  }
+
+  .admin-sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+  }
+
+  .admin-sidebar-link {
+    white-space: nowrap;
+  }
+
+  .admin-sidebar-footer {
+    flex-direction: row;
+    border-top: none;
+    margin-top: 10px;
+    padding-top: 0;
+  }
+}

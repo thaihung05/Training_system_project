@@ -33,4 +33,10 @@ public class ApiUploadController {
         String url = this.fileUploadService.uploadPdf(file);
         return new ResponseEntity<>(Collections.singletonMap("url", url), HttpStatus.OK);
     }
+
+    @PostMapping("/image")
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
+        String url = this.fileUploadService.uploadImage(file);
+        return new ResponseEntity<>(Collections.singletonMap("url", url), HttpStatus.OK);
+    }
 }

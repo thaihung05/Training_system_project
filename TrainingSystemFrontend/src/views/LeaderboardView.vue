@@ -6,11 +6,13 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import pointService from '@/api/pointService'
 import badgeService from '@/api/badgeService'
 import certificateService from '@/api/certificateService'
+import { formatDate } from '@/utils/formatDate'
 
 const auth = useAuthStore()
 
 const { data: pointsData } = useAsyncData(() => pointService.getMy())
-const { data: leaderboard, loading: leaderboardLoading } = useAsyncData(() => pointService.getLeaderboard(50))
+const { data: leaderboard, loading: leaderboardLoading } = useAsyncData(() => pointService.getLeaderboard(9999))
+const leaderboardTop15 = computed(() => (leaderboard.value || []).slice(0, 15))
 const { data: allBadges } = useAsyncData(() => badgeService.getAll())
 const { data: myBadges } = useAsyncData(() => badgeService.getMy())
 const { data: certificates, error: certificatesError } = useAsyncData(() => certificateService.getMy())
@@ -27,11 +29,6 @@ function isEarned(badgeId) {
 
 function initials(name) {
   return (name || '').split(' ').slice(-2).map((w) => w[0]).join('').toUpperCase()
-}
-
-function formatDate(ms) {
-  if (!ms) return ''
-  return new Date(ms).toLocaleDateString('vi-VN')
 }
 </script>
 
@@ -68,7 +65,7 @@ function formatDate(ms) {
         <p v-if="leaderboardLoading" class="state-text">Đang tải...</p>
         <div v-else class="widget-list">
           <div
-            v-for="(row, index) in leaderboard"
+            v-for="(row, index) in leaderboardTop15"
             :key="row.userId"
             class="list-item"
             :class="{ 'list-item--self': row.userId === auth.user?.id }"

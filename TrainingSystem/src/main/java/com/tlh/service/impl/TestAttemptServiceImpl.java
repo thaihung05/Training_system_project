@@ -101,6 +101,11 @@ public class TestAttemptServiceImpl implements TestAttemptService{
         if (existing.size() >= t.getMaxAttempts()) {
             throw new IllegalArgumentException("Đã đạt số lần làm bài tối đa (" + t.getMaxAttempts() + ")");
         }
+        for (TestAttempt prev : existing) {
+            if (prev.getSubmittedAt() == null) {
+                throw new IllegalArgumentException("Bạn đang có 1 lượt làm bài chưa nộp cho bài kiểm tra này");
+            }
+        }
 
         TestAttempt a = new TestAttempt();
         a.setTestId(t);
@@ -210,7 +215,8 @@ public class TestAttemptServiceImpl implements TestAttemptService{
 
         Long userId = attempt.getUserId().getId();
         this.notificationService.create(userId, "Kết quả bài kiểm tra",
-                "Bạn đạt " + score + " điểm cho bài \"" + test.getTitle() + "\" - " + (passed ? "ĐẠT" : "CHƯA ĐẠT"));
+                "Bạn đạt " + score + " điểm cho bài \"" + test.getTitle() + "\" - " + (passed ? "ĐẠT" : "CHƯA ĐẠT"),
+                "/attempts/" + attempt.getId() + "/result");
         if (passed) {
             boolean alreadyPassedBefore = false;
             for (TestAttempt prev : this.testAttemptRepo.getByUserAndTest(userId, test.getId())) {

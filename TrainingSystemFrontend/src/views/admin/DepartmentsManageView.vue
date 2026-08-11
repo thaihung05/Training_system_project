@@ -6,6 +6,7 @@ import departmentService from '@/api/departmentService'
 import userService from '@/api/userService'
 import courseService from '@/api/courseService'
 import { confirmDialog, showError } from '@/utils/alerts'
+import { Pencil, Trash2 } from '@lucide/vue'
 
 const { data: departments, loading, refresh } = useAsyncData(() => departmentService.getAll())
 const { data: users } = useAsyncData(() => userService.getAll())
@@ -104,9 +105,9 @@ async function remove(d) {
               <div class="dept-stat-value">{{ courseCountFor(d.id) }}</div>
             </div>
           </div>
-          <div class="dept-actions">
-            <span class="manage-action" @click="openEditForm(d)">Sửa</span>
-            <span class="manage-action manage-action--danger" @click="remove(d)">Xoá</span>
+          <div class="row-action-group dept-actions">
+            <button class="row-action-btn" @click="openEditForm(d)"><Pencil :size="13" /> Sửa</button>
+            <button class="row-action-btn row-action-btn--danger" @click="remove(d)"><Trash2 :size="13" /> Xoá</button>
           </div>
         </div>
       </div>

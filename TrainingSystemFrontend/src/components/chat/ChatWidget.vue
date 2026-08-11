@@ -17,6 +17,7 @@ const isOpen = ref(false)
 const messages = ref([])
 const loading = ref(false)
 const sending = ref(false)
+const sendError = ref('')
 const questionText = ref('')
 const messageListEl = ref(null)
 
@@ -47,11 +48,15 @@ async function sendQuestion() {
   const text = questionText.value.trim()
   if (!text || sending.value) return
   sending.value = true
+  sendError.value = ''
   questionText.value = ''
   try {
     const res = await chatService.ask(text, sessionId)
     messages.value.push(res.data)
     await scrollToBottom()
+  } catch (err) {
+    questionText.value = text
+    sendError.value = err.response?.data || 'Gửi câu hỏi thất bại, thử lại nhé.'
   } finally {
     sending.value = false
   }
@@ -80,6 +85,7 @@ async function sendQuestion() {
         </template>
       </div>
 
+      <p v-if="sendError" class="chat-send-error">{{ sendError }}</p>
       <form class="chat-input-row" @submit.prevent="sendQuestion">
         <input v-model="questionText" type="text" placeholder="Nhập câu hỏi..." :disabled="sending" />
         <button type="submit" class="btn btn-primary btn-sm" :disabled="sending || !questionText.trim()">
