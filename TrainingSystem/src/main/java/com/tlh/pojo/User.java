@@ -26,10 +26,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-/**
- * "user" la tu khoa danh rieng cua MySQL -> bat buoc escape bang backtick
- * trong @Table, va trong moi cau HQL/SQL viet tay o RepositoryImpl.
- */
 @Entity
 @Table(name = "`user`")
 @NamedQueries({

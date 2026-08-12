@@ -50,11 +50,19 @@ async function sendQuestion() {
   sending.value = true
   sendError.value = ''
   questionText.value = ''
+
+  const pendingMsg = { id: `pending-${Date.now()}`, question: text, answer: null, pending: true }
+  messages.value.push(pendingMsg)
+  await scrollToBottom()
+
   try {
     const res = await chatService.ask(text, sessionId)
-    messages.value.push(res.data)
+    const idx = messages.value.indexOf(pendingMsg)
+    if (idx !== -1) messages.value.splice(idx, 1, res.data)
     await scrollToBottom()
   } catch (err) {
+    const idx = messages.value.indexOf(pendingMsg)
+    if (idx !== -1) messages.value.splice(idx, 1)
     questionText.value = text
     sendError.value = err.response?.data || 'Gửi câu hỏi thất bại, thử lại nhé.'
   } finally {
@@ -79,7 +87,10 @@ async function sendQuestion() {
         <template v-else>
           <div v-for="m in messages" :key="m.id" class="chat-message-group">
             <div class="chat-bubble chat-bubble--user">{{ m.question }}</div>
-            <div v-if="m.answer" class="chat-bubble chat-bubble--bot">{{ m.answer }}</div>
+            <div v-if="m.pending" class="chat-bubble chat-bubble--typing">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <div v-else-if="m.answer" class="chat-bubble chat-bubble--bot">{{ m.answer }}</div>
             <div v-else class="chat-bubble chat-bubble--pending">
               Trợ lý ảo chưa tìm thấy câu trả lời cho câu hỏi này. Câu hỏi của bạn đã được chuyển cho trainer, sẽ được phản hồi sớm nhất.
             </div>

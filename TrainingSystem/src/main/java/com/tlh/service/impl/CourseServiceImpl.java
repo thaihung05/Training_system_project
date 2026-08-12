@@ -122,10 +122,20 @@ public class CourseServiceImpl implements CourseService {
         if (caller == null || course == null) {
             return false;
         }
-        if (!"EMPLOYEE".equals(caller.getRole())) {
+        if (this.canManage(caller, course)) {
             return true;
         }
-        return this.enrollmentService.isEnrolled(course.getId(), caller.getId());
+        if ("EMPLOYEE".equals(caller.getRole())) {
+            return this.enrollmentService.isEnrolled(course.getId(), caller.getId());
+        }
+        if ("TRAINER".equals(caller.getRole())) {
+            if (course.getDepartmentId() == null) {
+                return true;
+            }
+            return caller.getDepartmentId() != null
+                    && course.getDepartmentId().getId().equals(caller.getDepartmentId().getId());
+        }
+        return false;
     }
 
     @Override

@@ -45,7 +45,8 @@ public class NotificationRepositoryImpl implements NotificationRepository{
         
         var query = s.createQuery(q);
         if (page != null && size != null) {
-            query.setFirstResult((page - 1) * size);
+            int p = Math.max(page, 1);
+            query.setFirstResult((p - 1) * size);
             query.setMaxResults(size);
         }
         

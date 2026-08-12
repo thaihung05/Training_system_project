@@ -62,7 +62,7 @@ public class CourseRepositoryImpl implements CourseRepository {
         String pageStr = params != null ? params.get("page") : null;
         String sizeStr = params != null ? params.get("size") : null;
         if (pageStr != null && sizeStr != null){
-            int page = Integer.parseInt(pageStr);
+            int page = Math.max(Integer.parseInt(pageStr), 1);
             int size = Integer.parseInt(sizeStr);
             query.setFirstResult((page-1) * size);
             query.setMaxResults(size);
@@ -95,7 +95,8 @@ public class CourseRepositoryImpl implements CourseRepository {
 
         var query = s.createQuery(q);
         if (page != null && size != null) {
-            query.setFirstResult((page - 1) * size);
+            int p = Math.max(page, 1);
+            query.setFirstResult((p - 1) * size);
             query.setMaxResults(size);
         }
 
@@ -120,7 +121,8 @@ public class CourseRepositoryImpl implements CourseRepository {
 
         var query = s.createQuery(q);
         if (page != null && size != null) {
-            query.setFirstResult((page - 1) * size);
+            int p = Math.max(page, 1);
+            query.setFirstResult((p - 1) * size);
             query.setMaxResults(size);
         }
 

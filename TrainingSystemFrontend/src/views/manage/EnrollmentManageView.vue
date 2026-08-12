@@ -19,7 +19,6 @@ const { items: roster, loading: rosterLoading, loadingMore: rosterLoadingMore, h
   (page, size) => enrollmentService.getRoster(courseId, page, size),
   20,
 )
-// Danh sách đầy đủ (không phân trang) chỉ để loại người đã ghi danh khỏi ô chọn cá nhân
 const { data: fullRoster, refresh: refreshFullRoster } = useAsyncData(() => enrollmentService.getRoster(courseId))
 const { data: departments } = useAsyncData(() => departmentService.getAll())
 const { data: allUsers } = useAsyncData(() => userService.getAll())

@@ -8,7 +8,6 @@ import com.tlh.pojo.Course;
 import com.tlh.pojo.Lesson;
 import com.tlh.pojo.User;
 import com.tlh.service.CourseService;
-import com.tlh.service.EnrollmentService;
 import com.tlh.service.LessonService;
 import com.tlh.service.UserService;
 import java.security.Principal;
@@ -43,9 +42,6 @@ public class ApiLessonController {
     private CourseService courseService;
 
     @Autowired
-    private EnrollmentService enrollmentService;
-
-    @Autowired
     private UserService userService;
 
     private User currentUser(Principal principal){
@@ -53,9 +49,7 @@ public class ApiLessonController {
     }
 
     private boolean canView(User caller, Course course){
-        if (this.courseService.canManage(caller, course))
-            return true;
-        return this.enrollmentService.isEnrolled(course.getId(), caller.getId());
+        return this.courseService.canView(caller, course);
     }
 
     @GetMapping("/courses/{courseId}/lessons")

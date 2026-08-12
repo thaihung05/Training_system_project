@@ -38,7 +38,8 @@ public class ForumQuestionRepositoryImpl implements ForumQuestionRepository{
 
         var query = s.createQuery(q);
         if (page != null && size != null) {
-            query.setFirstResult((page - 1) * size);
+            int p = Math.max(page, 1);
+            query.setFirstResult((p - 1) * size);
             query.setMaxResults(size);
         }
         return query.getResultList();

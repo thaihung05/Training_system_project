@@ -56,7 +56,7 @@ public class UserRepositoryImpl implements UserRepository{
         String pageStr = params != null ? params.get("page") : null;
         String sizeStr = params != null ? params.get("size") : null;
         if (pageStr != null && sizeStr != null) {
-            int page = Integer.parseInt(pageStr);
+            int page = Math.max(Integer.parseInt(pageStr), 1);
             int size = Integer.parseInt(sizeStr);
             query.setFirstResult((page - 1) * size);
             query.setMaxResults(size);
@@ -141,7 +141,7 @@ public class UserRepositoryImpl implements UserRepository{
         Root<User> root = q.from(User.class);
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(b.equal(root.get("departmentId").get("id"), departmentId));
+        predicates.add(b.equal(root.get("departmentId").get("id"), Long.parseLong(departmentId)));
         predicates.add(b.isTrue(root.get("isActive")));
 
         q.select(root);
