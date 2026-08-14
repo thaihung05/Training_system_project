@@ -1,19 +1,22 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
+import courseService from '@/api/courseService'
 import testService from '@/api/testService'
 import questionService from '@/api/questionService'
 import questionOptionService from '@/api/questionOptionService'
 import { confirmDialog, showError } from '@/utils/alerts'
-import { ChevronLeft, Pencil, Power, Trash2 } from '@lucide/vue'
+import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import FormModal from '@/components/common/FormModal.vue'
+import { CirclePlus, FileSpreadsheet, Pencil, Plus, Power, Trash2 } from '@lucide/vue'
 
 const route = useRoute()
-const router = useRouter()
 const courseId = Number(route.params.courseId)
 const testId = Number(route.params.testId)
 
+const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: tests } = useAsyncData(() => testService.getByCourse(courseId))
 const currentTest = computed(() => (tests.value || []).find((t) => t.id === testId) || null)
 
@@ -24,8 +27,15 @@ const { items: questions, loading, loadingMore, hasMore, loadMore, reload: refre
 
 const editingQuestionId = ref(null)
 const questionDraft = ref('')
+const questionFormOpen = ref(false)
 const newQuestionContent = ref('')
-const newOptionText = ref({})
+const questionSaving = ref(false)
+const questionError = ref('')
+const optionQuestion = ref(null)
+const optionText = ref('')
+const optionIsCorrect = ref(false)
+const optionSaving = ref(false)
+const optionError = ref('')
 
 function startEditQuestion(q) {
   editingQuestionId.value = q.id
@@ -57,19 +67,65 @@ async function removeQuestion(q) {
   }
 }
 
-async function addQuestion() {
-  if (!newQuestionContent.value.trim()) return
-  await questionService.create(testId, { content: newQuestionContent.value })
+function openQuestionForm() {
   newQuestionContent.value = ''
-  refresh()
+  questionError.value = ''
+  questionFormOpen.value = true
 }
 
-async function addOption(q) {
-  const text = (newOptionText.value[q.id] || '').trim()
+function closeQuestionForm() {
+  questionFormOpen.value = false
+  questionError.value = ''
+}
+
+async function addQuestion() {
+  if (!newQuestionContent.value.trim()) return
+  questionSaving.value = true
+  questionError.value = ''
+  try {
+    await questionService.create(testId, { content: newQuestionContent.value.trim() })
+    closeQuestionForm()
+    newQuestionContent.value = ''
+    refresh()
+  } catch (err) {
+    questionError.value = err.response?.data || 'Không thể thêm câu hỏi. Kiểm tra nội dung và thử lại.'
+  } finally {
+    questionSaving.value = false
+  }
+}
+
+function openOptionForm(q) {
+  optionQuestion.value = q
+  optionText.value = ''
+  optionIsCorrect.value = false
+  optionError.value = ''
+}
+
+function closeOptionForm() {
+  optionQuestion.value = null
+  optionText.value = ''
+  optionIsCorrect.value = false
+  optionError.value = ''
+}
+
+async function addOption() {
+  const text = optionText.value.trim()
   if (!text) return
-  await questionOptionService.create(q.id, { optionText: text })
-  newOptionText.value[q.id] = ''
-  refresh()
+  optionSaving.value = true
+  optionError.value = ''
+  try {
+    const questionId = optionQuestion.value.id
+    const response = await questionOptionService.create(questionId, { optionText: text })
+    if (optionIsCorrect.value) {
+      await questionOptionService.setCorrect(questionId, response.data.id)
+    }
+    closeOptionForm()
+    refresh()
+  } catch (err) {
+    optionError.value = err.response?.data || 'Không thể thêm đáp án. Kiểm tra nội dung và thử lại.'
+  } finally {
+    optionSaving.value = false
+  }
 }
 
 async function setCorrect(q, opt) {
@@ -118,16 +174,19 @@ async function onImportFileChange(e) {
 </script>
 
 <template>
-  <div class="page">
-    <div class="detail-header">
-      <button class="back-btn" @click="router.push({ name: 'manage-tests', params: { courseId } })"><ChevronLeft :size="18" /></button>
-      <div class="detail-heading">
-        <h1>Câu hỏi — {{ currentTest?.title }}</h1>
-        <div class="detail-meta">{{ questions?.length ?? 0 }} câu hỏi</div>
+  <div class="page trainer-page">
+    <TrainerCourseNav :course="course" active="tests" />
+    <div class="trainer-context-header">
+      <div>
+        <h2>{{ currentTest?.title || 'Đang tải bài kiểm tra…' }}</h2>
+        <p>{{ questions?.length ?? 0 }} câu hỏi trong trang hiện tại.</p>
       </div>
-      <button class="btn btn-secondary" :disabled="importing" @click="openImportPicker">
-        {{ importing ? 'Đang nhập...' : 'Nhập từ Excel' }}
-      </button>
+      <div class="trainer-context-actions">
+        <button class="btn btn-secondary" :disabled="importing" @click="openImportPicker">
+          <FileSpreadsheet :size="16" /> {{ importing ? 'Đang nhập...' : 'Nhập từ Excel' }}
+        </button>
+        <button class="btn btn-primary" @click="openQuestionForm"><Plus :size="16" /> Thêm câu hỏi</button>
+      </div>
       <input ref="importInput" type="file" accept=".xlsx" class="qmg-import-input" @change="onImportFileChange" />
     </div>
 
@@ -142,16 +201,18 @@ async function onImportFileChange(e) {
       <button class="btn btn-secondary btn-sm" @click="importResults = null">Đóng</button>
     </div>
 
-    <div class="manage-layout">
-      <div class="qmg-main">
+    <div class="qmg-main">
         <p v-if="loading" class="state-text">Đang tải...</p>
         <div v-else-if="questions.length === 0" class="empty-state">Chưa có câu hỏi nào.</div>
         <div v-else class="qmg-list">
-          <div v-for="q in questions" :key="q.id" class="card qmg-card">
+          <div v-for="(q, index) in questions" :key="q.id" class="trainer-panel qmg-card">
             <div class="qmg-card-header">
-              <span class="badge" :class="q.isActive ? 'badge-success' : 'badge-neutral'">
-                {{ q.isActive ? 'Đang hoạt động' : 'Tắt' }}
-              </span>
+              <div class="qmg-card-identity">
+                <span class="qmg-card-number">Câu {{ index + 1 }}</span>
+                <span class="badge" :class="q.isActive ? 'badge-success' : 'badge-neutral'">
+                  {{ q.isActive ? 'Đang hoạt động' : 'Tắt' }}
+                </span>
+              </div>
               <div class="row-action-group">
                 <button class="row-action-btn" @click="startEditQuestion(q)"><Pencil :size="13" /> Sửa</button>
                 <button class="row-action-btn" @click="toggleQuestionActive(q)"><Power :size="13" /> {{ q.isActive ? 'Tắt' : 'Bật' }}</button>
@@ -169,7 +230,15 @@ async function onImportFileChange(e) {
             <div v-else class="qmg-content">{{ q.content }}</div>
 
             <div class="qmg-options">
-              <label v-for="opt in q.options" :key="opt.id" class="qmg-option-row">
+              <div class="qmg-options-heading">
+                <div>
+                  <strong>Danh sách đáp án</strong>
+                  <span>Chọn một đáp án đúng bằng nút tròn bên dưới.</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" @click="openOptionForm(q)"><CirclePlus :size="14" /> Thêm đáp án</button>
+              </div>
+              <div v-if="!q.options?.length" class="qmg-options-empty">Chưa có đáp án. Thêm ít nhất hai đáp án trước khi mở bài kiểm tra.</div>
+              <div v-for="opt in q.options" :key="opt.id" class="qmg-option-row">
                 <input
                   type="radio"
                   :name="'correct-' + q.id"
@@ -177,18 +246,7 @@ async function onImportFileChange(e) {
                   @change="setCorrect(q, opt)"
                 />
                 <span class="qmg-option-text">{{ opt.optionText }}</span>
-                <span class="manage-action manage-action--danger" @click="removeOption(opt)">Xoá</span>
-              </label>
-
-              <div class="qmg-add-option">
-                <input
-                  v-model="newOptionText[q.id]"
-                  type="text"
-                  class="input"
-                  placeholder="Thêm đáp án..."
-                  @keyup.enter="addOption(q)"
-                />
-                <button class="btn btn-secondary btn-sm" @click="addOption(q)">Thêm</button>
+                <button type="button" class="qmg-option-remove" @click="removeOption(opt)">Xoá</button>
               </div>
             </div>
           </div>
@@ -196,17 +254,56 @@ async function onImportFileChange(e) {
         <button v-if="hasMore" class="btn btn-secondary qmg-load-more" :disabled="loadingMore" @click="loadMore">
           {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
         </button>
-      </div>
-
-      <div class="manage-form card">
-        <h2>Thêm câu hỏi mới</h2>
-        <div class="form-field">
-          <label>Nội dung câu hỏi</label>
-          <textarea v-model="newQuestionContent" class="input" rows="3" placeholder="Nhập nội dung câu hỏi..."></textarea>
-        </div>
-        <button class="btn btn-primary" @click="addQuestion">Thêm câu hỏi</button>
-      </div>
     </div>
+
+    <FormModal
+      v-if="questionFormOpen"
+      title="Thêm câu hỏi mới"
+      description="Viết một ý rõ ràng cho mỗi câu hỏi. Đáp án sẽ được bổ sung ngay trong danh sách sau khi lưu."
+      submit-label="Thêm câu hỏi"
+      :saving="questionSaving"
+      :disabled="!newQuestionContent.trim()"
+      @close="closeQuestionForm"
+      @submit="addQuestion"
+    >
+      <section class="qmg-form-section">
+        <div class="qmg-form-heading">
+          <h3>Nội dung câu hỏi</h3>
+          <p>Tránh câu quá dài hoặc chứa nhiều ý khiến người học khó xác định yêu cầu.</p>
+        </div>
+        <p v-if="questionError" class="alert alert-error">{{ questionError }}</p>
+        <div class="form-field">
+          <label for="new-question-content">Câu hỏi</label>
+          <textarea id="new-question-content" v-model="newQuestionContent" class="input" rows="5" placeholder="Ví dụ: Nhân viên cần thực hiện bước nào trước khi tư vấn sản phẩm?" required></textarea>
+        </div>
+      </section>
+    </FormModal>
+
+    <FormModal
+      v-if="optionQuestion"
+      size="small"
+      title="Thêm đáp án"
+      description="Đáp án mới sẽ được thêm vào câu hỏi đang chọn. Sau đó đánh dấu đáp án đúng trong danh sách."
+      submit-label="Thêm đáp án"
+      :saving="optionSaving"
+      :disabled="!optionText.trim()"
+      @close="closeOptionForm"
+      @submit="addOption"
+    >
+      <div class="qmg-option-context">
+        <span>Câu hỏi</span>
+        <strong>{{ optionQuestion.content }}</strong>
+      </div>
+      <p v-if="optionError" class="alert alert-error">{{ optionError }}</p>
+      <div class="form-field">
+        <label for="new-option-text">Nội dung đáp án</label>
+        <textarea id="new-option-text" v-model="optionText" class="input" rows="3" placeholder="Nhập nội dung đáp án…" required></textarea>
+      </div>
+      <label class="qmg-correct-choice">
+        <input v-model="optionIsCorrect" type="checkbox" />
+        <span><strong>Đặt làm đáp án đúng</strong><small>Nếu chọn, đáp án đúng hiện tại của câu hỏi sẽ được thay thế.</small></span>
+      </label>
+    </FormModal>
   </div>
 </template>
 

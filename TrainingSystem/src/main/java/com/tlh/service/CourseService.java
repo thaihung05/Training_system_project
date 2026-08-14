@@ -17,6 +17,7 @@ public interface CourseService {
     Course getCourseById(long id);
     List<Course> getMyCourses(User caller, Integer page, Integer size);
     Course addOrUpdate(Course c);
+    void validateReadyForEnrollment(long courseId);
     void deactivateCourse(long id);
     boolean canManage(User caller, Course course);
     boolean canView(User caller, Course course);

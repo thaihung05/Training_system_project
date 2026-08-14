@@ -9,6 +9,7 @@ import com.tlh.pojo.User;
 import com.tlh.repository.UserRepository;
 import com.tlh.service.StoreService;
 import com.tlh.service.MailService;
+import com.tlh.service.NotificationService;
 import com.tlh.service.UserService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +27,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -34,6 +36,8 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 public class UserServiceImpl implements UserService{
+
+    private static final long MAX_IMPORT_SIZE = 10L * 1024 * 1024;
     
     @Autowired
     private UserRepository userRepo;
@@ -43,6 +47,9 @@ public class UserServiceImpl implements UserService{
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -122,6 +129,9 @@ public class UserServiceImpl implements UserService{
     public List<Map<String, Object>> bulkImportUsers(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Vui lòng chọn file Excel để nhập");
+        }
+        if (file.getSize() > MAX_IMPORT_SIZE) {
+            throw new IllegalArgumentException("File Excel tối đa 10 MB");
         }
         List<Map<String, Object>> results = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
@@ -218,6 +228,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional
     public void reactivateUser(long id) {
         User u = this.userRepo.getUserById(id);
         if (u == null) {
@@ -225,6 +236,11 @@ public class UserServiceImpl implements UserService{
         }
         u.setIsActive(true);
         this.userRepo.saveOrUpdate(u);
+        this.notificationService.create(
+                id,
+                "Tài khoản đã được kích hoạt lại",
+                "Tài khoản của bạn đã được quản trị viên kích hoạt lại.",
+                "/");
     }
 
     @Override

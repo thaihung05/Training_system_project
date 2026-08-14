@@ -28,9 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = res.data.token;
         localStorage.setItem('token', token.value);
         try {
-            const profileRes = await profileService.getMy()
-            user.value = profileRes.data;
-            localStorage.setItem('user', JSON.stringify(user.value));
+            await refreshProfile()
         } catch (err) {
             token.value = null;
             user.value = null;
@@ -40,6 +38,13 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    async function refreshProfile() {
+        const profileRes = await profileService.getMy()
+        user.value = profileRes.data
+        localStorage.setItem('user', JSON.stringify(user.value))
+        return user.value
+    }
+
     function logout() {
         token.value = null;
         user.value = null;
@@ -47,5 +52,5 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem('user');
     }
 
-    return { token, user, isLoggedIn, role, isAdmin, isTrainer, isTrainerOrAdmin, isEmployee, login, logout }
+    return { token, user, isLoggedIn, role, isAdmin, isTrainer, isTrainerOrAdmin, isEmployee, login, refreshProfile, logout }
 })

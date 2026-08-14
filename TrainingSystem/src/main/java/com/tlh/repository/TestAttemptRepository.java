@@ -15,6 +15,7 @@ import java.util.List;
 public interface TestAttemptRepository {
     List<TestAttempt> getByUserAndTest(long userId, long testId);
     TestAttempt getById(long id);
+    TestAttempt getByIdForUpdate(long id);
     List<TestAttempt> getByTest(long testId, Integer page, Integer size);
     boolean hasAttempts(long testId);
     List<TestAttempt> getByUser(long userId, Integer page, Integer size);

@@ -91,7 +91,16 @@ public class ApiCertificateController {
     @PutMapping("/certificates/{id}/pdf-url")
     public ResponseEntity<?> updatePdfUrl(
             @PathVariable(value = "id") long id, 
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body,
+            Principal principal) {
+        Certificate certificate = this.certificateService.getById(id);
+        if (certificate == null) {
+            return new ResponseEntity<>("Không tìm thấy chứng chỉ", HttpStatus.NOT_FOUND);
+        }
+        User caller = currentUser(principal);
+        if (!this.courseService.canManage(caller, certificate.getCourseId())) {
+            return new ResponseEntity<>("Bạn không có quyền cập nhật chứng chỉ này", HttpStatus.FORBIDDEN);
+        }
         Certificate updated = this.certificateService.updatePdfUrl(id, body.get("pdfUrl"));
         return new ResponseEntity<>(updated, HttpStatus.OK);
     }

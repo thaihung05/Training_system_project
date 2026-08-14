@@ -13,12 +13,14 @@ import com.tlh.service.ForumAnswerService;
 import com.tlh.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class ForumAnswerServiceImpl implements ForumAnswerService{
 
     @Autowired
@@ -34,6 +36,9 @@ public class ForumAnswerServiceImpl implements ForumAnswerService{
     public ForumAnswer answer(long forumQuestionId, User caller, String content) {
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("Câu trả lời không được để trống");
+        }
+        if (content.trim().length() > 65535) {
+            throw new IllegalArgumentException("Câu trả lời quá dài");
         }
         ForumQuestion q = this.forumQuestionRepo.getById(forumQuestionId);
         if (q == null) {

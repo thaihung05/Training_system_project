@@ -99,6 +99,7 @@
   color: var(--color-text-muted);
   letter-spacing: 0.04em;
   align-items: center;
+  min-width: 1080px;
 }
 
 .users-table-header > div {
@@ -112,6 +113,12 @@
   padding: 13px 16px;
   border-top: 1px solid var(--color-border);
   align-items: center;
+  min-width: 1080px;
+}
+
+.users-load-more {
+  display: flex;
+  margin: 14px auto 0;
 }
 
 .users-row-name {

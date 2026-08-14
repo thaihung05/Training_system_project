@@ -34,6 +34,12 @@ const router = createRouter({
             meta: { requiresAuth: true },
         },
         {
+            path: '/my-certificates',
+            name: 'my-certificates',
+            component: () => import('@/views/certificates/MyCertificatesView.vue'),
+            meta: { requiresAuth: true, roles: ['EMPLOYEE'] },
+        },
+        {
             path: '/leaderboard',
             name: 'leaderboard',
             component: () => import('@/views/LeaderboardView.vue'),
@@ -174,10 +180,21 @@ const router = createRouter({
     ]
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
     const auth = useAuthStore()
+    if (to.name === 'Login' && auth.isLoggedIn) {
+        return { name: 'home' }
+    }
     if (to.meta.requiresAuth && !auth.isLoggedIn) {
         return { name: 'Login' }
+    }
+    if (to.meta.requiresAuth && auth.isLoggedIn) {
+        try {
+            await auth.refreshProfile()
+        } catch {
+            auth.logout()
+            return { name: 'Login' }
+        }
     }
     if (to.meta.roles && !to.meta.roles.includes(auth.role)) {
         return { name: 'home' }

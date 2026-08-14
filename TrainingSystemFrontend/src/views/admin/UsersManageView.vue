@@ -4,12 +4,13 @@ import { useAuthStore } from '@/stores/auth'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
+import FormModal from '@/components/common/FormModal.vue'
 import userService from '@/api/userService'
 import storeService from '@/api/storeService'
 import pointService from '@/api/pointService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import { formatDateTime as formatDate } from '@/utils/formatDate'
-import { Coins, Pencil, Lock, Unlock } from '@lucide/vue'
+import { Coins, FileSpreadsheet, Lock, Pencil, Plus, Unlock } from '@lucide/vue'
 
 const auth = useAuthStore()
 
@@ -67,6 +68,11 @@ function openEditForm(u) {
   }
   errorMsg.value = ''
   showForm.value = true
+}
+
+function closeForm() {
+  showForm.value = false
+  errorMsg.value = ''
 }
 
 async function submit() {
@@ -163,13 +169,13 @@ async function viewPoints(u) {
     <AdminSidebar />
     <div class="admin-content">
       <div class="manage-header">
-        <h1>Quản lý người dùng</h1>
+        <div><h1>Người dùng</h1><p>Quản lý tài khoản, vai trò, đơn vị làm việc và trạng thái truy cập hệ thống.</p></div>
         <div class="manage-header-actions">
           <button v-if="auth.isAdmin" class="btn btn-secondary" :disabled="importing" @click="openImportPicker">
-            {{ importing ? 'Đang nhập...' : 'Nhập từ Excel' }}
+            <FileSpreadsheet :size="16" /> {{ importing ? 'Đang nhập...' : 'Nhập từ Excel' }}
           </button>
           <input ref="importInput" type="file" accept=".xlsx" class="users-import-input" @change="onImportFileChange" />
-          <button v-if="auth.isAdmin" class="btn btn-primary" @click="openCreateForm">+ Thêm người dùng</button>
+          <button v-if="auth.isAdmin" class="btn btn-primary" @click="openCreateForm"><Plus :size="16" /> Thêm người dùng</button>
         </div>
       </div>
 
@@ -185,7 +191,7 @@ async function viewPoints(u) {
         <button class="btn btn-secondary btn-sm" @click="importResults = null">Đóng</button>
       </div>
 
-      <div class="users-toolbar">
+      <div class="users-toolbar admin-toolbar">
         <div class="search-bar">
           <input v-model="keyword" type="text" placeholder="Tìm theo tên hoặc email..." @input="onSearchInput" />
         </div>
@@ -194,54 +200,73 @@ async function viewPoints(u) {
           <option value="none">Không thuộc siêu thị</option>
           <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
         </select>
+        <span class="admin-toolbar-meta">{{ filteredUsers.length }} người đang hiển thị</span>
       </div>
 
-      <div v-if="showForm && auth.isAdmin" class="card inline-form">
-        <h2>{{ editingId ? 'Sửa người dùng' : 'Thêm người dùng mới' }}</h2>
+      <FormModal
+        v-if="showForm && auth.isAdmin"
+        size="large"
+        :title="editingId ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'"
+        description="Thiết lập thông tin đăng nhập, vai trò và siêu thị làm việc."
+        :submit-label="editingId ? 'Lưu thay đổi' : 'Thêm người dùng'"
+        :saving="saving"
+        :disabled="!form.name.trim() || !form.email.trim() || (!editingId && (!form.username.trim() || !form.password))"
+        @close="closeForm"
+        @submit="submit"
+      >
         <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
-        <div class="users-form-grid">
+        <section class="admin-form-section">
+          <div class="admin-form-section-heading"><h3>Thông tin tài khoản</h3><p>Dùng để đăng nhập và nhận thông báo từ hệ thống.</p></div>
+          <div class="admin-form-grid admin-form-grid--three">
           <div class="form-field">
-            <label>Họ tên</label>
-            <input v-model="form.name" type="text" class="input" />
+            <label for="user-name">Họ tên</label>
+            <input id="user-name" v-model="form.name" type="text" class="input" required />
           </div>
           <div class="form-field">
-            <label>Username</label>
-            <input v-model="form.username" type="text" class="input" :disabled="!!editingId" />
+            <label for="user-username">Tên đăng nhập</label>
+            <input id="user-username" v-model="form.username" type="text" class="input" :disabled="!!editingId" :required="!editingId" />
           </div>
           <div class="form-field">
-            <label>Email</label>
-            <input v-model="form.email" type="email" class="input" />
+            <label for="user-email">Email</label>
+            <input id="user-email" v-model="form.email" type="email" class="input" required />
           </div>
           <div v-if="!editingId" class="form-field">
-            <label>Mật khẩu</label>
-            <input v-model="form.password" type="password" class="input" />
-          </div>
+            <label for="user-password">Mật khẩu ban đầu</label>
+            <input id="user-password" v-model="form.password" type="password" class="input" required />
+          </div></div>
+        </section>
+        <section class="admin-form-section">
+          <div class="admin-form-section-heading"><h3>Vai trò và đơn vị</h3><p>Quyết định quyền thao tác và phạm vi dữ liệu người dùng có thể xem.</p></div>
+          <div class="admin-form-grid">
           <div class="form-field">
-            <label>Vai trò</label>
-            <select v-model="form.role" class="input">
-              <option value="EMPLOYEE">EMPLOYEE</option>
-              <option value="TRAINER">TRAINER</option>
+            <label for="user-role">Vai trò</label>
+            <select id="user-role" v-model="form.role" class="input">
+              <option value="EMPLOYEE">Nhân viên</option>
+              <option value="TRAINER">Trainer</option>
             </select>
           </div>
           <div class="form-field">
-            <label>Siêu thị</label>
-            <select v-model="form.storeId" class="input">
+            <label for="user-store">Siêu thị làm việc</label>
+            <select id="user-store" v-model="form.storeId" class="input">
               <option :value="null">Không thuộc siêu thị</option>
               <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
-          </div>
-        </div>
-        <div class="manage-form-actions">
-          <button class="btn btn-primary" :disabled="saving" @click="submit">{{ editingId ? 'Lưu thay đổi' : 'Lưu người dùng' }}</button>
-          <button class="btn btn-secondary" @click="showForm = false">Huỷ</button>
-        </div>
-      </div>
+            <small class="form-help">Người không thuộc siêu thị sẽ chỉ thấy dữ liệu được phép theo luật phạm vi.</small>
+          </div></div>
+        </section>
+      </FormModal>
 
-      <div v-if="pointsUser" class="card users-points-panel">
-        <h2>Điểm của {{ pointsUser.name }}</h2>
+      <FormModal
+        v-if="pointsUser"
+        size="large"
+        :title="`Lịch sử điểm · ${pointsUser.name}`"
+        description="Theo dõi tổng điểm và các giao dịch đã ghi nhận cho người dùng này."
+        hide-submit
+        @close="pointsUser = null"
+      >
         <p v-if="pointsLoading" class="state-text">Đang tải...</p>
         <template v-else-if="pointsData">
-          <div class="users-points-total">Tổng điểm: <strong>{{ pointsData.totalPoints }}</strong></div>
+          <div class="users-points-total">Tổng điểm hiện tại: <strong>{{ pointsData.totalPoints }}</strong></div>
           <div v-if="pointsData.transactions.length === 0" class="empty-state">Chưa có giao dịch điểm nào.</div>
           <div v-else class="users-points-list">
             <div v-for="t in pointsData.transactions" :key="t.id" class="users-points-row">
@@ -251,10 +276,11 @@ async function viewPoints(u) {
             </div>
           </div>
         </template>
-        <button class="btn btn-secondary btn-sm" @click="pointsUser = null">Đóng</button>
-      </div>
+        <template #footer><button type="button" class="btn btn-secondary" @click="pointsUser = null">Đóng</button></template>
+      </FormModal>
 
       <div class="manage-table-wrap">
+        <div class="admin-panel-heading"><div><h2>Danh sách người dùng</h2><p>Trạng thái tài khoản và quyền đang được cấp.</p></div><span class="admin-panel-count">{{ filteredUsers.length }} người</span></div>
         <div class="users-table-header">
           <div>HỌ TÊN</div><div>EMAIL</div><div>SIÊU THỊ</div><div>VAI TRÒ</div><div>TRẠNG THÁI</div><div>HÀNH ĐỘNG</div>
         </div>

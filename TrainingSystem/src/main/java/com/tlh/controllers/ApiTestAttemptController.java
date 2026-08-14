@@ -75,17 +75,18 @@ public class ApiTestAttemptController {
             @PathVariable(value = "attemptId") long attemptId,
             @RequestBody Map<String, List<Map<String, Object>>> body,
             Principal principal) {
-        TestAttempt existed = this.testAttemptService.getById(attemptId);
-        if (existed == null) {
-            return new ResponseEntity<>("Không tìm thấy lượt làm bài", HttpStatus.NOT_FOUND);
-        }
         User caller = currentUser(principal);
-        if (!existed.getUserId().getId().equals(caller.getId())) {
-            return new ResponseEntity<>("Bạn không có quyền nộp bài làm này", HttpStatus.FORBIDDEN);
-        }
         List<Map<String, Object>> answers = body.get("answers");
-        Map<String, Object> result = this.testAttemptService.submit(attemptId, answers);
+        Map<String, Object> result = this.testAttemptService.submit(attemptId, answers, caller);
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PostMapping("/attempts/{attemptId}/abandon")
+    public ResponseEntity<?> abandon(
+            @PathVariable(value = "attemptId") long attemptId,
+            Principal principal) {
+        User caller = currentUser(principal);
+        return new ResponseEntity<>(this.testAttemptService.abandon(attemptId, caller), HttpStatus.OK);
     }
     
     @GetMapping("/attempts/{id}")

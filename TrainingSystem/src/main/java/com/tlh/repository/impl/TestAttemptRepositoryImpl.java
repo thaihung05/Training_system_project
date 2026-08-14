@@ -7,6 +7,7 @@ package com.tlh.repository.impl;
 import com.tlh.pojo.AttemptAnswer;
 import com.tlh.pojo.TestAttempt;
 import com.tlh.repository.TestAttemptRepository;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -51,6 +52,12 @@ public class TestAttemptRepositoryImpl implements TestAttemptRepository{
     public TestAttempt getById(long id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.get(TestAttempt.class, id);
+    }
+
+    @Override
+    public TestAttempt getByIdForUpdate(long id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.find(TestAttempt.class, id, LockModeType.PESSIMISTIC_WRITE);
     }
 
     @Override

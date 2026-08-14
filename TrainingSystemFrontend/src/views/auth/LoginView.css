@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
-  background: radial-gradient(ellipse 900px 520px at 50% -8%, var(--color-accent-light), transparent 65%);
+  background: var(--color-bg);
 }
 
 .login-panel {
@@ -12,8 +12,9 @@
   max-width: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
+  border-top: 4px solid #ffd400;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
   padding: 40px 36px;
   display: flex;
   flex-direction: column;
@@ -25,8 +26,8 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
-  background: var(--color-accent);
-  color: #fff;
+  background: #ffd400;
+  color: #005796;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 18px;

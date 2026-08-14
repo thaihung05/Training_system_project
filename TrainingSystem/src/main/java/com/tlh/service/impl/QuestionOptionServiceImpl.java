@@ -7,6 +7,7 @@ package com.tlh.service.impl;
 import com.tlh.pojo.Question;
 import com.tlh.pojo.QuestionOption;
 import com.tlh.pojo.Test;
+import com.tlh.repository.EnrollmentRepository;
 import com.tlh.repository.QuestionOptionRepository;
 import com.tlh.repository.TestAttemptRepository;
 import com.tlh.repository.TestRepository;
@@ -14,12 +15,14 @@ import com.tlh.service.QuestionOptionService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class QuestionOptionServiceImpl implements QuestionOptionService {
 
     @Autowired
@@ -31,7 +34,18 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
     @Autowired
     private TestAttemptRepository testAttemptRepo;
 
+    @Autowired
+    private EnrollmentRepository enrollmentRepo;
+
     private void assertTestNotLocked(long testId) {
+        Test test = this.testRepo.getById(testId);
+        if (test == null) {
+            throw new IllegalArgumentException("Không tìm thấy bài kiểm tra");
+        }
+        if (this.enrollmentRepo.hasEnrollments(test.getCourseId().getId())) {
+            throw new IllegalArgumentException(
+                    "Khóa học đã có người ghi danh, không thể thay đổi đáp án. Hãy tạo khóa học mới nếu cần cập nhật nội dung.");
+        }
         if (this.testAttemptRepo.hasAttempts(testId)) {
             throw new IllegalArgumentException(
                     "Bài kiểm tra này đã có người làm bài, không thể thay đổi đáp án. Hãy tạo bài kiểm tra mới nếu cần thay đổi nội dung.");

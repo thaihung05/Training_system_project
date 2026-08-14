@@ -28,9 +28,9 @@ watch(() => route.fullPath, refreshUnreadCount)
 const navItems = computed(() => {
   if (auth.isTrainer) {
     return [
-      { name: 'home', label: 'Trang chủ' },
-      { name: 'courses', label: 'Khoá học' },
-      { name: 'manage-courses', label: 'Quản lý' },
+      { name: 'home', label: 'Tổng quan' },
+      { name: 'courses', label: 'Danh mục' },
+      { name: 'manage-courses', label: 'Khóa học phụ trách' },
       { name: 'chat-queue', label: 'Hỏi & Đáp' },
     ]
   }
@@ -38,11 +38,14 @@ const navItems = computed(() => {
   const items = [
     { name: 'home', label: 'Trang chủ' },
     { name: 'my-courses', label: 'Khoá học của tôi' },
+    { name: 'my-certificates', label: 'Chứng chỉ' },
     { name: 'leaderboard', label: 'Thành tích' },
     { name: 'my-attempts', label: 'Lịch sử làm bài' },
     { name: 'my-chat-history', label: 'Câu hỏi của tôi' },
   ]
   if (auth.isAdmin) {
+    const certificateIndex = items.findIndex((item) => item.name === 'my-certificates')
+    if (certificateIndex >= 0) items.splice(certificateIndex, 1)
     items.splice(1, 0, { name: 'courses', label: 'Khoá học' })
     items.push({ name: 'manage-courses', label: 'Quản lý' })
     items.push({ name: 'chat-queue', label: 'Hỏi & Đáp' })
@@ -50,6 +53,13 @@ const navItems = computed(() => {
   }
   return items
 })
+
+const brandSub = computed(() => (auth.isTrainer ? 'Không gian giảng viên' : 'Đào tạo nội bộ'))
+
+function isNavActive(item) {
+  if (item.name === 'manage-courses') return route.path.startsWith('/manage/courses')
+  return route.name === item.name
+}
 
 const initials = computed(() => {
   const name = auth.user?.name || ''
@@ -63,12 +73,12 @@ function handleLogout() {
 </script>
 
 <template>
-  <div class="navbar">
+  <div class="navbar" :class="{ 'navbar--trainer': auth.isTrainer }">
     <RouterLink to="/" class="navbar-brand">
       <span class="navbar-mark">TLH</span>
       <span class="navbar-brand-text">
         <span class="navbar-brand-name">Training System</span>
-        <span class="navbar-brand-sub">Đào tạo nội bộ</span>
+        <span class="navbar-brand-sub">{{ brandSub }}</span>
       </span>
     </RouterLink>
 
@@ -78,13 +88,14 @@ function handleLogout() {
         :key="item.name"
         :to="{ name: item.name }"
         class="navbar-link"
-        :class="{ 'navbar-link--active': route.name === item.name }"
+        :class="{ 'navbar-link--active': isNavActive(item) }"
       >
         {{ item.label }}
       </RouterLink>
     </nav>
 
     <div class="navbar-actions">
+      <span v-if="auth.isTrainer" class="navbar-role-pill">Trainer</span>
       <RouterLink to="/notifications" class="navbar-bell">
         <Bell :size="17" />
         <span v-if="unreadCount > 0" class="navbar-bell-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>

@@ -16,4 +16,5 @@ public interface TestService {
     Test getById(long id);
     Test addTest(Test t);
     Test updateTest(Test t);
+    void validateForActivation(long testId);
 }

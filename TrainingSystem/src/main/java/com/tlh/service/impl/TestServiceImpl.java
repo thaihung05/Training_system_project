@@ -7,6 +7,8 @@ package com.tlh.service.impl;
 import com.tlh.pojo.Question;
 import com.tlh.pojo.QuestionOption;
 import com.tlh.pojo.Test;
+import com.tlh.repository.EnrollmentRepository;
+import com.tlh.repository.TestAttemptRepository;
 import com.tlh.repository.TestRepository;
 import com.tlh.service.QuestionOptionService;
 import com.tlh.service.QuestionService;
@@ -14,12 +16,14 @@ import com.tlh.service.TestService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class TestServiceImpl implements TestService{
 
     @Autowired
@@ -30,6 +34,12 @@ public class TestServiceImpl implements TestService{
 
     @Autowired
     private QuestionOptionService questionOptionService;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepo;
+
+    @Autowired
+    private TestAttemptRepository testAttemptRepo;
     
     private void validateFields(Test t){
         if (t.getTitle() == null || t.getTitle().trim().isEmpty())
@@ -43,7 +53,8 @@ public class TestServiceImpl implements TestService{
             throw new IllegalArgumentException("Số lần làm bài tối đa phải từ 1 trở lên");
     }
 
-    private void validate(long testId){
+    @Override
+    public void validateForActivation(long testId){
         List<Question> activeQuestions = this.questionService.getActiveByTest(testId);
         if (activeQuestions.isEmpty())
             throw new IllegalArgumentException("Bài kiểm tra chưa có câu hỏi nào đang hoạt động, không thể kích hoạt");
@@ -73,6 +84,12 @@ public class TestServiceImpl implements TestService{
     @Override
     public Test addTest(Test t) {
         validateFields(t);
+        if (t.getCourseId() == null || t.getCourseId().getId() == null) {
+            throw new IllegalArgumentException("Bài kiểm tra phải thuộc một khóa học");
+        }
+        if (this.enrollmentRepo.hasEnrollments(t.getCourseId().getId())) {
+            throw new IllegalArgumentException("Khóa học đã có người ghi danh, không thể thêm bài kiểm tra. Hãy tạo khóa học mới nếu cần thay đổi nội dung.");
+        }
         t.setIsActive(false);
         this.testRepo.saveOrUpdate(t);
         return t;
@@ -81,8 +98,26 @@ public class TestServiceImpl implements TestService{
     @Override
     public Test updateTest(Test t) {
         validateFields(t);
-        if (t.getIsActive())
-            validate(t.getId());
+        Test existing = this.testRepo.getById(t.getId());
+        if (existing == null) {
+            throw new IllegalArgumentException("Không tìm thấy bài kiểm tra");
+        }
+
+        boolean passScoreChanged = existing.getPassScore() != t.getPassScore();
+        boolean maxAttemptsChanged = existing.getMaxAttempts() != t.getMaxAttempts();
+        boolean activeChanged = existing.getIsActive() != t.getIsActive();
+
+        if (this.testAttemptRepo.hasAttempts(t.getId())
+                && (passScoreChanged || maxAttemptsChanged || activeChanged)) {
+            throw new IllegalArgumentException("Bài kiểm tra đã có lượt làm bài, không thể đổi điểm đạt, số lần làm hoặc trạng thái.");
+        }
+        if (this.enrollmentRepo.hasEnrollments(existing.getCourseId().getId())
+                && (passScoreChanged || maxAttemptsChanged || activeChanged)) {
+            throw new IllegalArgumentException("Khóa học đã có người ghi danh, không thể thay đổi cấu hình bài kiểm tra.");
+        }
+        if (t.getIsActive()) {
+            validateForActivation(t.getId());
+        }
         this.testRepo.saveOrUpdate(t);
         return t;
     }

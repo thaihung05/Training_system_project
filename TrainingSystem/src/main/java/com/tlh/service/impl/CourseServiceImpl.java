@@ -10,21 +10,30 @@ import com.tlh.pojo.Region;
 import com.tlh.pojo.Store;
 import com.tlh.pojo.User;
 import com.tlh.repository.CourseRepository;
+import com.tlh.repository.EnrollmentRepository;
+import com.tlh.repository.LessonRepository;
 import com.tlh.service.ChainService;
 import com.tlh.service.CourseService;
 import com.tlh.service.EnrollmentService;
+import com.tlh.service.NotificationService;
 import com.tlh.service.RegionService;
+import com.tlh.service.TestService;
+import com.tlh.utils.UrlUtils;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class CourseServiceImpl implements CourseService {
 
     @Autowired
@@ -39,10 +48,25 @@ public class CourseServiceImpl implements CourseService {
     @Autowired
     private EnrollmentService enrollmentService;
 
+    @Autowired
+    private EnrollmentRepository enrollmentRepo;
+
+    @Autowired
+    private LessonRepository lessonRepo;
+
+    @Autowired
+    private TestService testService;
+
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public List<Course> getCourses(String kw, Long chainId, Long regionId, User caller, Integer page, Integer size, Boolean activeOnly) {
         if (caller != null && "EMPLOYEE".equals(caller.getRole())) {
             return this.courseRepo.getCoursesForEmployee(kw, caller.getId(), page, size);
+        }
+        if (caller != null && "TRAINER".equals(caller.getRole())) {
+            return this.courseRepo.getCoursesForTrainer(kw, chainId, regionId, caller.getStoreId(), page, size);
         }
         Map<String, String> params = new HashMap<>();
         if (kw != null) {
@@ -84,6 +108,10 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course addOrUpdate(Course c) {
+        Course existing = c.getId() == null ? null : this.courseRepo.getCourseByIdForUpdate(c.getId());
+        if (c.getId() != null && existing == null) {
+            throw new IllegalArgumentException("Không tìm thấy khóa học");
+        }
         if (c.getTitle() == null || c.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Tên khoá học không được để trống");
         }
@@ -92,13 +120,15 @@ public class CourseServiceImpl implements CourseService {
         }
         c.setTitle(c.getTitle().trim());
 
-        if (c.getImageUrl() != null) {
-            String trimmed = c.getImageUrl().trim();
-            if (trimmed.length() > 500) {
-                throw new IllegalArgumentException("Link ảnh tối đa 500 ký tự");
+        if (c.getDescription() != null) {
+            String description = c.getDescription().trim();
+            if (description.length() > 65535) {
+                throw new IllegalArgumentException("Mô tả khóa học quá dài");
             }
-            c.setImageUrl(trimmed.isEmpty() ? null : trimmed);
+            c.setDescription(description.isEmpty() ? null : description);
         }
+
+        c.setImageUrl(UrlUtils.normalizeHttpUrl(c.getImageUrl(), "Link ảnh", 500, false));
 
         if (c.getChains() != null) {
             for (Chain ch : c.getChains()) {
@@ -115,13 +145,85 @@ public class CourseServiceImpl implements CourseService {
             }
         }
 
+        if (existing == null) {
+            c.setIsActive(false);
+        } else {
+            if (this.enrollmentRepo.hasEnrollments(c.getId())
+                    && (!sameChainScope(existing, c) || !sameRegionScope(existing, c))) {
+                throw new IllegalArgumentException("Khóa học đã có người ghi danh, không thể thay đổi phạm vi Chuỗi/Vùng.");
+            }
+            if (c.getIsActive()) {
+                validateReadyForEnrollment(c.getId());
+            }
+        }
+
         this.courseRepo.saveOrUpdate(c);
         return c;
     }
 
     @Override
+    public void validateReadyForEnrollment(long courseId) {
+        boolean hasLesson = !this.lessonRepo.getLessonByCourse(courseId).isEmpty();
+        boolean hasActiveTest = false;
+        for (com.tlh.pojo.Test test : this.testService.getByCourse(courseId)) {
+            if (test.getIsActive()) {
+                this.testService.validateForActivation(test.getId());
+                hasActiveTest = true;
+            }
+        }
+        if (!hasLesson && !hasActiveTest) {
+            throw new IllegalArgumentException("Khóa học chưa có bài học hoặc bài kiểm tra đang hoạt động, không thể mở.");
+        }
+    }
+
+    private boolean sameChainScope(Course first, Course second) {
+        Set<Long> firstIds = new HashSet<>();
+        Set<Long> secondIds = new HashSet<>();
+        if (first.getChains() != null) {
+            for (Chain chain : first.getChains()) {
+                firstIds.add(chain.getId());
+            }
+        }
+        if (second.getChains() != null) {
+            for (Chain chain : second.getChains()) {
+                secondIds.add(chain.getId());
+            }
+        }
+        return firstIds.equals(secondIds);
+    }
+
+    private boolean sameRegionScope(Course first, Course second) {
+        Set<Long> firstIds = new HashSet<>();
+        Set<Long> secondIds = new HashSet<>();
+        if (first.getRegions() != null) {
+            for (Region region : first.getRegions()) {
+                firstIds.add(region.getId());
+            }
+        }
+        if (second.getRegions() != null) {
+            for (Region region : second.getRegions()) {
+                secondIds.add(region.getId());
+            }
+        }
+        return firstIds.equals(secondIds);
+    }
+
+    @Override
     public void deactivateCourse(long id) {
+        Course course = this.courseRepo.getCourseByIdForUpdate(id);
+        if (course == null || !course.getIsActive()) {
+            return;
+        }
         this.courseRepo.deactivateCourse(id);
+        for (com.tlh.pojo.Enrollment enrollment : this.enrollmentRepo.getByCourse(id, null, null)) {
+            if (enrollment.getCompletedAt() == null) {
+                this.notificationService.create(
+                        enrollment.getUserId().getId(),
+                        "Khóa học đã được ẩn",
+                        "Khóa học " + course.getTitle() + " đã được ẩn khỏi danh mục. Ghi danh của bạn vẫn được giữ để tiếp tục học.",
+                        "/courses/" + id);
+            }
+        }
     }
 
     @Override
@@ -149,7 +251,7 @@ public class CourseServiceImpl implements CourseService {
             return this.enrollmentService.isEnrolled(course.getId(), caller.getId());
         }
         if ("TRAINER".equals(caller.getRole())) {
-            return this.isStoreInCourseScope(caller.getStoreId(), course);
+            return course.getIsActive() && this.isStoreInCourseScope(caller.getStoreId(), course);
         }
         return false;
     }
@@ -161,6 +263,7 @@ public class CourseServiceImpl implements CourseService {
         }
         return caller != null && course != null
                 && "TRAINER".equals(caller.getRole())
+                && course.getIsActive()
                 && course.getChains().isEmpty() && course.getRegions().isEmpty();
     }
 

@@ -17,7 +17,8 @@ public interface TestAttemptService {
     TestAttempt startAttempt(long testId, User caller);
     List<Map<String, Object>> getQuestionsForAttempt(long testId);
     boolean hasOpenAttempt(long testId, long userId);
-    Map<String, Object> submit(long attemptId, List<Map<String, Object>> answers);
+    Map<String, Object> submit(long attemptId, List<Map<String, Object>> answers, User caller);
+    TestAttempt abandon(long attemptId, User caller);
     Map<String, Object> getAttemptDetail(long attemptId);
     TestAttempt getById(long id);
     List<TestAttempt> getMyAttempts(long userId, Long testId, Integer page, Integer size);

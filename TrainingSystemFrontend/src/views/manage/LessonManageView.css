@@ -6,6 +6,10 @@
   border-top: 1px solid var(--color-border);
 }
 
+.lessonmg-list-panel {
+  width: 100%;
+}
+
 .manage-table-wrap .lessonmg-row:first-child {
   border-top: none;
 }
@@ -53,4 +57,64 @@
   font-size: 12px;
   color: var(--color-success);
   margin-top: 4px;
+}
+
+.lessonmg-form-section + .lessonmg-form-section {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-border);
+}
+
+.lessonmg-section-heading {
+  margin-bottom: 16px;
+}
+
+.lessonmg-section-heading h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.lessonmg-section-heading p {
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.lessonmg-file-picker {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px dashed #aeb9c4;
+  border-radius: var(--radius-md);
+  background: #f8f9fa;
+  color: var(--color-accent);
+}
+
+.lessonmg-file-picker strong,
+.lessonmg-file-picker span {
+  display: block;
+}
+
+.lessonmg-file-picker strong {
+  color: var(--color-heading);
+  font-size: 13px;
+}
+
+.lessonmg-file-picker span {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 11.5px;
+}
+
+@media (max-width: 620px) {
+  .lessonmg-file-picker {
+    grid-template-columns: auto 1fr;
+  }
+
+  .lessonmg-file-picker .btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
 }

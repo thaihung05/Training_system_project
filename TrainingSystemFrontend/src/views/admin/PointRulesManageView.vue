@@ -2,9 +2,10 @@
 import { ref } from 'vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
+import FormModal from '@/components/common/FormModal.vue'
 import pointRuleService from '@/api/pointRuleService'
 import { confirmDialog } from '@/utils/alerts'
-import { Pencil, Trash2 } from '@lucide/vue'
+import { Pencil, Plus, Trash2 } from '@lucide/vue'
 
 const { data: rules, loading, refresh } = useAsyncData(() => pointRuleService.getAll())
 
@@ -26,6 +27,11 @@ function openEditForm(r) {
   form.value = { actionType: r.actionType, points: r.points, description: r.description || '' }
   errorMsg.value = ''
   showForm.value = true
+}
+
+function closeForm() {
+  showForm.value = false
+  errorMsg.value = ''
 }
 
 async function submit() {
@@ -63,32 +69,40 @@ async function remove(r) {
     <AdminSidebar />
     <div class="admin-content">
       <div class="manage-header">
-        <h1>Quy tắc tính điểm</h1>
-        <button class="btn btn-primary" @click="openCreateForm">+ Thêm quy tắc</button>
+        <div><h1>Quy tắc tính điểm</h1><p>Cấu hình số điểm hệ thống trao cho từng hành động học tập.</p></div>
+        <button class="btn btn-primary" @click="openCreateForm"><Plus :size="16" /> Thêm quy tắc</button>
       </div>
 
-      <div v-if="showForm" class="card inline-form">
-        <h2>{{ editingId ? 'Sửa quy tắc' : 'Thêm quy tắc mới' }}</h2>
+      <FormModal
+        v-if="showForm"
+        :title="editingId ? 'Chỉnh sửa quy tắc điểm' : 'Thêm quy tắc điểm'"
+        description="Mã hành động phải khớp với sự kiện mà hệ thống đang phát sinh."
+        :submit-label="editingId ? 'Lưu thay đổi' : 'Thêm quy tắc'"
+        :saving="saving"
+        :disabled="!form.actionType.trim() || Number(form.points) < 0"
+        @close="closeForm"
+        @submit="submit"
+      >
         <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
-        <div class="form-field">
-          <label>Loại hành động</label>
-          <input v-model="form.actionType" type="text" class="input" placeholder="VD: TEST_PASSED" />
+        <div class="admin-form-grid">
+          <div class="form-field">
+            <label for="rule-action">Mã hành động</label>
+            <input id="rule-action" v-model="form.actionType" type="text" class="input" placeholder="Ví dụ: TEST_PASSED" required />
+          </div>
+          <div class="form-field">
+            <label for="rule-points">Số điểm</label>
+            <input id="rule-points" v-model="form.points" type="number" min="0" class="input" required />
+            <small class="form-help">Chỉ áp dụng cho giao dịch mới, không tính lại lịch sử điểm.</small>
+          </div>
+          <div class="form-field admin-form-span">
+            <label for="rule-description">Mô tả</label>
+            <textarea id="rule-description" v-model="form.description" class="input" rows="3" placeholder="Giải thích khi nào điểm được trao."></textarea>
+          </div>
         </div>
-        <div class="form-field">
-          <label>Điểm</label>
-          <input v-model="form.points" type="number" class="input" />
-        </div>
-        <div class="form-field">
-          <label>Mô tả</label>
-          <textarea v-model="form.description" class="input" rows="2" placeholder="Mô tả ngắn gọn..."></textarea>
-        </div>
-        <div class="manage-form-actions">
-          <button class="btn btn-primary" :disabled="saving" @click="submit">Lưu</button>
-          <button class="btn btn-secondary" @click="showForm = false">Huỷ</button>
-        </div>
-      </div>
+      </FormModal>
 
       <div class="manage-table-wrap">
+        <div class="admin-panel-heading"><div><h2>Danh sách quy tắc</h2><p>Các hành động đang được quy đổi thành điểm thưởng.</p></div><span class="admin-panel-count">{{ rules?.length ?? 0 }} quy tắc</span></div>
         <div class="rules-table-header">
           <div>LOẠI HÀNH ĐỘNG</div><div>ĐIỂM</div><div>MÔ TẢ</div><div>HÀNH ĐỘNG</div>
         </div>

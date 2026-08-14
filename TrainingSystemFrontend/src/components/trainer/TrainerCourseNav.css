@@ -1,0 +1,140 @@
+.trainer-course-hero {
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 1px solid #005796;
+  border-top: 4px solid #ffd400;
+  border-radius: 8px;
+  background: #0068b3;
+  color: #fff;
+}
+
+.trainer-course-hero__top,
+.trainer-course-hero__body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trainer-course-hero__top {
+  padding: 12px 18px 0;
+}
+
+.trainer-course-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.trainer-course-back:hover {
+  color: #ffd400;
+}
+
+.trainer-course-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(0, 64, 111, 0.38);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.trainer-course-status::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffd400;
+  content: '';
+}
+
+.trainer-course-status--muted {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.trainer-course-status--muted::before {
+  background: #cbd5df;
+}
+
+.trainer-course-hero__body {
+  min-height: 76px;
+  padding: 10px 18px 16px;
+}
+
+.trainer-course-hero h1 {
+  margin: 0 0 3px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.trainer-course-hero p {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11.5px;
+}
+
+.trainer-course-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(110px, 1fr));
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  background: #005b9f;
+}
+
+.trainer-course-steps--loading {
+  min-height: 46px;
+}
+
+.trainer-course-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 46px;
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.trainer-course-step:last-child {
+  border-right: 0;
+}
+
+.trainer-course-step:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.trainer-course-step--active {
+  background: #fff;
+  color: #005b9f;
+}
+
+.trainer-course-step--active::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #ffd400;
+  content: '';
+}
+
+@media (max-width: 720px) {
+  .trainer-course-steps {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .trainer-course-step {
+    min-width: 112px;
+  }
+}

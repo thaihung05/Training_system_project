@@ -39,6 +39,22 @@
   padding: 6px 0;
 }
 
-.attempt-submit {
-  width: 100%;
+.attempt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.attempt-actions .btn {
+  min-width: 170px;
+}
+
+@media (max-width: 560px) {
+  .attempt-actions {
+    flex-direction: column-reverse;
+  }
+
+  .attempt-actions .btn {
+    width: 100%;
+  }
 }

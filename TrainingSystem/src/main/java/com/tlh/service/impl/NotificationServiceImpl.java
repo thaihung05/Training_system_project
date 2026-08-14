@@ -11,12 +11,14 @@ import com.tlh.service.NotificationService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class NotificationServiceImpl implements NotificationService{
 
     @Autowired
@@ -56,19 +58,15 @@ public class NotificationServiceImpl implements NotificationService{
 
     @Override
     public void create(Long userId, String title, String content, String link) {
-        try {
-            if (userId == null)
-                return;
-            Notification n = new Notification();
-            n.setUserId(new User(userId));
-            n.setTitle(title);
-            n.setContent(content);
-            n.setLink(link);
-            n.setIsRead(false);
-            this.notificationRepo.saveOrUpdate(n);
-        } catch(Exception e) {
-            System.err.println(e.getMessage());
-        }
+        if (userId == null)
+            return;
+        Notification n = new Notification();
+        n.setUserId(new User(userId));
+        n.setTitle(title);
+        n.setContent(content);
+        n.setLink(link);
+        n.setIsRead(false);
+        this.notificationRepo.saveOrUpdate(n);
     }
     
 }

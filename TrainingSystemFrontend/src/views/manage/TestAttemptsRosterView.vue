@@ -1,18 +1,20 @@
 <script setup>
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
+import courseService from '@/api/courseService'
 import testService from '@/api/testService'
 import testAttemptService from '@/api/testAttemptService'
 import { formatDateTime } from '@/utils/formatDate'
-import { ChevronLeft } from '@lucide/vue'
+import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import { BarChart3 } from '@lucide/vue'
 
 const route = useRoute()
-const router = useRouter()
 const courseId = Number(route.params.courseId)
 const testId = Number(route.params.testId)
 
+const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: tests } = useAsyncData(() => testService.getByCourse(courseId))
 const currentTest = computed(() => (tests.value || []).find((t) => t.id === testId) || null)
 
@@ -28,18 +30,20 @@ function formatDate(ms) {
 </script>
 
 <template>
-  <div class="page">
-    <div class="detail-header">
-      <button class="back-btn" @click="router.push({ name: 'manage-tests', params: { courseId } })">
-        <ChevronLeft :size="18" />
-      </button>
-      <div class="detail-heading">
-        <h1>Kết quả — {{ currentTest?.title }}</h1>
-        <div class="detail-meta">{{ attempts?.length ?? 0 }} lượt làm bài</div>
+  <div class="page trainer-page">
+    <TrainerCourseNav :course="course" active="tests" />
+    <div class="trainer-context-header">
+      <div>
+        <h2>{{ currentTest?.title || 'Đang tải bài kiểm tra…' }}</h2>
+        <p>{{ attempts?.length ?? 0 }} lượt làm bài trong trang hiện tại.</p>
       </div>
     </div>
 
-    <div class="manage-table-wrap">
+    <div class="manage-table-wrap trainer-panel">
+      <div class="trainer-panel-heading">
+        <div><h2>Kết quả nhân viên</h2><p>Điểm, trạng thái đạt và thời gian nộp.</p></div>
+        <BarChart3 :size="19" />
+      </div>
       <div class="attempts-table-header">
         <div>NHÂN VIÊN</div>
         <div>LẦN</div>

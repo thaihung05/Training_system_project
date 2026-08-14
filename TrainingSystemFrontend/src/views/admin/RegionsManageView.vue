@@ -2,10 +2,11 @@
 import { ref } from 'vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
+import FormModal from '@/components/common/FormModal.vue'
 import regionService from '@/api/regionService'
 import storeService from '@/api/storeService'
 import { confirmDialog, showError } from '@/utils/alerts'
-import { Pencil, Trash2 } from '@lucide/vue'
+import { Pencil, Plus, Trash2 } from '@lucide/vue'
 
 const { data: regions, loading, refresh } = useAsyncData(() => regionService.getAll())
 const { data: stores } = useAsyncData(() => storeService.getAll())
@@ -32,6 +33,11 @@ function openEditForm(r) {
   form.value = { name: r.name }
   errorMsg.value = ''
   showForm.value = true
+}
+
+function closeForm() {
+  showForm.value = false
+  errorMsg.value = ''
 }
 
 async function submit() {
@@ -68,40 +74,42 @@ async function remove(r) {
     <AdminSidebar />
     <div class="admin-content">
       <div class="manage-header">
-        <h1>Vùng</h1>
-        <button class="btn btn-primary" @click="openCreateForm">+ Thêm vùng</button>
+        <div><h1>Vùng quản lý</h1><p>Thiết lập các khu vực dùng để phân quyền, chọn phạm vi và lọc siêu thị.</p></div>
+        <button class="btn btn-primary" @click="openCreateForm"><Plus :size="16" /> Thêm vùng</button>
       </div>
 
-      <div v-if="showForm" class="card inline-form">
-        <h2>{{ editingId ? 'Sửa vùng' : 'Thêm vùng mới' }}</h2>
+      <FormModal
+        v-if="showForm"
+        size="small"
+        :title="editingId ? 'Chỉnh sửa vùng' : 'Thêm vùng mới'"
+        description="Tên vùng nên thống nhất với cách doanh nghiệp đang phân chia khu vực vận hành."
+        :submit-label="editingId ? 'Lưu thay đổi' : 'Thêm vùng'"
+        :saving="saving"
+        :disabled="!form.name.trim()"
+        @close="closeForm"
+        @submit="submit"
+      >
         <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
         <div class="form-field">
-          <label>Tên vùng</label>
-          <input v-model="form.name" type="text" class="input" placeholder="VD: Hồ Chí Minh" />
+          <label for="region-name">Tên vùng</label>
+          <input id="region-name" v-model="form.name" type="text" class="input" placeholder="Ví dụ: Thành phố Hồ Chí Minh" required />
         </div>
-        <div class="manage-form-actions">
-          <button class="btn btn-primary" :disabled="saving" @click="submit">Lưu</button>
-          <button class="btn btn-secondary" @click="showForm = false">Huỷ</button>
-        </div>
-      </div>
+      </FormModal>
 
-      <p v-if="loading" class="state-text">Đang tải...</p>
-      <div v-else-if="regions.length === 0" class="empty-state">Chưa có vùng nào.</div>
-      <div v-else class="dept-grid">
-        <div v-for="r in regions" :key="r.id" class="card dept-card">
-          <div class="dept-name">{{ r.name }}</div>
-          <div class="dept-stats">
-            <div>
-              <div class="dept-stat-label">Siêu thị</div>
-              <div class="dept-stat-value">{{ storeCountFor(r.id) }}</div>
-            </div>
-          </div>
-          <div class="row-action-group dept-actions">
+      <section class="admin-data-panel">
+        <div class="admin-panel-heading"><div><h2>Danh sách vùng</h2><p>Số siêu thị đang hoạt động trong từng vùng.</p></div><span class="admin-panel-count">{{ regions?.length ?? 0 }} vùng</span></div>
+        <div class="admin-org-table-header"><div>Tên vùng</div><div>Siêu thị</div><div>Hành động</div></div>
+        <p v-if="loading" class="state-text">Đang tải...</p>
+        <div v-else-if="regions.length === 0" class="empty-state">Chưa có vùng nào. Hãy thêm vùng trước khi tạo siêu thị.</div>
+        <div v-for="r in regions" v-else :key="r.id" class="admin-org-row">
+          <div><div class="admin-org-name">{{ r.name }}</div><div class="admin-org-detail">Mã hệ thống #{{ r.id }}</div></div>
+          <div class="admin-org-value">{{ storeCountFor(r.id) }}</div>
+          <div class="row-action-group">
             <button class="row-action-btn" @click="openEditForm(r)"><Pencil :size="13" /> Sửa</button>
             <button class="row-action-btn row-action-btn--danger" @click="remove(r)"><Trash2 :size="13" /> Xoá</button>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>

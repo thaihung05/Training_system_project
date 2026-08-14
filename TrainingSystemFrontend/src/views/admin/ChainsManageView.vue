@@ -2,10 +2,11 @@
 import { ref } from 'vue'
 import { useAsyncData } from '@/composables/useAsyncData'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
+import FormModal from '@/components/common/FormModal.vue'
 import chainService from '@/api/chainService'
 import storeService from '@/api/storeService'
 import { confirmDialog, showError } from '@/utils/alerts'
-import { Pencil, Trash2 } from '@lucide/vue'
+import { Pencil, Plus, Trash2 } from '@lucide/vue'
 
 const { data: chains, loading, refresh } = useAsyncData(() => chainService.getAll())
 const { data: stores } = useAsyncData(() => storeService.getAll())
@@ -32,6 +33,11 @@ function openEditForm(c) {
   form.value = { name: c.name }
   errorMsg.value = ''
   showForm.value = true
+}
+
+function closeForm() {
+  showForm.value = false
+  errorMsg.value = ''
 }
 
 async function submit() {
@@ -68,40 +74,42 @@ async function remove(c) {
     <AdminSidebar />
     <div class="admin-content">
       <div class="manage-header">
-        <h1>Chuỗi</h1>
-        <button class="btn btn-primary" @click="openCreateForm">+ Thêm chuỗi</button>
+        <div><h1>Chuỗi bán lẻ</h1><p>Quản lý các thương hiệu hoặc chuỗi đang vận hành trong hệ thống đào tạo.</p></div>
+        <button class="btn btn-primary" @click="openCreateForm"><Plus :size="16" /> Thêm chuỗi</button>
       </div>
 
-      <div v-if="showForm" class="card inline-form">
-        <h2>{{ editingId ? 'Sửa chuỗi' : 'Thêm chuỗi mới' }}</h2>
+      <FormModal
+        v-if="showForm"
+        size="small"
+        :title="editingId ? 'Chỉnh sửa chuỗi' : 'Thêm chuỗi mới'"
+        description="Tên chuỗi được dùng khi phân phạm vi khóa học và lọc siêu thị."
+        :submit-label="editingId ? 'Lưu thay đổi' : 'Thêm chuỗi'"
+        :saving="saving"
+        :disabled="!form.name.trim()"
+        @close="closeForm"
+        @submit="submit"
+      >
         <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
         <div class="form-field">
-          <label>Tên chuỗi</label>
-          <input v-model="form.name" type="text" class="input" placeholder="VD: Điện Máy Xanh" />
+          <label for="chain-name">Tên chuỗi</label>
+          <input id="chain-name" v-model="form.name" type="text" class="input" placeholder="Ví dụ: Điện Máy Xanh" required />
         </div>
-        <div class="manage-form-actions">
-          <button class="btn btn-primary" :disabled="saving" @click="submit">Lưu</button>
-          <button class="btn btn-secondary" @click="showForm = false">Huỷ</button>
-        </div>
-      </div>
+      </FormModal>
 
-      <p v-if="loading" class="state-text">Đang tải...</p>
-      <div v-else-if="chains.length === 0" class="empty-state">Chưa có chuỗi nào.</div>
-      <div v-else class="dept-grid">
-        <div v-for="c in chains" :key="c.id" class="card dept-card">
-          <div class="dept-name">{{ c.name }}</div>
-          <div class="dept-stats">
-            <div>
-              <div class="dept-stat-label">Siêu thị</div>
-              <div class="dept-stat-value">{{ storeCountFor(c.id) }}</div>
-            </div>
-          </div>
-          <div class="row-action-group dept-actions">
+      <section class="admin-data-panel">
+        <div class="admin-panel-heading"><div><h2>Danh sách chuỗi</h2><p>Số siêu thị đang gắn với từng chuỗi.</p></div><span class="admin-panel-count">{{ chains?.length ?? 0 }} chuỗi</span></div>
+        <div class="admin-org-table-header"><div>Tên chuỗi</div><div>Siêu thị</div><div>Hành động</div></div>
+        <p v-if="loading" class="state-text">Đang tải...</p>
+        <div v-else-if="chains.length === 0" class="empty-state">Chưa có chuỗi nào. Hãy thêm chuỗi trước khi tạo siêu thị.</div>
+        <div v-for="c in chains" v-else :key="c.id" class="admin-org-row">
+          <div><div class="admin-org-name">{{ c.name }}</div><div class="admin-org-detail">Mã hệ thống #{{ c.id }}</div></div>
+          <div class="admin-org-value">{{ storeCountFor(c.id) }}</div>
+          <div class="row-action-group">
             <button class="row-action-btn" @click="openEditForm(c)"><Pencil :size="13" /> Sửa</button>
             <button class="row-action-btn row-action-btn--danger" @click="remove(c)"><Trash2 :size="13" /> Xoá</button>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>

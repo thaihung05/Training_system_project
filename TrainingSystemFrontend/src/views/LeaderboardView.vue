@@ -102,7 +102,7 @@ function initials(name) {
                 <div class="cert-title">{{ c.courseId.title }}</div>
                 <div class="cert-date">Cấp ngày {{ formatDate(c.issuedAt) }}</div>
               </div>
-              <a v-if="c.pdfUrl" :href="c.pdfUrl" target="_blank" class="cert-download">Tải về</a>
+              <a v-if="c.pdfUrl" :href="c.pdfUrl" target="_blank" rel="noopener" class="cert-download">Tải về</a>
               <span v-else class="cert-pending">Đang chờ file</span>
             </div>
           </div>

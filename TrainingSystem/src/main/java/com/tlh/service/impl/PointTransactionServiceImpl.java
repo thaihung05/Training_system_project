@@ -18,12 +18,14 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class PointTransactionServiceImpl implements PointTransactionService{
 
     @Autowired
@@ -84,24 +86,20 @@ public class PointTransactionServiceImpl implements PointTransactionService{
 
     @Override
     public void awardPoints(Long userId, String actionType, String reason) {
-        try {
-            if (userId == null || actionType == null) {
-                return;
-            }
-            PointRule rule = this.pointRuleRepo.getByActionType(actionType);
-            if (rule == null) {
-                System.err.println("Khong co PointRule cho actionType: " + actionType);
-                return;
-            }
-            PointTransaction t = new PointTransaction();
-            t.setUserId(new User(userId));
-            t.setRuleId(rule);
-            t.setPoints(rule.getPoints());
-            t.setReason(reason);
-            this.pointTransactionRepo.saveOrUpdate(t);
-        } catch (Exception e) {
-            System.err.println("PointTransactionService.awardPoints that bai: " + e.getMessage());
+        if (userId == null || actionType == null) {
+            return;
         }
+        PointRule rule = this.pointRuleRepo.getByActionType(actionType);
+        if (rule == null) {
+            System.err.println("Khong co PointRule cho actionType: " + actionType);
+            return;
+        }
+        PointTransaction t = new PointTransaction();
+        t.setUserId(new User(userId));
+        t.setRuleId(rule);
+        t.setPoints(rule.getPoints());
+        t.setReason(reason);
+        this.pointTransactionRepo.saveOrUpdate(t);
     }
     
 }

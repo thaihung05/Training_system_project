@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLazyList } from '@/composables/useLazyList'
 import { useAsyncData } from '@/composables/useAsyncData'
@@ -10,14 +10,25 @@ import uploadService from '@/api/uploadService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import { formatDate } from '@/utils/formatDate'
 import { scopeLabel } from '@/utils/courseScope'
-import { Pencil, BookOpen, ClipboardList, Users, Award, EyeOff, Eye } from '@lucide/vue'
+import {
+  ArrowRight,
+  Award,
+  BookOpen,
+  Building2,
+  ClipboardList,
+  Eye,
+  EyeOff,
+  ImagePlus,
+  MapPinned,
+  Pencil,
+  Plus,
+  Search,
+  Users,
+  X,
+} from '@lucide/vue'
 
 const router = useRouter()
 const imageInput = ref(null)
-
-function openImagePicker() {
-  imageInput.value.click()
-}
 
 const { items: courses, loading, loadingMore, hasMore, loadMore, reload } = useLazyList(
   (page, size) => courseService.getMyCourses(page, size),
@@ -27,41 +38,81 @@ const { data: chains } = useAsyncData(() => chainService.getAll())
 const { data: regions } = useAsyncData(() => regionService.getAll())
 
 const editingId = ref(null)
-const form = ref({ title: '', description: '', chainIds: [], regionIds: [], isActive: true, imageUrl: null })
+const formOpen = ref(false)
+const courseSearch = ref('')
+const form = ref({ title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null })
 const saving = ref(false)
 const errorMsg = ref('')
 const uploadingImage = ref(false)
 
+const visibleCourses = computed(() => {
+  const keyword = courseSearch.value.trim().toLowerCase()
+  if (!keyword) return courses.value
+  return courses.value.filter((course) =>
+    [course.title, course.description, scopeLabel(course)].some((value) => value?.toLowerCase().includes(keyword)),
+  )
+})
+
+const selectedChainNames = computed(() =>
+  (chains.value || []).filter((item) => form.value.chainIds.includes(item.id)).map((item) => item.name),
+)
+const selectedRegionNames = computed(() =>
+  (regions.value || []).filter((item) => form.value.regionIds.includes(item.id)).map((item) => item.name),
+)
+
+function blankForm() {
+  return { title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null }
+}
+
 function resetForm() {
   editingId.value = null
-  form.value = { title: '', description: '', chainIds: [], regionIds: [], isActive: true, imageUrl: null }
+  form.value = blankForm()
   errorMsg.value = ''
 }
 
-function editCourse(c) {
-  editingId.value = c.id
+function openCreate() {
+  resetForm()
+  formOpen.value = true
+}
+
+function closeForm() {
+  formOpen.value = false
+  resetForm()
+}
+
+function editCourse(course) {
+  editingId.value = course.id
   form.value = {
-    title: c.title,
-    description: c.description,
-    chainIds: (c.chains || []).map((ch) => ch.id),
-    regionIds: (c.regions || []).map((r) => r.id),
-    isActive: c.isActive,
-    imageUrl: c.imageUrl || null,
+    title: course.title,
+    description: course.description,
+    chainIds: (course.chains || []).map((chain) => chain.id),
+    regionIds: (course.regions || []).map((region) => region.id),
+    isActive: course.isActive,
+    imageUrl: course.imageUrl || null,
   }
   errorMsg.value = ''
+  formOpen.value = true
 }
 
+function toggleScope(field, id) {
+  const selected = form.value[field]
+  form.value[field] = selected.includes(id) ? selected.filter((itemId) => itemId !== id) : [...selected, id]
+}
 
-async function onImageFileChange(e) {
-  const file = e.target.files[0]
-  e.target.value = ''
+function openImagePicker() {
+  imageInput.value?.click()
+}
+
+async function onImageFileChange(event) {
+  const file = event.target.files[0]
+  event.target.value = ''
   if (!file) return
   uploadingImage.value = true
   try {
-    const res = await uploadService.uploadImage(file)
-    form.value.imageUrl = res.data.url
-  } catch (err) {
-    showError(err.response?.data || 'Tải ảnh lên thất bại.')
+    const response = await uploadService.uploadImage(file)
+    form.value.imageUrl = response.data.url
+  } catch (error) {
+    showError(error.response?.data || 'Tải ảnh lên thất bại.')
   } finally {
     uploadingImage.value = false
   }
@@ -82,154 +133,227 @@ async function submit() {
   errorMsg.value = ''
   saving.value = true
   try {
-    if (editingId.value) {
-      await courseService.update(editingId.value, buildPayload())
-    } else {
-      await courseService.create(buildPayload())
-    }
-    resetForm()
+    if (editingId.value) await courseService.update(editingId.value, buildPayload())
+    else await courseService.create(buildPayload())
+    closeForm()
     reload()
-  } catch (err) {
-    errorMsg.value = err.response?.data || 'Có lỗi xảy ra.'
+  } catch (error) {
+    errorMsg.value = error.response?.data || 'Không thể lưu khóa học. Kiểm tra lại thông tin và thử lại.'
   } finally {
     saving.value = false
   }
 }
 
-async function deactivate(c) {
-  if (!(await confirmDialog(`Ẩn khoá học "${c.title}"?`))) return
-  await courseService.remove(c.id)
+async function deactivate(course) {
+  if (!(await confirmDialog(`Ẩn khoá học "${course.title}"?`))) return
+  await courseService.remove(course.id)
   reload()
 }
 
-async function reactivate(c) {
-  await courseService.update(c.id, {
-    title: c.title,
-    description: c.description,
-    chains: (c.chains || []).map((ch) => ({ id: ch.id })),
-    regions: (c.regions || []).map((r) => ({ id: r.id })),
-    isActive: true,
-    imageUrl: c.imageUrl,
-  })
-  reload()
+async function reactivate(course) {
+  try {
+    await courseService.update(course.id, {
+      title: course.title,
+      description: course.description,
+      chains: (course.chains || []).map((chain) => ({ id: chain.id })),
+      regions: (course.regions || []).map((region) => ({ id: region.id })),
+      isActive: true,
+      imageUrl: course.imageUrl,
+    })
+    reload()
+  } catch (error) {
+    showError(error.response?.data || 'Chưa thể mở khóa học. Hãy kiểm tra lại bài học và bài kiểm tra.')
+  }
 }
 
-function goEnroll(c) {
-  router.push({ name: 'course-enrollments', params: { courseId: c.id } })
+function go(routeName, course) {
+  router.push({ name: routeName, params: { courseId: course.id } })
 }
-
-function goLessons(c) {
-  router.push({ name: 'manage-lessons', params: { courseId: c.id } })
-}
-
-function goTests(c) {
-  router.push({ name: 'manage-tests', params: { courseId: c.id } })
-}
-
-function goCertificates(c) {
-  router.push({ name: 'course-certificates', params: { courseId: c.id } })
-}
-
 </script>
 
 <template>
-  <div class="page">
-    <div class="manage-header">
-      <h1>Quản lý khoá học</h1>
+  <div class="page trainer-page course-studio" @keydown.esc="closeForm">
+    <header class="trainer-page-header">
+      <div>
+        <h1>Khóa học phụ trách</h1>
+        <p>Tạo nội dung, chọn đúng phạm vi Chuỗi – Vùng và theo dõi toàn bộ vòng đời khóa học tại một nơi.</p>
+      </div>
+      <button class="btn btn-primary course-studio-create" @click="openCreate">
+        <Plus :size="18" /> Tạo khóa học
+      </button>
+    </header>
+
+    <div class="course-studio-toolbar trainer-panel">
+      <label class="course-studio-search">
+        <Search :size="17" />
+        <input v-model="courseSearch" type="search" placeholder="Tìm theo tên, mô tả hoặc phạm vi…" />
+      </label>
+      <div class="course-studio-count">
+        <strong>{{ visibleCourses.length }}</strong>
+        <span>khóa đang hiển thị</span>
+      </div>
     </div>
 
-    <div class="manage-layout">
-      <div class="manage-table-wrap">
-        <div class="manage-table-header">
-          <div>TÊN KHOÁ HỌC</div>
-          <div>PHẠM VI</div>
-          <div>NGƯỜI TẠO</div>
-          <div>TRẠNG THÁI</div>
-          <div>HÀNH ĐỘNG</div>
-        </div>
-        <p v-if="loading" class="state-text">Đang tải...</p>
-        <div v-else-if="courses.length === 0" class="empty-state">Bạn chưa tạo khoá học nào.</div>
-        <template v-else>
-          <div v-for="c in courses" :key="c.id" class="manage-row">
-            <div class="manage-row-title">{{ c.title }}</div>
-            <div class="manage-row-dept">{{ scopeLabel(c) }}</div>
-            <div class="manage-row-creator">
-              <div v-if="c.createdBy">{{ c.createdBy.name }}</div>
-              <div class="manage-row-creator-date">{{ formatDate(c.createdAt) }}</div>
-            </div>
-            <div>
-              <span class="badge" :class="c.isActive ? 'badge-success' : 'badge-neutral'">
-                {{ c.isActive ? 'Đang mở' : 'Đã ẩn' }}
-              </span>
-            </div>
-            <div class="row-action-group">
-              <button class="row-action-btn" @click="editCourse(c)"><Pencil :size="13" /> Sửa</button>
-              <button class="row-action-btn" @click="goLessons(c)"><BookOpen :size="13" /> Bài học</button>
-              <button class="row-action-btn" @click="goTests(c)"><ClipboardList :size="13" /> Kiểm tra</button>
-              <button class="row-action-btn" @click="goEnroll(c)"><Users :size="13" /> Ghi danh</button>
-              <button class="row-action-btn" @click="goCertificates(c)"><Award :size="13" /> Chứng chỉ</button>
-              <button v-if="c.isActive" class="row-action-btn row-action-btn--danger" @click="deactivate(c)"><EyeOff :size="13" /> Ẩn</button>
-              <button v-else class="row-action-btn" @click="reactivate(c)"><Eye :size="13" /> Mở lại</button>
-            </div>
-          </div>
-        </template>
-        <button v-if="hasMore" class="btn btn-secondary courses-load-more" :disabled="loadingMore" @click="loadMore">
-          {{ loadingMore ? 'Đang tải...' : 'Tải thêm' }}
-        </button>
-      </div>
+    <p v-if="loading" class="state-text">Đang tải danh sách khóa học…</p>
+    <div v-else-if="courses.length === 0" class="course-studio-empty trainer-panel">
+      <BookOpen :size="34" />
+      <h2>Bắt đầu khóa học đầu tiên</h2>
+      <p>Thiết lập thông tin, chọn Chuỗi – Vùng rồi bổ sung bài học và bài kiểm tra.</p>
+      <button class="btn btn-primary" @click="openCreate"><Plus :size="16" /> Tạo khóa học</button>
+    </div>
+    <div v-else-if="visibleCourses.length === 0" class="empty-state">Không có khóa học phù hợp từ khóa.</div>
 
-      <div class="manage-form card">
-        <h2>{{ editingId ? 'Sửa khoá học' : 'Thêm khoá học mới' }}</h2>
-        <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
-        <div class="form-field">
-          <label>Tên khoá học</label>
-          <input v-model="form.title" type="text" class="input" placeholder="VD: Kỹ năng bán hàng nâng cao" />
+    <section v-else class="course-studio-grid" aria-label="Danh sách khóa học phụ trách">
+      <article v-for="course in visibleCourses" :key="course.id" class="course-studio-card trainer-panel">
+        <div class="course-studio-cover" :class="{ 'course-studio-cover--blank': !course.imageUrl }">
+          <img v-if="course.imageUrl" :src="course.imageUrl" :alt="course.title" />
+          <BookOpen v-else :size="30" />
+          <span class="course-studio-status" :class="{ 'course-studio-status--hidden': !course.isActive }">
+            {{ course.isActive ? 'Đang mở' : 'Chưa mở' }}
+          </span>
         </div>
-        <div class="form-field">
-          <label>Chuỗi được học (để trống = tất cả)</label>
-          <div class="manage-checkbox-list">
-            <label v-for="c in chains" :key="c.id" class="manage-checkbox">
-              <input type="checkbox" :value="c.id" v-model="form.chainIds" />
-              {{ c.name }}
-            </label>
-          </div>
+
+        <div class="course-studio-card-body">
+          <div class="course-studio-card-meta">Cập nhật {{ formatDate(course.createdAt) }}</div>
+          <h2>{{ course.title }}</h2>
+          <p class="course-studio-description">{{ course.description || 'Chưa có mô tả cho khóa học này.' }}</p>
+          <div class="course-studio-scope">{{ scopeLabel(course) }}</div>
         </div>
-        <div class="form-field">
-          <label>Vùng được học (để trống = tất cả)</label>
-          <div class="manage-checkbox-list">
-            <label v-for="r in regions" :key="r.id" class="manage-checkbox">
-              <input type="checkbox" :value="r.id" v-model="form.regionIds" />
-              {{ r.name }}
-            </label>
-          </div>
+
+        <div class="course-studio-actions">
+          <button @click="go('manage-lessons', course)"><BookOpen :size="15" /><span>Bài học</span></button>
+          <button @click="go('manage-tests', course)"><ClipboardList :size="15" /><span>Kiểm tra</span></button>
+          <button @click="go('course-enrollments', course)"><Users :size="15" /><span>Ghi danh</span></button>
+          <button @click="go('course-certificates', course)"><Award :size="15" /><span>Chứng chỉ</span></button>
         </div>
-        <div class="form-field">
-          <label>Mô tả ngắn</label>
-          <textarea v-model="form.description" class="input" rows="3" placeholder="Mô tả nội dung khoá học..."></textarea>
-        </div>
-        <div class="form-field">
-          <label>Ảnh đại diện khoá học</label>
-          <img v-if="form.imageUrl" :src="form.imageUrl" class="manage-course-image-preview" />
-          <div class="manage-course-image-actions">
-            <button type="button" class="btn btn-secondary btn-sm" :disabled="uploadingImage" @click="openImagePicker">
-              {{ uploadingImage ? 'Đang tải ảnh lên...' : form.imageUrl ? 'Đổi ảnh khác' : 'Chọn ảnh' }}
-            </button>
-            <span v-if="form.imageUrl && !uploadingImage" class="manage-action manage-action--danger" @click="form.imageUrl = null">Bỏ ảnh</span>
-          </div>
-          <input ref="imageInput" type="file" accept="image/jpeg,image/png,image/webp" class="hidden-file-input" @change="onImageFileChange" />
-        </div>
-        <label class="manage-checkbox">
-          <input type="checkbox" v-model="form.isActive" />
-          Đang mở (nhân viên có thể xem và được ghi danh)
-        </label>
-        <div class="manage-form-actions">
-          <button class="btn btn-primary" :disabled="saving" @click="submit">
-            {{ editingId ? 'Lưu thay đổi' : 'Lưu khoá học' }}
+
+        <div class="course-studio-card-footer">
+          <button class="course-studio-text-action" @click="editCourse(course)"><Pencil :size="14" /> Chỉnh sửa</button>
+          <button v-if="course.isActive" class="course-studio-text-action course-studio-text-action--danger" @click="deactivate(course)">
+            <EyeOff :size="14" /> Ẩn khóa học
           </button>
-          <button v-if="editingId" class="btn btn-secondary" @click="resetForm">Huỷ</button>
+          <button v-else class="course-studio-text-action" @click="reactivate(course)"><Eye :size="14" /> Mở khóa học</button>
         </div>
+      </article>
+    </section>
+
+    <button v-if="hasMore" class="btn btn-secondary course-studio-load-more" :disabled="loadingMore" @click="loadMore">
+      {{ loadingMore ? 'Đang tải…' : 'Tải thêm khóa học' }}
+    </button>
+
+    <Transition name="course-editor">
+      <div v-if="formOpen" class="course-editor-backdrop" @click.self="closeForm">
+        <form class="course-editor" @submit.prevent="submit">
+          <header class="course-editor-header">
+            <div>
+              <h2>{{ editingId ? 'Chỉnh sửa khóa học' : 'Tạo khóa học mới' }}</h2>
+              <p>Thông tin rõ ràng và phạm vi chính xác giúp ghi danh đúng nhân viên.</p>
+            </div>
+            <button type="button" class="course-editor-close" aria-label="Đóng" @click="closeForm"><X :size="20" /></button>
+          </header>
+
+          <div class="course-editor-body">
+            <div class="course-editor-main">
+              <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
+
+              <section class="course-editor-section">
+                <div class="course-editor-section-title"><div><h3>Thông tin cơ bản</h3><p>Tên ngắn gọn, dễ nhận biết trong danh mục.</p></div></div>
+                <div class="form-field">
+                  <label for="course-title">Tên khóa học</label>
+                  <input id="course-title" v-model="form.title" type="text" class="input" placeholder="Ví dụ: Kỹ năng tư vấn sản phẩm mới" required />
+                </div>
+                <div class="form-field">
+                  <label for="course-description">Mô tả ngắn</label>
+                  <textarea id="course-description" v-model="form.description" class="input" rows="4" placeholder="Nhân viên sẽ học được gì sau khóa học?"></textarea>
+                </div>
+              </section>
+
+              <section class="course-editor-section">
+                <div class="course-editor-section-title"><div><h3>Phạm vi áp dụng</h3><p>Chuỗi và Vùng kết hợp theo điều kiện AND. Để trống cả hai nghĩa là áp dụng cho toàn tập đoàn.</p></div></div>
+
+                <div class="course-scope-builder">
+                  <div class="course-scope-column">
+                    <div class="course-scope-heading">
+                      <div><Building2 :size="17" /><strong>Chuỗi bán lẻ</strong></div>
+                      <button type="button" :class="{ active: form.chainIds.length === 0 }" @click="form.chainIds = []">Toàn bộ chuỗi</button>
+                    </div>
+                    <div class="course-scope-options">
+                      <button
+                        v-for="chain in chains"
+                        :key="chain.id"
+                        type="button"
+                        :class="{ selected: form.chainIds.includes(chain.id) }"
+                        @click="toggleScope('chainIds', chain.id)"
+                      >
+                        <span class="course-scope-check"></span>{{ chain.name }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="course-scope-column">
+                    <div class="course-scope-heading">
+                      <div><MapPinned :size="17" /><strong>Vùng quản lý</strong></div>
+                      <button type="button" :class="{ active: form.regionIds.length === 0 }" @click="form.regionIds = []">Toàn bộ vùng</button>
+                    </div>
+                    <div class="course-scope-options">
+                      <button
+                        v-for="region in regions"
+                        :key="region.id"
+                        type="button"
+                        :class="{ selected: form.regionIds.includes(region.id) }"
+                        @click="toggleScope('regionIds', region.id)"
+                      >
+                        <span class="course-scope-check"></span>{{ region.name }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="course-scope-summary">
+                  <strong>Nhân viên được áp dụng</strong>
+                  <span>{{ selectedChainNames.length ? selectedChainNames.join(', ') : 'Tất cả Chuỗi' }}</span>
+                  <ArrowRight :size="14" />
+                  <span>{{ selectedRegionNames.length ? selectedRegionNames.join(', ') : 'Tất cả Vùng' }}</span>
+                </div>
+              </section>
+            </div>
+
+            <aside class="course-editor-aside">
+              <section class="course-editor-preview">
+                <div class="course-editor-preview-image" :class="{ empty: !form.imageUrl }">
+                  <img v-if="form.imageUrl" :src="form.imageUrl" alt="Ảnh đại diện khóa học" />
+                  <ImagePlus v-else :size="30" />
+                </div>
+                <button type="button" class="btn btn-secondary" :disabled="uploadingImage" @click="openImagePicker">
+                  <ImagePlus :size="15" /> {{ uploadingImage ? 'Đang tải ảnh…' : form.imageUrl ? 'Đổi ảnh đại diện' : 'Chọn ảnh đại diện' }}
+                </button>
+                <button v-if="form.imageUrl && !uploadingImage" type="button" class="course-editor-remove-image" @click="form.imageUrl = null">Bỏ ảnh hiện tại</button>
+                <input ref="imageInput" type="file" accept="image/jpeg,image/png,image/webp" class="hidden-file-input" @change="onImageFileChange" />
+              </section>
+
+              <label v-if="editingId" class="course-editor-switch">
+                <input v-model="form.isActive" type="checkbox" />
+                <span class="course-editor-switch-track"></span>
+                <span><strong>Mở khóa học</strong><small>Cho phép hiển thị và ghi danh</small></span>
+              </label>
+
+              <div v-else class="course-editor-lifecycle">
+                <strong>Khóa học sẽ được tạo ở trạng thái chưa mở</strong>
+                <p>Thêm ít nhất một bài học hoặc một bài kiểm tra hợp lệ, sau đó mở khóa học từ danh sách.</p>
+              </div>
+
+            </aside>
+          </div>
+
+          <footer class="course-editor-footer">
+            <button type="button" class="btn btn-secondary" @click="closeForm">Hủy</button>
+            <button type="submit" class="btn btn-primary" :disabled="saving || uploadingImage">
+              {{ saving ? 'Đang lưu…' : editingId ? 'Lưu thay đổi' : 'Tạo khóa học' }}
+            </button>
+          </footer>
+        </form>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 

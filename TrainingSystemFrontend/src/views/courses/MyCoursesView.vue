@@ -22,8 +22,8 @@ watch(filter, async (val) => {
 
 const filtered = computed(() => {
   const list = enrollments.value || []
-  if (filter.value === 'in-progress') return list.filter((e) => e.progressPercent < 100)
-  if (filter.value === 'done') return list.filter((e) => e.progressPercent >= 100)
+  if (filter.value === 'in-progress') return list.filter((e) => !e.completedAt)
+  if (filter.value === 'done') return list.filter((e) => !!e.completedAt)
   return list
 })
 </script>
@@ -50,8 +50,8 @@ const filtered = computed(() => {
           <div class="mycourse-thumb" :style="e.courseId.imageUrl ? {} : { background: thumbFor(e.courseId).bg }">
             <img v-if="e.courseId.imageUrl" :src="e.courseId.imageUrl" class="mycourse-thumb-img" />
             <span v-else class="mycourse-thumb-initials" :style="{ color: thumbFor(e.courseId).fg }">{{ thumbFor(e.courseId).initials }}</span>
-            <span class="mycourse-badge" :class="e.progressPercent >= 100 ? 'mycourse-badge--done' : 'mycourse-badge--progress'">
-              {{ e.progressPercent >= 100 ? 'Đã hoàn thành' : 'Đang học' }}
+            <span class="mycourse-badge" :class="e.completedAt ? 'mycourse-badge--done' : 'mycourse-badge--progress'">
+              {{ e.completedAt ? 'Đã hoàn thành' : 'Đang học' }}
             </span>
           </div>
           <div class="mycourse-body">
@@ -65,7 +65,7 @@ const filtered = computed(() => {
             </div>
             <div class="mycourse-percent">{{ e.progressPercent }}%</div>
             <RouterLink :to="{ name: 'course-detail', params: { id: e.courseId.id } }" class="btn btn-primary">
-              {{ e.progressPercent >= 100 ? 'Xem lại' : 'Tiếp tục học' }}
+              {{ e.completedAt ? 'Xem lại' : 'Tiếp tục học' }}
             </RouterLink>
           </div>
         </div>

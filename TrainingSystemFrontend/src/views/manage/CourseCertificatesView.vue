@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
 import { useAuthStore } from '@/stores/auth'
@@ -9,10 +9,10 @@ import certificateService from '@/api/certificateService'
 import uploadService from '@/api/uploadService'
 import { showError } from '@/utils/alerts'
 import { formatDate } from '@/utils/formatDate'
-import { ChevronLeft, Download, Upload } from '@lucide/vue'
+import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import { Award, Download, Upload } from '@lucide/vue'
 
 const route = useRoute()
-const router = useRouter()
 const auth = useAuthStore()
 const courseId = Number(route.params.courseId)
 
@@ -50,16 +50,20 @@ async function handleFileChange(event) {
 </script>
 
 <template>
-  <div class="page">
-    <div class="detail-header">
-      <button class="back-btn" @click="router.push({ name: 'manage-courses' })"><ChevronLeft :size="18" /></button>
-      <div class="detail-heading">
-        <h1>Chứng chỉ — {{ course?.title }}</h1>
-        <div class="detail-meta">{{ certificates?.length ?? 0 }} chứng chỉ đã cấp</div>
+  <div class="page trainer-page">
+    <TrainerCourseNav :course="course" active="certificates" />
+    <div class="trainer-context-header">
+      <div>
+        <h2>Chứng chỉ đã cấp</h2>
+        <p>{{ certificates?.length ?? 0 }} chứng chỉ trong danh sách hiện tại.</p>
       </div>
     </div>
 
-    <div class="manage-table-wrap">
+    <div class="manage-table-wrap trainer-panel">
+      <div class="trainer-panel-heading">
+        <div><h2>Danh sách chứng chỉ</h2><p>Mã chứng chỉ, ngày cấp và file PDF.</p></div>
+        <Award :size="19" />
+      </div>
       <div class="certmg-table-header">
         <div>NHÂN VIÊN</div>
         <div>MÃ CHỨNG CHỈ</div>
@@ -75,7 +79,7 @@ async function handleFileChange(event) {
           <div class="certmg-code">{{ c.certificateCode }}</div>
           <div class="certmg-date">{{ formatDate(c.issuedAt) }}</div>
           <div class="certmg-file">
-            <a v-if="c.pdfUrl" :href="c.pdfUrl" target="_blank" class="row-action-btn"><Download :size="13" /> Tải về</a>
+            <a v-if="c.pdfUrl" :href="c.pdfUrl" target="_blank" rel="noopener" class="row-action-btn"><Download :size="13" /> Tải về</a>
             <span v-else class="certmg-empty">Chưa có file</span>
             <div v-if="auth.isAdmin" class="certmg-upload">
               <button class="row-action-btn" :disabled="uploadingId === c.id" @click="openPdfPicker(c)">

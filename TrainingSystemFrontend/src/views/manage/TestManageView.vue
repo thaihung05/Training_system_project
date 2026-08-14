@@ -5,7 +5,9 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import courseService from '@/api/courseService'
 import testService from '@/api/testService'
 import { showError } from '@/utils/alerts'
-import { ChevronLeft, Pencil, ListChecks, BarChart3, Power } from '@lucide/vue'
+import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import FormModal from '@/components/common/FormModal.vue'
+import { BarChart3, ListChecks, Pencil, Plus, Power } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,20 +17,28 @@ const { data: course } = useAsyncData(() => courseService.getCourseById(courseId
 const { data: tests, loading, refresh } = useAsyncData(() => testService.getByCourse(courseId))
 
 const editingId = ref(null)
+const formOpen = ref(false)
 const form = ref({ title: '', passScore: 70, maxAttempts: 3 })
 const saving = ref(false)
 const errorMsg = ref('')
 
-function resetForm() {
+function closeForm() {
   editingId.value = null
   form.value = { title: '', passScore: 70, maxAttempts: 3 }
   errorMsg.value = ''
+  formOpen.value = false
+}
+
+function openCreateForm() {
+  closeForm()
+  formOpen.value = true
 }
 
 function editTest(t) {
   editingId.value = t.id
   form.value = { title: t.title, passScore: t.passScore, maxAttempts: t.maxAttempts }
   errorMsg.value = ''
+  formOpen.value = true
 }
 
 async function submit() {
@@ -50,7 +60,7 @@ async function submit() {
         maxAttempts: Number(form.value.maxAttempts),
       })
     }
-    resetForm()
+    closeForm()
     refresh()
   } catch (err) {
     errorMsg.value = err.response?.data || 'Có lỗi xảy ra.'
@@ -83,17 +93,17 @@ function goResults(t) {
 </script>
 
 <template>
-  <div class="page">
-    <div class="detail-header">
-      <button class="back-btn" @click="router.push({ name: 'manage-courses' })"><ChevronLeft :size="18" /></button>
-      <div class="detail-heading">
-        <h1>Bài kiểm tra — {{ course?.title }}</h1>
-        <div class="detail-meta">{{ tests?.length ?? 0 }} bài kiểm tra</div>
+  <div class="page trainer-page">
+    <TrainerCourseNav :course="course" active="tests" />
+    <div class="trainer-context-header">
+      <div>
+        <h2>Bài kiểm tra</h2>
+        <p>{{ tests?.length ?? 0 }} bài kiểm tra đang được thiết lập.</p>
       </div>
+      <button class="btn btn-primary" @click="openCreateForm"><Plus :size="16" /> Thêm bài kiểm tra</button>
     </div>
 
-    <div class="manage-layout">
-      <div class="manage-table-wrap">
+    <div class="manage-table-wrap trainer-panel">
         <div class="test-table-header">
           <div>TÊN BÀI KIỂM TRA</div>
           <div>ĐIỂM ĐẠT</div>
@@ -121,31 +131,37 @@ function goResults(t) {
             </div>
           </div>
         </template>
-      </div>
+    </div>
 
-      <div class="manage-form card">
-        <h2>{{ editingId ? 'Sửa bài kiểm tra' : 'Thêm bài kiểm tra mới' }}</h2>
+    <FormModal
+      v-if="formOpen"
+      :title="editingId ? 'Chỉnh sửa bài kiểm tra' : 'Thêm bài kiểm tra mới'"
+      description="Thiết lập tên, điểm đạt và số lần nhân viên được phép làm bài."
+      :submit-label="editingId ? 'Lưu thay đổi' : 'Thêm bài kiểm tra'"
+      :saving="saving"
+      :disabled="!form.title.trim() || form.passScore < 0 || form.passScore > 100 || form.maxAttempts < 1"
+      @close="closeForm"
+      @submit="submit"
+    >
+      <section class="test-form-section">
+        <div class="test-form-heading"><h3>Thiết lập bài kiểm tra</h3><p>Các thông số này được áp dụng cho mọi nhân viên làm bài.</p></div>
         <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
         <div class="form-field">
-          <label>Tên bài kiểm tra</label>
-          <input v-model="form.title" type="text" class="input" placeholder="VD: Kiểm tra chương 1" />
+          <label for="test-title">Tên bài kiểm tra</label>
+          <input id="test-title" v-model="form.title" type="text" class="input" placeholder="Ví dụ: Kiểm tra cuối khóa" required />
         </div>
-        <div class="form-field">
-          <label>Điểm đạt (%)</label>
-          <input v-model="form.passScore" type="number" min="0" max="100" class="input" />
+        <div class="test-form-grid">
+          <div class="form-field">
+            <label for="test-score">Điểm đạt (%)</label>
+            <input id="test-score" v-model="form.passScore" type="number" min="0" max="100" class="input" required />
+          </div>
+          <div class="form-field">
+            <label for="test-attempts">Số lần làm tối đa</label>
+            <input id="test-attempts" v-model="form.maxAttempts" type="number" min="1" class="input" required />
+          </div>
         </div>
-        <div class="form-field">
-          <label>Số lần làm tối đa</label>
-          <input v-model="form.maxAttempts" type="number" min="1" class="input" />
-        </div>
-        <div class="manage-form-actions">
-          <button class="btn btn-primary" :disabled="saving" @click="submit">
-            {{ editingId ? 'Lưu thay đổi' : 'Lưu bài kiểm tra' }}
-          </button>
-          <button v-if="editingId" class="btn btn-secondary" @click="resetForm">Huỷ</button>
-        </div>
-      </div>
-    </div>
+      </section>
+    </FormModal>
   </div>
 </template>
 

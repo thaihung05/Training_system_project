@@ -1,21 +1,23 @@
 <script setup>
 import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import courseService from '@/api/courseService'
 import lessonService from '@/api/lessonService'
 import uploadService from '@/api/uploadService'
 import { confirmDialog, showError } from '@/utils/alerts'
-import { ChevronLeft, ChevronUp, ChevronDown, Pencil, Trash2 } from '@lucide/vue'
+import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import FormModal from '@/components/common/FormModal.vue'
+import { ChevronUp, ChevronDown, FileText, Pencil, Plus, Trash2, Upload } from '@lucide/vue'
 
 const route = useRoute()
-const router = useRouter()
 const courseId = Number(route.params.courseId)
 
 const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: lessons, loading, refresh } = useAsyncData(() => lessonService.getByCourse(courseId))
 
 const editingId = ref(null)
+const formOpen = ref(false)
 const form = ref({ title: '', slidePdfUrl: '' })
 const uploading = ref(false)
 const saving = ref(false)
@@ -26,16 +28,23 @@ function openPdfPicker() {
   pdfInput.value.click()
 }
 
-function resetForm() {
+function closeForm() {
   editingId.value = null
   form.value = { title: '', slidePdfUrl: '' }
   errorMsg.value = ''
+  formOpen.value = false
+}
+
+function openCreateForm() {
+  closeForm()
+  formOpen.value = true
 }
 
 function editLesson(l) {
   editingId.value = l.id
   form.value = { title: l.title, slidePdfUrl: l.slidePdfUrl || '' }
   errorMsg.value = ''
+  formOpen.value = true
 }
 
 async function handleFileChange(event) {
@@ -64,7 +73,7 @@ async function submit() {
     } else {
       await lessonService.create(courseId, payload)
     }
-    resetForm()
+    closeForm()
     refresh()
   } catch (err) {
     errorMsg.value = err.response?.data || 'Có lỗi xảy ra.'
@@ -94,17 +103,21 @@ async function move(index, direction) {
 </script>
 
 <template>
-  <div class="page">
-    <div class="detail-header">
-      <button class="back-btn" @click="router.push({ name: 'manage-courses' })"><ChevronLeft :size="18" /></button>
-      <div class="detail-heading">
-        <h1>Bài học — {{ course?.title }}</h1>
-        <div class="detail-meta">{{ lessons?.length ?? 0 }} bài</div>
+  <div class="page trainer-page">
+    <TrainerCourseNav :course="course" active="lessons" />
+    <div class="trainer-context-header">
+      <div>
+        <h2>Bài học và tài liệu</h2>
+        <p>{{ lessons?.length ?? 0 }} bài học, có thể kéo thứ tự bằng nút lên và xuống.</p>
       </div>
+      <button class="btn btn-primary" @click="openCreateForm"><Plus :size="16" /> Thêm bài học</button>
     </div>
 
-    <div class="manage-layout">
-      <div class="manage-table-wrap">
+    <div class="manage-table-wrap trainer-panel lessonmg-list-panel">
+        <div class="trainer-panel-heading">
+          <div><h2>Lộ trình bài học</h2><p>Sắp xếp nội dung theo thứ tự nhân viên sẽ học.</p></div>
+          <FileText :size="19" />
+        </div>
         <p v-if="loading" class="state-text">Đang tải...</p>
         <div v-else-if="lessons.length === 0" class="empty-state">Chưa có bài học nào.</div>
         <template v-else>
@@ -123,31 +136,52 @@ async function move(index, direction) {
             </div>
           </div>
         </template>
-      </div>
+    </div>
 
-      <div class="manage-form card">
-        <h2>{{ editingId ? 'Sửa bài học' : 'Thêm bài học mới' }}</h2>
+    <FormModal
+      v-if="formOpen"
+      :title="editingId ? 'Chỉnh sửa bài học' : 'Thêm bài học mới'"
+      description="Đặt tên dễ nhận biết và đính kèm tài liệu PDF để nhân viên học theo đúng thứ tự."
+      :submit-label="editingId ? 'Lưu thay đổi' : 'Thêm bài học'"
+      :saving="saving"
+      :disabled="uploading || !form.title.trim()"
+      @close="closeForm"
+      @submit="submit"
+    >
+      <section class="lessonmg-form-section">
+        <div class="lessonmg-section-heading">
+          <h3>Thông tin bài học</h3>
+          <p>Tên bài học sẽ xuất hiện trong lộ trình của nhân viên.</p>
+        </div>
         <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
         <div class="form-field">
-          <label>Tên bài học</label>
-          <input v-model="form.title" type="text" class="input" placeholder="VD: Bài 1: Giới thiệu" />
+          <label for="lesson-title">Tên bài học</label>
+          <input id="lesson-title" v-model="form.title" type="text" class="input" placeholder="Ví dụ: Quy trình tư vấn tại quầy" required />
+        </div>
+      </section>
+
+      <section class="lessonmg-form-section">
+        <div class="lessonmg-section-heading">
+          <h3>Tài liệu học tập</h3>
+          <p>Chấp nhận tệp PDF. Có thể bổ sung hoặc thay tệp sau.</p>
         </div>
         <div class="form-field">
-          <label>Tài liệu PDF</label>
-          <button type="button" class="btn btn-secondary btn-sm" :disabled="uploading" @click="openPdfPicker">
-            {{ uploading ? 'Đang tải lên...' : form.slidePdfUrl ? 'Đổi file khác' : 'Chọn file PDF' }}
-          </button>
+          <label>Tệp PDF</label>
+          <div class="lessonmg-file-picker">
+            <FileText :size="22" />
+            <div>
+              <strong>{{ form.slidePdfUrl ? 'Tài liệu đã sẵn sàng' : 'Chưa có tài liệu' }}</strong>
+              <span>{{ form.slidePdfUrl ? 'Chọn tệp khác nếu cần thay thế.' : 'Tải lên slide hoặc tài liệu hướng dẫn.' }}</span>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" :disabled="uploading" @click="openPdfPicker">
+              <Upload :size="14" /> {{ uploading ? 'Đang tải…' : form.slidePdfUrl ? 'Đổi tệp' : 'Chọn PDF' }}
+            </button>
+          </div>
           <input ref="pdfInput" type="file" accept="application/pdf" class="hidden-file-input" @change="handleFileChange" />
-          <div v-if="form.slidePdfUrl && !uploading" class="lessonmg-uploaded">Đã tải lên xong.</div>
+          <div v-if="form.slidePdfUrl && !uploading" class="lessonmg-uploaded">Đã tải tài liệu lên hệ thống.</div>
         </div>
-        <div class="manage-form-actions">
-          <button class="btn btn-primary" :disabled="saving || uploading" @click="submit">
-            {{ editingId ? 'Lưu thay đổi' : 'Thêm bài học' }}
-          </button>
-          <button v-if="editingId" class="btn btn-secondary" @click="resetForm">Huỷ</button>
-        </div>
-      </div>
-    </div>
+      </section>
+    </FormModal>
   </div>
 </template>
 

@@ -13,7 +13,7 @@ import com.tlh.pojo.TestAttempt;
 import com.tlh.pojo.User;
 import com.tlh.repository.EnrollmentRepository;
 import com.tlh.repository.TestAttemptRepository;
-import com.tlh.service.CertificateService;
+import com.tlh.service.EnrollmentService;
 import com.tlh.service.NotificationService;
 import com.tlh.service.PointTransactionService;
 import com.tlh.service.QuestionOptionService;
@@ -28,12 +28,14 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class TestAttemptServiceImpl implements TestAttemptService{
 
     @Autowired
@@ -58,7 +60,7 @@ public class TestAttemptServiceImpl implements TestAttemptService{
     private PointTransactionService pointTransactionService;
 
     @Autowired
-    private CertificateService certificateService;
+    private EnrollmentService enrollmentService;
 
 
     private Map<String, Object> buildAttemptDetail(TestAttempt attempt, List<AttemptAnswer> answers) {
@@ -84,6 +86,7 @@ public class TestAttemptServiceImpl implements TestAttemptService{
     
     @Override
     public TestAttempt startAttempt(long testId, User caller) {
+        assertActiveEmployee(caller);
         Test t = this.testService.getById(testId);
         if (t == null) {
             throw new IllegalArgumentException("Không tìm thấy bài kiểm tra");
@@ -91,8 +94,9 @@ public class TestAttemptServiceImpl implements TestAttemptService{
         if (!t.getIsActive()) {
             throw new IllegalArgumentException("Bài kiểm tra chưa được kích hoạt");
         }
+        this.testService.validateForActivation(testId);
 
-        Enrollment enrollment = this.enrollmentRepo.getByCourseAndUser(t.getCourseId().getId(), caller.getId());
+        Enrollment enrollment = this.enrollmentRepo.getByCourseAndUserForUpdate(t.getCourseId().getId(), caller.getId());
         if (enrollment == null) {
             throw new IllegalArgumentException("Bạn chưa được ghi danh khóa học này");
         }
@@ -143,6 +147,10 @@ public class TestAttemptServiceImpl implements TestAttemptService{
 
     @Override
     public boolean hasOpenAttempt(long testId, long userId) {
+        Test test = this.testService.getById(testId);
+        if (test == null || this.enrollmentRepo.getByCourseAndUser(test.getCourseId().getId(), userId) == null) {
+            return false;
+        }
         List<TestAttempt> attempts = this.testAttemptRepo.getByUserAndTest(userId, testId);
         for (TestAttempt a : attempts) {
             if (a.getSubmittedAt() == null) {
@@ -153,16 +161,24 @@ public class TestAttemptServiceImpl implements TestAttemptService{
     }
 
     @Override
-    public Map<String, Object> submit(long attemptId, List<Map<String, Object>> answersBody) {
-        TestAttempt attempt = this.testAttemptRepo.getById(attemptId);
+    public Map<String, Object> submit(long attemptId, List<Map<String, Object>> answersBody, User caller) {
+        assertActiveEmployee(caller);
+        TestAttempt attempt = this.testAttemptRepo.getByIdForUpdate(attemptId);
         if (attempt == null) {
             throw new IllegalArgumentException("Không tìm thấy lượt làm bài");
         }
         if (attempt.getSubmittedAt() != null) {
             throw new IllegalArgumentException("Bài làm đã được nộp trước đó");
         }
+        if (!attempt.getUserId().getId().equals(caller.getId())) {
+            throw new IllegalArgumentException("Bạn không có quyền nộp bài làm này");
+        }
 
         Test test = attempt.getTestId();
+        Enrollment enrollment = this.enrollmentRepo.getByCourseAndUser(test.getCourseId().getId(), caller.getId());
+        if (enrollment == null) {
+            throw new IllegalArgumentException("Bạn không còn được ghi danh khóa học này");
+        }
         List<Question> activeQuestions = this.questionService.getActiveByTest(test.getId());
 
         Map<Long, Long> selectedByQuestion = new HashMap<>();
@@ -231,10 +247,39 @@ public class TestAttemptServiceImpl implements TestAttemptService{
             if (!alreadyPassedBefore) {
                 this.pointTransactionService.awardPoints(userId, "TEST_PASSED", "Vượt qua bài kiểm tra: " + test.getTitle());
             }
-            this.certificateService.checkAndIssue(userId, test.getCourseId().getId());
         }
+        this.enrollmentService.recalcProgress(enrollment.getId());
 
         return buildAttemptDetail(attempt, answers);
+    }
+
+    @Override
+    public TestAttempt abandon(long attemptId, User caller) {
+        assertActiveEmployee(caller);
+        TestAttempt attempt = this.testAttemptRepo.getByIdForUpdate(attemptId);
+        if (attempt == null) {
+            throw new IllegalArgumentException("Không tìm thấy lượt làm bài");
+        }
+        if (!attempt.getUserId().getId().equals(caller.getId())) {
+            throw new IllegalArgumentException("Bạn không có quyền hủy lượt làm bài này");
+        }
+        if (attempt.getSubmittedAt() != null) {
+            throw new IllegalArgumentException("Lượt làm bài này đã kết thúc");
+        }
+        attempt.setScore(0);
+        attempt.setPassed(false);
+        attempt.setSubmittedAt(new Date());
+        this.testAttemptRepo.saveOrUpdate(attempt);
+        return attempt;
+    }
+
+    private void assertActiveEmployee(User caller) {
+        if (caller == null || !"EMPLOYEE".equals(caller.getRole())) {
+            throw new IllegalArgumentException("Chỉ nhân viên mới được làm bài kiểm tra");
+        }
+        if (!caller.getIsActive()) {
+            throw new IllegalArgumentException("Tài khoản đã bị khóa");
+        }
     }
 
     @Override

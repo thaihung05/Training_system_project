@@ -196,7 +196,7 @@ async function submitAnswer(questionId) {
       <div v-else class="detail-body">
         <div v-if="activeLesson" class="lesson-main">
           <div class="lesson-viewer">
-            <a v-if="activeLesson.slidePdfUrl" :href="activeLesson.slidePdfUrl" target="_blank" class="lesson-pdf-link">
+            <a v-if="activeLesson.slidePdfUrl" :href="activeLesson.slidePdfUrl" target="_blank" rel="noopener" class="lesson-pdf-link">
               <FileText :size="15" /> Mở tài liệu bài học <ExternalLink :size="13" />
             </a>
             <span v-else class="lesson-pdf-empty">Bài học chưa có tài liệu.</span>

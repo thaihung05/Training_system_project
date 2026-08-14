@@ -1,12 +1,42 @@
 .navbar {
   height: var(--header-height);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: #0068b3;
+  border-bottom: 4px solid #ffd400;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
   gap: 24px;
+}
+
+.navbar--trainer {
+  border-bottom-color: #ffd400;
+  background: #0068b3;
+  box-shadow: none;
+}
+
+.navbar--trainer .navbar-mark,
+.navbar--trainer .navbar-avatar {
+  background: #ffd400;
+  color: #005796;
+}
+
+.navbar--trainer .navbar-link--active {
+  border-bottom-color: #ffd400;
+  color: #ffd400;
+}
+
+.navbar-role-pill {
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(0, 55, 96, 0.25);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .navbar-brand {
@@ -20,8 +50,8 @@
   width: 34px;
   height: 34px;
   border-radius: var(--radius-sm);
-  background: var(--color-accent);
-  color: #fff;
+  background: #ffd400;
+  color: #005796;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 14px;
@@ -41,13 +71,13 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 15px;
-  color: var(--color-heading);
+  color: #fff;
 }
 
 .navbar-brand-sub {
   font-size: 10px;
   letter-spacing: 0.05em;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.72);
   text-transform: uppercase;
 }
 
@@ -61,16 +91,16 @@
 .navbar-link {
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text);
-  padding: 20px 0;
+  color: rgba(255, 255, 255, 0.86);
+  padding: 19px 0 17px;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
 }
 
 .navbar-link--active {
   font-weight: 600;
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
+  color: #ffd400;
+  border-bottom-color: #ffd400;
 }
 
 .navbar-actions {
@@ -85,8 +115,9 @@
   width: 34px;
   height: 34px;
   border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: rgba(0, 55, 96, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,7 +150,7 @@
 .navbar-user-name {
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text);
+  color: #fff;
   white-space: nowrap;
 }
 
@@ -128,11 +159,11 @@
   width: 34px;
   height: 34px;
   border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: rgba(0, 55, 96, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   align-items: center;
   justify-content: center;
-  color: var(--color-text);
+  color: #fff;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -158,8 +189,8 @@
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    background: var(--color-surface);
-    border-top: 1px solid var(--color-border);
+    background: #0068b3;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
     margin: 0 -16px;
     padding: 4px 16px 10px;
   }
@@ -170,28 +201,59 @@
 
   .navbar-link {
     padding: 12px 0;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
   }
 
   .navbar-link--active {
-    border-bottom-color: var(--color-accent);
+    border-bottom-color: #ffd400;
   }
 
   .navbar-user-name {
     display: none;
   }
+
+  .navbar-role-pill {
+    display: none;
+  }
+}
+
+.navbar .btn-secondary {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
+}
+
+.navbar .btn-secondary:hover:not(:disabled) {
+  border-color: #ffd400;
+  color: #ffd400;
 }
 
 .navbar-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--color-accent);
-  color: #fff;
+  background: #ffd400;
+  color: #005796;
   font-size: 12px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+@media (max-width: 1180px) and (min-width: 881px) {
+  .navbar {
+    padding: 0 20px;
+    gap: 16px;
+  }
+
+  .navbar-nav {
+    gap: 18px;
+  }
+
+  .navbar-brand-text,
+  .navbar-user-name {
+    display: none;
+  }
 }

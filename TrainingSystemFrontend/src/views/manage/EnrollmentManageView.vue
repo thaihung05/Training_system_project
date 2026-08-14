@@ -1,17 +1,20 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
 import courseService from '@/api/courseService'
 import storeService from '@/api/storeService'
+import chainService from '@/api/chainService'
+import regionService from '@/api/regionService'
 import userService from '@/api/userService'
 import enrollmentService from '@/api/enrollmentService'
 import { confirmDialog } from '@/utils/alerts'
-import { ChevronLeft, UserMinus } from '@lucide/vue'
+import { isStoreInCourseScope } from '@/utils/courseScope'
+import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import { Building2, MapPinned, Store, UserMinus, Users } from '@lucide/vue'
 
 const route = useRoute()
-const router = useRouter()
 const courseId = Number(route.params.courseId)
 
 const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
@@ -21,14 +24,55 @@ const { items: roster, loading: rosterLoading, loadingMore: rosterLoadingMore, h
 )
 const { data: fullRoster, refresh: refreshFullRoster } = useAsyncData(() => enrollmentService.getRoster(courseId))
 const { data: stores } = useAsyncData(() => storeService.getAll())
+const { data: chains } = useAsyncData(() => chainService.getAll())
+const { data: regions } = useAsyncData(() => regionService.getAll())
 const { data: allUsers } = useAsyncData(() => userService.getAll())
 
 const enrolledUserIds = computed(() => new Set((fullRoster.value || []).map((e) => e.userId.id)))
+const scopeEligibleStores = computed(() =>
+  (stores.value || []).filter((store) => isStoreInCourseScope(store, course.value)),
+)
+const selectedChainId = ref(null)
+const selectedRegionId = ref(null)
+
+const availableChains = computed(() => {
+  const ids = new Set(scopeEligibleStores.value.map((store) => store.chainId?.id))
+  return (chains.value || []).filter((chain) => ids.has(chain.id))
+})
+
+const availableRegions = computed(() => {
+  const matchingStores = selectedChainId.value
+    ? scopeEligibleStores.value.filter((store) => store.chainId?.id === selectedChainId.value)
+    : scopeEligibleStores.value
+  const ids = new Set(matchingStores.map((store) => store.regionId?.id))
+  return (regions.value || []).filter((region) => ids.has(region.id))
+})
+
+const filteredStores = computed(() => {
+  if (!selectedChainId.value || !selectedRegionId.value) return []
+  return scopeEligibleStores.value.filter(
+    (store) => store.chainId?.id === selectedChainId.value && store.regionId?.id === selectedRegionId.value,
+  )
+})
+
 const availableEmployees = computed(() =>
   (allUsers.value || []).filter(
-    (u) => u.role === 'EMPLOYEE' && u.isActive && !enrolledUserIds.value.has(u.id),
+    (u) =>
+      u.role === 'EMPLOYEE' &&
+      u.isActive &&
+      isStoreInCourseScope(u.storeId, course.value) &&
+      !enrolledUserIds.value.has(u.id),
   ),
 )
+
+watch(selectedChainId, () => {
+  if (!availableRegions.value.some((region) => region.id === selectedRegionId.value)) selectedRegionId.value = null
+  selectedStoreId.value = null
+})
+
+watch(selectedRegionId, () => {
+  selectedStoreId.value = null
+})
 
 const employeeSearch = ref('')
 const filteredAvailableEmployees = computed(() => {
@@ -50,7 +94,7 @@ async function enrollSelected() {
   submitting.value = true
   try {
     const res = await enrollmentService.enrollUsers(courseId, selectedUserIds.value)
-    resultMsg.value = `Đã ghi danh ${res.data.enrolled.length} người. Bỏ qua ${res.data.skipped.length} người (đã ghi danh từ trước).`
+    resultMsg.value = `Đã ghi danh ${res.data.enrolled.length} người. Bỏ qua ${res.data.skipped.length} người (đã ghi danh hoặc không còn đủ điều kiện).`
     selectedUserIds.value = []
     refreshRoster()
     refreshFullRoster()
@@ -68,7 +112,7 @@ async function enrollStore() {
   submitting.value = true
   try {
     const res = await enrollmentService.enrollByStore(courseId, selectedStoreId.value)
-    resultMsg.value = `Đã ghi danh ${res.data.enrolled.length} người. Bỏ qua ${res.data.skipped.length} người (đã ghi danh từ trước).`
+    resultMsg.value = `Đã ghi danh ${res.data.enrolled.length} người. Bỏ qua ${res.data.skipped.length} người (đã ghi danh hoặc không còn đủ điều kiện).`
     selectedStoreId.value = null
     refreshRoster()
     refreshFullRoster()
@@ -88,12 +132,13 @@ async function unenroll(e) {
 </script>
 
 <template>
-  <div class="page">
-    <div class="detail-header">
-      <button class="back-btn" @click="router.push({ name: 'manage-courses' })"><ChevronLeft :size="18" /></button>
-      <div class="detail-heading">
-        <h1>Ghi danh — {{ course?.title }}</h1>
-        <div class="detail-meta">{{ fullRoster?.length ?? 0 }} người đã ghi danh</div>
+  <div class="page trainer-page enrollment-workspace">
+    <TrainerCourseNav :course="course" active="enrollments" />
+
+    <div class="trainer-context-header">
+      <div>
+        <h2>Ghi danh nhân viên</h2>
+        <p>{{ fullRoster?.length ?? 0 }} nhân viên đang tham gia khóa học.</p>
       </div>
     </div>
 
@@ -103,8 +148,12 @@ async function unenroll(e) {
     <p v-if="resultMsg" class="alert alert-success">{{ resultMsg }}</p>
     <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
 
-    <div class="manage-layout">
-      <div class="manage-table-wrap">
+    <div class="manage-layout enrollment-layout">
+      <div class="manage-table-wrap trainer-panel enrollment-roster">
+        <div class="trainer-panel-heading">
+          <div><h2>Danh sách đã ghi danh</h2><p>Theo dõi Siêu thị và tiến độ hiện tại.</p></div>
+          <Users :size="19" />
+        </div>
         <div class="roster-header">
           <div>NHÂN VIÊN</div>
           <div>SIÊU THỊ</div>
@@ -129,23 +178,61 @@ async function unenroll(e) {
       </div>
 
       <div class="enroll-side">
-        <div class="card">
-          <h2>Ghi danh theo siêu thị</h2>
-          <div class="form-field">
-            <select v-model="selectedStoreId" class="input" :disabled="!course?.isActive">
-              <option :value="null">-- Chọn siêu thị --</option>
-              <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
+        <div class="trainer-panel enroll-store-card">
+          <div class="trainer-panel-heading">
+            <div><h2>Ghi danh theo Siêu thị</h2><p>Chọn lần lượt Chuỗi, Vùng và Siêu thị.</p></div>
+            <Store :size="19" />
           </div>
-          <button class="btn btn-primary" :disabled="!selectedStoreId || submitting || !course?.isActive" @click="enrollStore">
-            Ghi danh cả siêu thị
-          </button>
+
+          <div v-if="scopeEligibleStores.length === 0" class="state-text enrollment-card-padding">
+            Không có Siêu thị phù hợp với phạm vi khóa học.
+          </div>
+
+          <div v-else class="enrollment-filter-flow">
+            <label class="enrollment-filter-step">
+              <span class="enrollment-step-number">1</span>
+              <span class="enrollment-step-label"><Building2 :size="15" /> Chọn Chuỗi</span>
+              <select v-model="selectedChainId" class="input" :disabled="!course?.isActive">
+                <option :value="null">-- Chọn Chuỗi --</option>
+                <option v-for="chain in availableChains" :key="chain.id" :value="chain.id">{{ chain.name }}</option>
+              </select>
+            </label>
+
+            <label class="enrollment-filter-step" :class="{ muted: !selectedChainId }">
+              <span class="enrollment-step-number">2</span>
+              <span class="enrollment-step-label"><MapPinned :size="15" /> Chọn Vùng</span>
+              <select v-model="selectedRegionId" class="input" :disabled="!course?.isActive || !selectedChainId">
+                <option :value="null">-- Chọn Vùng --</option>
+                <option v-for="region in availableRegions" :key="region.id" :value="region.id">{{ region.name }}</option>
+              </select>
+            </label>
+
+            <label class="enrollment-filter-step" :class="{ muted: !selectedRegionId }">
+              <span class="enrollment-step-number">3</span>
+              <span class="enrollment-step-label"><Store :size="15" /> Chọn Siêu thị</span>
+              <select v-model="selectedStoreId" class="input" :disabled="!course?.isActive || !selectedChainId || !selectedRegionId">
+                <option :value="null">-- Chọn Siêu thị --</option>
+                <option v-for="store in filteredStores" :key="store.id" :value="store.id">{{ store.name }}</option>
+              </select>
+              <small v-if="selectedChainId && selectedRegionId">
+                Tìm thấy {{ filteredStores.length }} Siêu thị đúng Chuỗi và Vùng đã chọn.
+              </small>
+            </label>
+
+            <button class="btn btn-primary" :disabled="!selectedStoreId || submitting || !course?.isActive" @click="enrollStore">
+              <Users :size="16" /> Ghi danh cả Siêu thị
+            </button>
+          </div>
         </div>
 
-        <div class="card">
-          <h2>Ghi danh cá nhân</h2>
-          <div v-if="availableEmployees.length === 0" class="state-text">Tất cả nhân viên đã được ghi danh.</div>
-          <template v-else>
+        <div class="trainer-panel enroll-person-card">
+          <div class="trainer-panel-heading">
+            <div><h2>Ghi danh cá nhân</h2><p>Chọn một hoặc nhiều nhân viên phù hợp.</p></div>
+            <Users :size="19" />
+          </div>
+          <div class="enrollment-card-padding">
+            <div v-if="availableEmployees.length === 0" class="state-text">Không còn nhân viên phù hợp để ghi danh.</div>
+            <template v-else>
             <input
               v-model="employeeSearch"
               type="text"
@@ -167,7 +254,8 @@ async function unenroll(e) {
             >
               Ghi danh {{ selectedUserIds.length > 0 ? `(${selectedUserIds.length})` : '' }}
             </button>
-          </template>
+            </template>
+          </div>
         </div>
       </div>
     </div>

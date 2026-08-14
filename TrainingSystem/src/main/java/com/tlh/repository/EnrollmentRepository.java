@@ -16,6 +16,8 @@ public interface EnrollmentRepository {
     List<Enrollment> getByUser(long userId, Integer page, Integer size);
     Enrollment getById(long id);
     Enrollment getByCourseAndUser(long courseId, long userId);
+    Enrollment getByCourseAndUserForUpdate(long courseId, long userId);
+    boolean hasEnrollments(long courseId);
     void saveOrUpdate(Enrollment e);
     void delete(long id);
 }

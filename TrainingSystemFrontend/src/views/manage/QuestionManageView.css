@@ -41,13 +41,30 @@
 .qmg-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  overflow: hidden;
 }
 
 .qmg-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: #f8f9fa;
+}
+
+.qmg-card-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qmg-card-number {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .qmg-card-actions {
@@ -57,9 +74,15 @@
 }
 
 .qmg-content {
-  font-size: 13.5px;
+  padding: 18px 18px 16px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-text);
-  line-height: 1.5;
+  line-height: 1.55;
+}
+
+.qmg-edit {
+  padding: 16px 18px;
 }
 
 .qmg-edit-actions {
@@ -71,17 +94,64 @@
 .qmg-options {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   border-top: 1px solid var(--color-border);
-  padding-top: 10px;
+  padding: 14px 18px 18px;
+}
+
+.qmg-options-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.qmg-options-heading strong,
+.qmg-options-heading span {
+  display: block;
+}
+
+.qmg-options-heading strong {
+  color: var(--color-heading);
+  font-size: 12.5px;
+}
+
+.qmg-options-heading span {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.qmg-options-empty {
+  padding: 11px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #f8f9fa;
+  color: var(--color-text-muted);
+  font-size: 11.5px;
 }
 
 .qmg-option-row {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #fff;
   font-size: 12.5px;
   color: var(--color-text);
+}
+
+.qmg-option-row:has(input:checked) {
+  border-color: #b9d8ed;
+  background: var(--color-accent-light);
+}
+
+.qmg-option-row input {
+  accent-color: var(--color-accent);
   cursor: pointer;
 }
 
@@ -89,12 +159,102 @@
   flex: 1;
 }
 
-.qmg-add-option {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
+.qmg-option-remove {
+  border: none;
+  background: transparent;
+  color: var(--color-danger);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.qmg-add-option .input {
-  flex: 1;
+.qmg-option-remove:hover {
+  text-decoration: underline;
+}
+
+.qmg-form-heading {
+  margin-bottom: 16px;
+}
+
+.qmg-form-heading h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.qmg-form-heading p {
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.qmg-option-context {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--color-accent);
+  background: #f8fbfd;
+}
+
+.qmg-option-context span,
+.qmg-option-context strong {
+  display: block;
+}
+
+.qmg-correct-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 13px;
+  border: 1px solid #b9d8ed;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-light);
+  cursor: pointer;
+}
+
+.qmg-correct-choice input {
+  margin-top: 3px;
+  accent-color: var(--color-accent);
+}
+
+.qmg-correct-choice strong,
+.qmg-correct-choice small {
+  display: block;
+}
+
+.qmg-correct-choice strong {
+  color: var(--color-heading);
+  font-size: 12px;
+}
+
+.qmg-correct-choice small {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 10.5px;
+}
+
+.qmg-option-context span {
+  margin-bottom: 3px;
+  color: var(--color-text-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.qmg-option-context strong {
+  color: var(--color-heading);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .qmg-card-header,
+  .qmg-options-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .qmg-card-header .row-action-group,
+  .qmg-options-heading .btn {
+    width: 100%;
+  }
 }

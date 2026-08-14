@@ -10,6 +10,9 @@ export default {
     submit(attemptId, body) {
         return http.post(`/api/secure/attempts/${attemptId}/submit`, body);
     },
+    abandon(attemptId) {
+        return http.post(`/api/secure/attempts/${attemptId}/abandon`);
+    },
     getById(attemptId) {
         return http.get(`/api/secure/attempts/${attemptId}`);
     },

@@ -6,6 +6,7 @@ package com.tlh.repository.impl;
 
 import com.tlh.pojo.Enrollment;
 import com.tlh.repository.EnrollmentRepository;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -86,6 +87,31 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository{
         q.select(root).where(predicates.toArray(Predicate[]::new));
         List<Enrollment> results = s.createQuery(q).getResultList();
         return results.isEmpty() ? null : results.get(0);
+    }
+
+    @Override
+    public Enrollment getByCourseAndUserForUpdate(long courseId, long userId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Enrollment> q = b.createQuery(Enrollment.class);
+        Root<Enrollment> root = q.from(Enrollment.class);
+        q.select(root).where(
+                b.equal(root.get("courseId").get("id"), courseId),
+                b.equal(root.get("userId").get("id"), userId));
+        List<Enrollment> results = s.createQuery(q)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .getResultList();
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    @Override
+    public boolean hasEnrollments(long courseId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Enrollment> root = q.from(Enrollment.class);
+        q.select(b.count(root)).where(b.equal(root.get("courseId").get("id"), courseId));
+        return s.createQuery(q).getSingleResult() > 0;
     }
 
     @Override

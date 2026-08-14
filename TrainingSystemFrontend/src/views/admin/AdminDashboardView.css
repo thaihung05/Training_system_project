@@ -1,34 +1,105 @@
+.admin-page-header .btn {
+  flex: 0 0 auto;
+}
+
 .admin-stats {
-  margin-bottom: var(--space-6);
+  margin-bottom: 20px;
+  border-top: 4px solid #ffd400;
+  border-radius: var(--radius-lg);
 }
 
-.admin-hub {
+.admin-dashboard-columns {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 }
 
-.admin-hub-card {
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.admin-dashboard-panel {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  background: #fff;
 }
 
-.admin-hub-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15.5px;
-  color: var(--color-heading);
+.admin-dashboard-panel-heading {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.admin-hub-desc {
-  font-size: 12.5px;
+.admin-dashboard-panel-heading h2 {
+  margin: 0;
+  font-size: 14.5px;
+}
+
+.admin-dashboard-panel-heading p {
+  margin-top: 3px;
   color: var(--color-text-muted);
+  font-size: 11.5px;
 }
 
-@media (max-width: 900px) {
-  .admin-hub {
+.admin-task-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 64px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.admin-task-row:hover {
+  background: #f8fbfd;
+  color: var(--color-accent);
+}
+
+.admin-task-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #b9d8ed;
+  border-radius: 5px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.admin-task-row strong,
+.admin-task-row small {
+  display: block;
+}
+
+.admin-task-row strong {
+  color: var(--color-heading);
+  font-size: 12.5px;
+}
+
+.admin-task-row small {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 10.5px;
+}
+
+@media (max-width: 980px) {
+  .admin-dashboard-columns {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-page-header .btn {
+    width: 100%;
+  }
+
+  .admin-stats .stat-rail-item {
+    flex: 1 1 100%;
+    border-top: 1px solid var(--color-border);
+    border-left: none;
+  }
+
+  .admin-stats .stat-rail-item:first-child {
+    border-top: none;
   }
 }

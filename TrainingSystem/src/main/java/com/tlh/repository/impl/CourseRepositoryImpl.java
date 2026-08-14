@@ -4,11 +4,17 @@
  */
 package com.tlh.repository.impl;
 
+import com.tlh.pojo.Chain;
 import com.tlh.pojo.Course;
 import com.tlh.pojo.Enrollment;
+import com.tlh.pojo.Region;
+import com.tlh.pojo.Store;
 import com.tlh.repository.CourseRepository;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -108,9 +114,65 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     @Override
+    public List<Course> getCoursesForTrainer(String kw, Long chainId, Long regionId, Store store, Integer page, Integer size) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Course> q = b.createQuery(Course.class);
+        Root<Course> root = q.from(Course.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.isTrue(root.get("isActive")));
+        if (kw != null && !kw.trim().isEmpty()) {
+            predicates.add(b.like(b.lower(root.get("title")), "%" + kw.trim().toLowerCase() + "%"));
+        }
+
+        boolean hasStore = store != null && store.getChainId() != null && store.getRegionId() != null;
+        if (hasStore) {
+            Join<Course, Chain> scopeChain = root.join("chains", JoinType.LEFT);
+            Join<Course, Region> scopeRegion = root.join("regions", JoinType.LEFT);
+            predicates.add(b.or(
+                    b.isEmpty(root.get("chains")),
+                    b.equal(scopeChain.get("id"), store.getChainId().getId())));
+            predicates.add(b.or(
+                    b.isEmpty(root.get("regions")),
+                    b.equal(scopeRegion.get("id"), store.getRegionId().getId())));
+        } else {
+            predicates.add(b.isEmpty(root.get("chains")));
+            predicates.add(b.isEmpty(root.get("regions")));
+        }
+
+        if (chainId != null) {
+            Join<Course, Chain> filterChain = root.join("chains", JoinType.INNER);
+            predicates.add(b.equal(filterChain.get("id"), chainId));
+        }
+        if (regionId != null) {
+            Join<Course, Region> filterRegion = root.join("regions", JoinType.INNER);
+            predicates.add(b.equal(filterRegion.get("id"), regionId));
+        }
+
+        q.select(root).distinct(true).where(predicates.toArray(Predicate[]::new));
+        q.orderBy(b.desc(root.get("id")));
+
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            int p = Math.max(page, 1);
+            query.setFirstResult((p - 1) * size);
+            query.setMaxResults(size);
+        }
+
+        return query.getResultList();
+    }
+
+    @Override
     public Course getCourseById(long id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.get(Course.class, id);
+    }
+
+    @Override
+    public Course getCourseByIdForUpdate(long id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.find(Course.class, id, LockModeType.PESSIMISTIC_WRITE);
     }
 
     @Override

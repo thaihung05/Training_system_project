@@ -17,6 +17,7 @@ const { data: questions, loading, error } = useAsyncData(() =>
 
 const answers = ref({})
 const submitting = ref(false)
+const abandoning = ref(false)
 const errorMsg = ref('')
 
 const answeredCount = computed(() => Object.keys(answers.value).length)
@@ -37,6 +38,20 @@ async function submitAttempt() {
   } catch (err) {
     errorMsg.value = err.response?.data || 'Nộp bài thất bại.'
     submitting.value = false
+  }
+}
+
+async function abandonAttempt() {
+  if (!(await confirmDialog('Kết thúc lượt làm bài này? Lượt làm sẽ được tính là 0 điểm và không thể mở lại.'))) return
+  abandoning.value = true
+  errorMsg.value = ''
+  try {
+    await testAttemptService.abandon(attemptId)
+    if (courseId) router.push({ name: 'course-detail', params: { id: courseId } })
+    else router.push({ name: 'my-attempts' })
+  } catch (err) {
+    errorMsg.value = err.response?.data || 'Không thể kết thúc lượt làm bài.'
+    abandoning.value = false
   }
 }
 </script>
@@ -62,14 +77,14 @@ async function submitAttempt() {
       </div>
     </div>
 
-    <button
-      v-if="questions && questions.length > 0"
-      class="btn btn-primary attempt-submit"
-      :disabled="submitting"
-      @click="submitAttempt"
-    >
-      Nộp bài
-    </button>
+    <div v-if="questions && questions.length > 0" class="attempt-actions">
+      <button class="btn btn-secondary" :disabled="submitting || abandoning" @click="abandonAttempt">
+        {{ abandoning ? 'Đang kết thúc…' : 'Kết thúc lượt làm' }}
+      </button>
+      <button class="btn btn-primary" :disabled="submitting || abandoning" @click="submitAttempt">
+        {{ submitting ? 'Đang nộp…' : 'Nộp bài' }}
+      </button>
+    </div>
   </div>
 </template>
 

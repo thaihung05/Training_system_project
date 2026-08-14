@@ -14,12 +14,14 @@ import com.tlh.service.UserBadgeService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class UserBadgeServiceImpl implements UserBadgeService{
 
     @Autowired
@@ -38,27 +40,23 @@ public class UserBadgeServiceImpl implements UserBadgeService{
 
     @Override
     public void checkAndAward(Long userId, String badgeCode) {
-         try {
-            if (userId == null || badgeCode == null) {
-                return;
-            }
-             Badge badge = this.badgeRepo.getByCode(badgeCode);
-            if (badge == null) {
-                System.err.println("Khong co Badge voi code: " + badgeCode);
-                return;
-            }
-            UserBadge existed = this.userBadgeRepo.getByUserAndBadge(userId, badge.getId());
-            if (existed != null) {
-                return;
-            }
-            UserBadge ub = new UserBadge();
-            ub.setUserId(new User(userId));
-            ub.setBadgeId(badge);
-            this.userBadgeRepo.saveOrUpdate(ub);
-            this.notificationService.create(userId, "Huy hiệu mới", "Bạn vừa nhận được huy hiệu " + badge.getName(), "/leaderboard");
-        } catch (Exception e) {
-            System.err.println("UserBadgeService.checkAndAward that bai: " + e.getMessage());
+        if (userId == null || badgeCode == null) {
+            return;
         }
+        Badge badge = this.badgeRepo.getByCode(badgeCode);
+        if (badge == null) {
+            System.err.println("Khong co Badge voi code: " + badgeCode);
+            return;
+        }
+        UserBadge existed = this.userBadgeRepo.getByUserAndBadge(userId, badge.getId());
+        if (existed != null) {
+            return;
+        }
+        UserBadge ub = new UserBadge();
+        ub.setUserId(new User(userId));
+        ub.setBadgeId(badge);
+        this.userBadgeRepo.saveOrUpdate(ub);
+        this.notificationService.create(userId, "Huy hiệu mới", "Bạn vừa nhận được huy hiệu " + badge.getName(), "/leaderboard");
     }
     
 }

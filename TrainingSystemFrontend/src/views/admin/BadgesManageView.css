@@ -1,54 +1,73 @@
 .badge-manage-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
 }
 
 .badge-manage-card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 44px 1fr;
   align-items: center;
-  text-align: center;
-  gap: 6px;
+  gap: 4px 12px;
+  padding: 14px;
 }
 
 .badge-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  grid-row: 1 / span 3;
+  place-items: center;
+  border: 1px solid #e3bd00;
+  border-radius: 6px;
+  background: #ffd400;
+  color: #005796;
+}
+
+.badge-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .badge-manage-name {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 14px;
   color: var(--color-heading);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .badge-manage-code {
+  color: var(--color-accent);
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .badge-manage-desc {
-  font-size: 11.5px;
+  min-height: 34px;
   color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .badge-manage-actions {
-  margin-top: 4px;
-  justify-content: center;
+  grid-column: 1 / -1;
+  margin-top: 9px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1080px) {
   .badge-manage-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .badge-manage-grid {
+    grid-template-columns: 1fr;
+    padding: 12px;
   }
 }

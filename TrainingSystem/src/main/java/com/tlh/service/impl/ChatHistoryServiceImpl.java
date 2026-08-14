@@ -16,12 +16,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author LENOVO
  */
 @Service
+@Transactional
 public class ChatHistoryServiceImpl implements ChatHistoryService{
 
     @Autowired
@@ -40,11 +42,15 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
     public ChatHistory ask(User caller, String question, String sessionId) {
         if (question == null || question.trim().isEmpty())
             throw new IllegalArgumentException("Câu hỏi không được để trống");
+        if (question.trim().length() > 65535)
+            throw new IllegalArgumentException("Câu hỏi quá dài");
+        if (sessionId != null && sessionId.trim().length() > 100)
+            throw new IllegalArgumentException("Mã phiên hỏi đáp quá dài");
 
         ChatHistory ch = new ChatHistory();
         ch.setUserId(caller);
         ch.setQuestion(question.trim());
-        ch.setSessionId(sessionId);
+        ch.setSessionId(sessionId == null ? null : sessionId.trim());
         ch.setCreatedAt(new Date());
         try {
             String apiUrl = this.env.getProperty("chatbot.api.url");
@@ -119,6 +125,8 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
             throw new IllegalArgumentException("Câu hỏi này đã được trả lời");
         if (answertext == null || answertext.trim().isEmpty())
             throw new IllegalArgumentException("Câu trả lời không được để trống");
+        if (answertext.trim().length() > 65535)
+            throw new IllegalArgumentException("Câu trả lời quá dài");
         if (!canAnswer(caller, ch)) {
             throw new IllegalArgumentException("Bạn không có quyền trả lời câu hỏi này");
         }

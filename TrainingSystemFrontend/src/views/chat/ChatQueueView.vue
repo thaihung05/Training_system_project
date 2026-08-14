@@ -4,6 +4,7 @@ import { useLazyList } from '@/composables/useLazyList'
 import chatService from '@/api/chatService'
 import { showError } from '@/utils/alerts'
 import { formatDateTime as formatDate } from '@/utils/formatDate'
+import { Clock3, MessageCircleQuestion, Send } from '@lucide/vue'
 
 const { items: pending, loading, loadingMore, hasMore, loadMore, reload } = useLazyList(
   (page, size) => chatService.getPending(page, size),
@@ -30,39 +31,38 @@ async function submitAnswer(item) {
 </script>
 
 <template>
-  <div class="page">
-    <div class="page-header">
-      <h1>Câu hỏi chờ trả lời</h1>
-      <p class="page-subtitle">
-        Câu hỏi gửi cho trợ lý ảo chung của công ty (qua khung chat nổi ở góc màn hình) — không thuộc riêng khoá học nào.
-        Câu hỏi trong diễn đàn từng khoá học nằm ở tab "Diễn đàn" trong trang chi tiết khoá học đó.
-      </p>
-    </div>
+  <div class="page trainer-page trainer-queue-page">
+    <header class="trainer-page-header">
+      <div>
+        <h1>Hộp thư hỏi đáp</h1>
+        <p>Các câu hỏi gửi đến trợ lý chung của công ty. Câu hỏi thuộc khóa học vẫn được xử lý tại diễn đàn của khóa đó.</p>
+      </div>
+      <div class="queue-counter"><MessageCircleQuestion :size="18" /><strong>{{ pending.length }}</strong><span>đang chờ</span></div>
+    </header>
 
     <p v-if="loading" class="state-text">Đang tải...</p>
     <div v-else-if="pending.length === 0" class="empty-state">Không có câu hỏi nào đang chờ trả lời.</div>
     <template v-else>
       <div class="queue-list">
-        <div v-for="item in pending" :key="item.id" class="card queue-card">
+        <div v-for="item in pending" :key="item.id" class="trainer-panel queue-card">
           <div class="queue-meta">
-            <span class="queue-user">{{ item.userId.name }}</span>
-            <span class="queue-date">{{ formatDate(item.createdAt) }}</span>
+            <span class="queue-user"><span class="queue-avatar">{{ item.userId.name?.charAt(0) }}</span>{{ item.userId.name }}</span>
+            <span class="queue-date"><Clock3 :size="13" />{{ formatDate(item.createdAt) }}</span>
           </div>
           <div class="queue-question">{{ item.question }}</div>
           <div class="queue-answer-row">
-            <input
+            <textarea
               v-model="answerDrafts[item.id]"
-              type="text"
               class="input"
-              placeholder="Nhập câu trả lời..."
-              @keyup.enter="submitAnswer(item)"
-            />
+              rows="2"
+              placeholder="Viết câu trả lời rõ ràng cho nhân viên…"
+            ></textarea>
             <button
               class="btn btn-primary btn-sm"
               :disabled="submitting === item.id || !answerDrafts[item.id]?.trim()"
               @click="submitAnswer(item)"
             >
-              Trả lời
+              <Send :size="15" /> Gửi trả lời
             </button>
           </div>
         </div>
