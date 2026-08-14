@@ -5,7 +5,7 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
 import userService from '@/api/userService'
-import departmentService from '@/api/departmentService'
+import storeService from '@/api/storeService'
 import pointService from '@/api/pointService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import { formatDateTime as formatDate } from '@/utils/formatDate'
@@ -18,7 +18,7 @@ const { items: users, loading, loadingMore, hasMore, loadMore, reload } = useLaz
   (page, size) => userService.getAll(keyword.value, page, size),
   20,
 )
-const { data: departments } = useAsyncData(() => departmentService.getAll())
+const { data: stores } = useAsyncData(() => storeService.getAll())
 
 let debounceTimer = null
 function onSearchInput() {
@@ -26,9 +26,9 @@ function onSearchInput() {
   debounceTimer = setTimeout(reload, 400)
 }
 
-const deptFilter = ref(null)
+const storeFilter = ref(null)
 
-watch(deptFilter, async (val) => {
+watch(storeFilter, async (val) => {
   if (val === null) return
   while (hasMore.value) {
     await loadMore()
@@ -37,20 +37,20 @@ watch(deptFilter, async (val) => {
 
 const filteredUsers = computed(() => {
   const list = users.value || []
-  if (deptFilter.value === null) return list
-  if (deptFilter.value === 'none') return list.filter((u) => !u.departmentId)
-  return list.filter((u) => u.departmentId && u.departmentId.id === deptFilter.value)
+  if (storeFilter.value === null) return list
+  if (storeFilter.value === 'none') return list.filter((u) => !u.storeId)
+  return list.filter((u) => u.storeId && u.storeId.id === storeFilter.value)
 })
 
 const editingId = ref(null)
 const showForm = ref(false)
-const form = ref({ name: '', username: '', email: '', password: '', role: 'EMPLOYEE', departmentId: null })
+const form = ref({ name: '', username: '', email: '', password: '', role: 'EMPLOYEE', storeId: null })
 const saving = ref(false)
 const errorMsg = ref('')
 
 function openCreateForm() {
   editingId.value = null
-  form.value = { name: '', username: '', email: '', password: '', role: 'EMPLOYEE', departmentId: null }
+  form.value = { name: '', username: '', email: '', password: '', role: 'EMPLOYEE', storeId: null }
   errorMsg.value = ''
   showForm.value = true
 }
@@ -63,7 +63,7 @@ function openEditForm(u) {
     email: u.email,
     password: '',
     role: u.role,
-    departmentId: u.departmentId ? u.departmentId.id : null,
+    storeId: u.storeId ? u.storeId.id : null,
   }
   errorMsg.value = ''
   showForm.value = true
@@ -78,7 +78,7 @@ async function submit() {
         name: form.value.name,
         email: form.value.email,
         role: form.value.role,
-        departmentId: form.value.departmentId ? { id: form.value.departmentId } : null,
+        storeId: form.value.storeId ? { id: form.value.storeId } : null,
       }
       await userService.update(editingId.value, payload)
     } else {
@@ -88,7 +88,7 @@ async function submit() {
         email: form.value.email,
         password: form.value.password,
         role: form.value.role,
-        departmentId: form.value.departmentId ? { id: form.value.departmentId } : null,
+        storeId: form.value.storeId ? { id: form.value.storeId } : null,
       }
       await userService.create(payload)
     }
@@ -189,10 +189,10 @@ async function viewPoints(u) {
         <div class="search-bar">
           <input v-model="keyword" type="text" placeholder="Tìm theo tên hoặc email..." @input="onSearchInput" />
         </div>
-        <select v-model="deptFilter" class="input users-dept-select">
-          <option :value="null">Tất cả phòng ban</option>
-          <option value="none">Không thuộc phòng ban</option>
-          <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+        <select v-model="storeFilter" class="input users-dept-select">
+          <option :value="null">Tất cả siêu thị</option>
+          <option value="none">Không thuộc siêu thị</option>
+          <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
         </select>
       </div>
 
@@ -224,10 +224,10 @@ async function viewPoints(u) {
             </select>
           </div>
           <div class="form-field">
-            <label>Phòng ban</label>
-            <select v-model="form.departmentId" class="input">
-              <option :value="null">Không thuộc phòng ban</option>
-              <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+            <label>Siêu thị</label>
+            <select v-model="form.storeId" class="input">
+              <option :value="null">Không thuộc siêu thị</option>
+              <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
           </div>
         </div>
@@ -256,7 +256,7 @@ async function viewPoints(u) {
 
       <div class="manage-table-wrap">
         <div class="users-table-header">
-          <div>HỌ TÊN</div><div>EMAIL</div><div>PHÒNG BAN</div><div>VAI TRÒ</div><div>TRẠNG THÁI</div><div>HÀNH ĐỘNG</div>
+          <div>HỌ TÊN</div><div>EMAIL</div><div>SIÊU THỊ</div><div>VAI TRÒ</div><div>TRẠNG THÁI</div><div>HÀNH ĐỘNG</div>
         </div>
         <p v-if="loading" class="state-text">Đang tải...</p>
         <div v-else-if="filteredUsers.length === 0" class="empty-state">Không tìm thấy người dùng nào.</div>
@@ -264,7 +264,7 @@ async function viewPoints(u) {
           <div v-for="u in filteredUsers" :key="u.id" class="users-row">
             <div class="users-row-name">{{ u.name }}</div>
             <div class="users-row-email">{{ u.email }}</div>
-            <div class="users-row-dept">{{ u.departmentId ? u.departmentId.name : '—' }}</div>
+            <div class="users-row-dept">{{ u.storeId ? u.storeId.name : '—' }}</div>
             <div class="users-row-role">{{ u.role }}</div>
             <div>
               <span class="badge" :class="u.isActive ? 'badge-success' : 'badge-neutral'">

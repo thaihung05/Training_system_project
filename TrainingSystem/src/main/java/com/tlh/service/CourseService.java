@@ -13,7 +13,7 @@ import java.util.List;
  * @author LENOVO
  */
 public interface CourseService {
-    List<Course> getCourses(String kw, Long departmentId, User caller, Integer page, Integer size, Boolean activeOnly);
+    List<Course> getCourses(String kw, Long chainId, Long regionId, User caller, Integer page, Integer size, Boolean activeOnly);
     Course getCourseById(long id);
     List<Course> getMyCourses(User caller, Integer page, Integer size);
     Course addOrUpdate(Course c);

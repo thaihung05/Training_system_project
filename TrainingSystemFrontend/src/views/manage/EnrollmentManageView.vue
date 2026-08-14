@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
 import courseService from '@/api/courseService'
-import departmentService from '@/api/departmentService'
+import storeService from '@/api/storeService'
 import userService from '@/api/userService'
 import enrollmentService from '@/api/enrollmentService'
 import { confirmDialog } from '@/utils/alerts'
@@ -20,7 +20,7 @@ const { items: roster, loading: rosterLoading, loadingMore: rosterLoadingMore, h
   20,
 )
 const { data: fullRoster, refresh: refreshFullRoster } = useAsyncData(() => enrollmentService.getRoster(courseId))
-const { data: departments } = useAsyncData(() => departmentService.getAll())
+const { data: stores } = useAsyncData(() => storeService.getAll())
 const { data: allUsers } = useAsyncData(() => userService.getAll())
 
 const enrolledUserIds = computed(() => new Set((fullRoster.value || []).map((e) => e.userId.id)))
@@ -38,7 +38,7 @@ const filteredAvailableEmployees = computed(() => {
 })
 
 const selectedUserIds = ref([])
-const selectedDeptId = ref(null)
+const selectedStoreId = ref(null)
 const resultMsg = ref('')
 const errorMsg = ref('')
 const submitting = ref(false)
@@ -61,15 +61,15 @@ async function enrollSelected() {
   }
 }
 
-async function enrollDepartment() {
-  if (!selectedDeptId.value) return
+async function enrollStore() {
+  if (!selectedStoreId.value) return
   errorMsg.value = ''
   resultMsg.value = ''
   submitting.value = true
   try {
-    const res = await enrollmentService.enrollByDepartment(courseId, selectedDeptId.value)
+    const res = await enrollmentService.enrollByStore(courseId, selectedStoreId.value)
     resultMsg.value = `Đã ghi danh ${res.data.enrolled.length} người. Bỏ qua ${res.data.skipped.length} người (đã ghi danh từ trước).`
-    selectedDeptId.value = null
+    selectedStoreId.value = null
     refreshRoster()
     refreshFullRoster()
   } catch (err) {
@@ -107,7 +107,7 @@ async function unenroll(e) {
       <div class="manage-table-wrap">
         <div class="roster-header">
           <div>NHÂN VIÊN</div>
-          <div>PHÒNG BAN</div>
+          <div>SIÊU THỊ</div>
           <div>TIẾN ĐỘ</div>
           <div>HÀNH ĐỘNG</div>
         </div>
@@ -116,7 +116,7 @@ async function unenroll(e) {
         <template v-else>
           <div v-for="e in roster" :key="e.id" class="roster-row">
             <div class="roster-row-name">{{ e.userId.name }}</div>
-            <div class="roster-row-dept">{{ e.userId.departmentId ? e.userId.departmentId.name : '—' }}</div>
+            <div class="roster-row-dept">{{ e.userId.storeId ? e.userId.storeId.name : '—' }}</div>
             <div class="roster-row-progress">{{ e.progressPercent }}%</div>
             <div class="row-action-group">
               <button class="row-action-btn row-action-btn--danger" @click="unenroll(e)"><UserMinus :size="13" /> Huỷ ghi danh</button>
@@ -130,15 +130,15 @@ async function unenroll(e) {
 
       <div class="enroll-side">
         <div class="card">
-          <h2>Ghi danh theo phòng ban</h2>
+          <h2>Ghi danh theo siêu thị</h2>
           <div class="form-field">
-            <select v-model="selectedDeptId" class="input" :disabled="!course?.isActive">
-              <option :value="null">-- Chọn phòng ban --</option>
-              <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+            <select v-model="selectedStoreId" class="input" :disabled="!course?.isActive">
+              <option :value="null">-- Chọn siêu thị --</option>
+              <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
           </div>
-          <button class="btn btn-primary" :disabled="!selectedDeptId || submitting || !course?.isActive" @click="enrollDepartment">
-            Ghi danh cả phòng
+          <button class="btn btn-primary" :disabled="!selectedStoreId || submitting || !course?.isActive" @click="enrollStore">
+            Ghi danh cả siêu thị
           </button>
         </div>
 
@@ -157,7 +157,7 @@ async function unenroll(e) {
               <label v-for="u in filteredAvailableEmployees" :key="u.id" class="employee-pick-row">
                 <input type="checkbox" :value="u.id" v-model="selectedUserIds" :disabled="!course?.isActive" />
                 <span>{{ u.name }}</span>
-                <span class="employee-pick-dept">{{ u.departmentId ? u.departmentId.name : '—' }}</span>
+                <span class="employee-pick-dept">{{ u.storeId ? u.storeId.name : '—' }}</span>
               </label>
             </div>
             <button

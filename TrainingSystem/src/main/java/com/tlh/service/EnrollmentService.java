@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public interface EnrollmentService {
     Map<String, Object> enrollUsers(Course course, List<Long> userIds);
-    Map<String, Object> enrollDepartment(Course course, long departmentId);
+    Map<String, Object> enrollStore(Course course, long storeId);
     List<Enrollment> getRoster(long courseId, Integer page, Integer size);
     List<Enrollment> getMyEnrollments(long userId, Integer page, Integer size);
     Enrollment getById(long id);

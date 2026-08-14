@@ -4,16 +4,16 @@
  */
 package com.tlh.service;
 
-import com.tlh.pojo.Department;
+import com.tlh.pojo.Region;
 import java.util.List;
 
 /**
  *
  * @author LENOVO
  */
-public interface DepartmentService {
-    List<Department> getDepartments();
-    Department getDepartmentById(long id);
-    Department addOrUpdate(Department d);
-    void deleteDepartment(long id);
+public interface RegionService {
+    List<Region> getRegions();
+    Region getRegionById(long id);
+    Region addOrUpdate(Region r);
+    void deleteRegion(long id);
 }

@@ -87,9 +87,9 @@ public class User implements Serializable {
     @JsonIgnore
     @OneToMany(mappedBy = "createdBy")
     private List<Course> courseList;
-    @JoinColumn(name = "department_id", referencedColumnName = "id")
+    @JoinColumn(name = "store_id", referencedColumnName = "id")
     @ManyToOne
-    private Department departmentId;
+    private Store storeId;
 
     public User() {
     }
@@ -187,12 +187,12 @@ public class User implements Serializable {
         this.courseList = courseList;
     }
 
-    public Department getDepartmentId() {
-        return departmentId;
+    public Store getStoreId() {
+        return storeId;
     }
 
-    public void setDepartmentId(Department departmentId) {
-        this.departmentId = departmentId;
+    public void setStoreId(Store storeId) {
+        this.storeId = storeId;
     }
 
     @Override

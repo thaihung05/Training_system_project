@@ -72,8 +72,8 @@ public class ApiEnrollmentController {
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
     
-    @PostMapping("/courses/{courseId}/enrollments/by-department")
-    public ResponseEntity<?> enrollByDepartment(
+    @PostMapping("/courses/{courseId}/enrollments/by-store")
+    public ResponseEntity<?> enrollByStore(
             @PathVariable(value = "courseId") long courseId,
             @RequestBody Map<String, Long> body,
             Principal principal){
@@ -85,10 +85,10 @@ public class ApiEnrollmentController {
             return new ResponseEntity<>("Bạn không có quyền ghi danh cho khoá học này", HttpStatus.FORBIDDEN);
         if (!c.getIsActive())
             return new ResponseEntity<>("Khoá học chưa được kích hoạt", HttpStatus.BAD_REQUEST);
-        Long departmentId = body.get("departmentId");
-        if (departmentId == null)
-            return new ResponseEntity<>("Thiếu departmentId", HttpStatus.BAD_REQUEST);
-        Map<String, Object> result = this.enrollmentService.enrollDepartment(c, departmentId);
+        Long storeId = body.get("storeId");
+        if (storeId == null)
+            return new ResponseEntity<>("Thiếu storeId", HttpStatus.BAD_REQUEST);
+        Map<String, Object> result = this.enrollmentService.enrollStore(c, storeId);
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 

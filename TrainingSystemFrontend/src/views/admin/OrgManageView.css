@@ -38,6 +38,12 @@
   margin-top: 2px;
 }
 
+.store-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 900px) {
   .dept-grid {
     grid-template-columns: repeat(2, 1fr);

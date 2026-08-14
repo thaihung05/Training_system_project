@@ -134,14 +134,14 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public List<User> getUserByDepartment(String departmentId) {
+    public List<User> getUserByStore(String storeId) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<User> q = b.createQuery(User.class);
         Root<User> root = q.from(User.class);
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(b.equal(root.get("departmentId").get("id"), Long.parseLong(departmentId)));
+        predicates.add(b.equal(root.get("storeId").get("id"), Long.parseLong(storeId)));
         predicates.add(b.isTrue(root.get("isActive")));
 
         q.select(root);

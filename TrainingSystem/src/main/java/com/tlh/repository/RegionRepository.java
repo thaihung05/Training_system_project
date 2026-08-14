@@ -4,17 +4,17 @@
  */
 package com.tlh.repository;
 
-import com.tlh.pojo.Department;
+import com.tlh.pojo.Region;
 import java.util.List;
 
 /**
  *
  * @author LENOVO
  */
-public interface DepartmentRepository {
-    List<Department> getDepartments();
-    Department getDepartmentById(long id);
-    Department getDepartmentByName(String name);
-    void saveOrUpdate(Department d);
-    void deleteDepartment(long id);
+public interface RegionRepository {
+    List<Region> getRegions();
+    Region getRegionById(long id);
+    Region getRegionByName(String name);
+    void saveOrUpdate(Region r);
+    void deleteRegion(long id);
 }

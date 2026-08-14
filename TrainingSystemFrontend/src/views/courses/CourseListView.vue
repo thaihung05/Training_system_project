@@ -4,23 +4,23 @@ import { useLazyList } from '@/composables/useLazyList'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { useAuthStore } from '@/stores/auth'
 import courseService from '@/api/courseService'
-import departmentService from '@/api/departmentService'
+import chainService from '@/api/chainService'
+import regionService from '@/api/regionService'
 import { formatDate } from '@/utils/formatDate'
 import { thumbFor } from '@/utils/courseThumb'
+import { scopeLabel } from '@/utils/courseScope'
 
 const auth = useAuthStore()
 const keyword = ref('')
-const selectedDeptId = ref(null)
+const selectedChainId = ref(null)
+const selectedRegionId = ref(null)
 
 const { items: courses, loading, loadingMore, hasMore, loadMore, error, reload } = useLazyList(
-  (page, size) => courseService.getCourses(keyword.value, selectedDeptId.value, page, size),
+  (page, size) => courseService.getCourses(keyword.value, selectedChainId.value, selectedRegionId.value, page, size),
   9,
 )
-const { data: departments } = useAsyncData(() => departmentService.getAll())
-
-function selectDept(id) {
-  selectedDeptId.value = id
-}
+const { data: chains } = useAsyncData(() => chainService.getAll())
+const { data: regions } = useAsyncData(() => regionService.getAll())
 
 let debounceTimer = null
 watch(keyword, () => {
@@ -28,7 +28,7 @@ watch(keyword, () => {
   debounceTimer = setTimeout(reload, 400)
 })
 
-watch(selectedDeptId, reload)
+watch([selectedChainId, selectedRegionId], reload)
 </script>
 
 <template>
@@ -41,23 +41,15 @@ watch(selectedDeptId, reload)
       <div class="search-bar">
         <input v-model="keyword" type="text" placeholder="Tìm kiếm khoá học..." />
       </div>
-      <div v-if="!auth.isEmployee" class="filter-chips">
-        <button
-          class="filter-chip"
-          :class="{ 'filter-chip--active': selectedDeptId === null }"
-          @click="selectDept(null)"
-        >
-          Tất cả
-        </button>
-        <button
-          v-for="d in departments"
-          :key="d.id"
-          class="filter-chip"
-          :class="{ 'filter-chip--active': selectedDeptId === d.id }"
-          @click="selectDept(d.id)"
-        >
-          {{ d.name }}
-        </button>
+      <div v-if="!auth.isEmployee" class="course-filter-selects">
+        <select v-model="selectedChainId" class="input">
+          <option :value="null">Tất cả chuỗi</option>
+          <option v-for="c in chains" :key="c.id" :value="c.id">{{ c.name }}</option>
+        </select>
+        <select v-model="selectedRegionId" class="input">
+          <option :value="null">Tất cả vùng</option>
+          <option v-for="r in regions" :key="r.id" :value="r.id">{{ r.name }}</option>
+        </select>
       </div>
     </div>
 
@@ -71,7 +63,7 @@ watch(selectedDeptId, reload)
           <div class="course-card-thumb" :style="c.imageUrl ? {} : { background: thumbFor(c).bg }">
             <img v-if="c.imageUrl" :src="c.imageUrl" class="course-card-thumb-img" />
             <span v-else class="course-card-thumb-initials" :style="{ color: thumbFor(c).fg }">{{ thumbFor(c).initials }}</span>
-            <span class="course-card-badge">{{ c.departmentId ? c.departmentId.name : 'Toàn công ty' }}</span>
+            <span class="course-card-badge">{{ scopeLabel(c) }}</span>
           </div>
           <div class="course-card-body">
             <div class="course-card-title">{{ c.title }}</div>

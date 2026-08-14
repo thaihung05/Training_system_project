@@ -46,13 +46,14 @@ public class ApiSecureCourseController {
     @GetMapping
     public ResponseEntity<List<Course>> getCourses(
             @RequestParam(value = "kw", required = false) String kw,
-            @RequestParam(value = "departmentId", required = false) Long departmentId,
+            @RequestParam(value = "chainId", required = false) Long chainId,
+            @RequestParam(value = "regionId", required = false) Long regionId,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "activeOnly", required = false) Boolean activeOnly,
             Principal principal) {
         User caller = currentUser(principal);
-        return new ResponseEntity<>(this.courseService.getCourses(kw, departmentId, caller, page, size, activeOnly), HttpStatus.OK);
+        return new ResponseEntity<>(this.courseService.getCourses(kw, chainId, regionId, caller, page, size, activeOnly), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

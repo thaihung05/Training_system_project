@@ -55,7 +55,12 @@ public class SecurityConfigs {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.GET, "/api/secure/users/**").hasAnyRole("ADMIN", "TRAINER")
                     .requestMatchers("/api/secure/users/**").hasRole("ADMIN")
-                    .requestMatchers("/api/secure/departments/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/secure/chains/**").authenticated()
+                    .requestMatchers("/api/secure/chains/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/secure/regions/**").authenticated()
+                    .requestMatchers("/api/secure/regions/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/secure/stores/**").authenticated()
+                    .requestMatchers("/api/secure/stores/**").hasRole("ADMIN")
                     .requestMatchers("/api/secure/point-rules/**").hasRole("ADMIN")
                     .requestMatchers("/api/secure/badges/my").authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/secure/badges").hasRole("ADMIN")

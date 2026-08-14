@@ -19,7 +19,7 @@ public interface UserService {
     User getUserById(long id);
     User getUserByUsername(String username);
     List<User> getUsersByRole(String role);
-    List<User> getUsersByDepartment(String departmentId);
+    List<User> getUsersByStore(String storeId);
     User createUser(User u);
     List<Map<String, Object>> bulkImportUsers(MultipartFile file);
     User login(String username, String rawPassword);

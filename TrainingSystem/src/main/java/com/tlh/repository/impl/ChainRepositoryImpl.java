@@ -4,8 +4,8 @@
  */
 package com.tlh.repository.impl;
 
-import com.tlh.pojo.Department;
-import com.tlh.repository.DepartmentRepository;
+import com.tlh.pojo.Chain;
+import com.tlh.repository.ChainRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
@@ -22,60 +22,60 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Repository
 @Transactional
-public class DepartmentRepositoryImpl implements DepartmentRepository{
-    
+public class ChainRepositoryImpl implements ChainRepository{
+
     @Autowired
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<Department> getDepartments() {
+    public List<Chain> getChains() {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Department> q = b.createQuery(Department.class);
-        Root<Department> root = q.from(Department.class);
-        
+        CriteriaQuery<Chain> q = b.createQuery(Chain.class);
+        Root<Chain> root = q.from(Chain.class);
+
         q.select(root);
         q.orderBy(b.asc(root.get("name")));
-        
+
         return s.createQuery(q).getResultList();
     }
 
     @Override
-    public Department getDepartmentById(long id) {
+    public Chain getChainById(long id) {
         Session s = this.factory.getObject().getCurrentSession();
-        return s.get(Department.class, id);
+        return s.get(Chain.class, id);
     }
 
     @Override
-    public Department getDepartmentByName(String name) {
+    public Chain getChainByName(String name) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Department> q = b.createQuery(Department.class);
-        Root<Department> root = q.from(Department.class);
-        
+        CriteriaQuery<Chain> q = b.createQuery(Chain.class);
+        Root<Chain> root = q.from(Chain.class);
+
         q.select(root);
         q.where(b.equal(root.get("name"), name));
-        
-        List<Department> results = s.createQuery(q).getResultList();
+
+        List<Chain> results = s.createQuery(q).getResultList();
         return results.isEmpty() ? null : results.get(0);
     }
 
     @Override
-    public void saveOrUpdate(Department d) {
+    public void saveOrUpdate(Chain c) {
         Session s = this.factory.getObject().getCurrentSession();
-        if (d.getId() == null) 
-            s.persist(d);
+        if (c.getId() == null)
+            s.persist(c);
         else
-            s.merge(d);
+            s.merge(c);
     }
 
     @Override
-    public void deleteDepartment(long id) {
+    public void deleteChain(long id) {
         Session s = this.factory.getObject().getCurrentSession();
-        Department d = s.get(Department.class, id);
-        if (d != null) {
-            s.remove(d);
+        Chain c = s.get(Chain.class, id);
+        if (c != null) {
+            s.remove(c);
         }
     }
-    
+
 }

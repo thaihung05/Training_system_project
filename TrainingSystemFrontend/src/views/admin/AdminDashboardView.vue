@@ -4,12 +4,12 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
 import userService from '@/api/userService'
 import courseService from '@/api/courseService'
-import departmentService from '@/api/departmentService'
+import storeService from '@/api/storeService'
 import pointService from '@/api/pointService'
 
 const { data: users } = useAsyncData(() => userService.getAll())
-const { data: courses } = useAsyncData(() => courseService.getCourses(undefined, undefined, undefined, undefined, false))
-const { data: departments } = useAsyncData(() => departmentService.getAll())
+const { data: courses } = useAsyncData(() => courseService.getCourses(undefined, undefined, undefined, undefined, undefined, false))
+const { data: stores } = useAsyncData(() => storeService.getAll())
 const { data: pointsIssued } = useAsyncData(() => pointService.getTotalIssued())
 
 const activeCourses = computed(() => (courses.value || []).filter((c) => c.isActive).length)
@@ -35,8 +35,8 @@ const trainerCount = computed(() => (users.value || []).filter((u) => u.role ===
           <div class="stat-rail-label">Khoá học đang mở</div>
         </div>
         <div class="stat-rail-item">
-          <div class="stat-rail-value">{{ departments?.length ?? 0 }}</div>
-          <div class="stat-rail-label">Phòng ban</div>
+          <div class="stat-rail-value">{{ stores?.length ?? 0 }}</div>
+          <div class="stat-rail-label">Siêu thị</div>
         </div>
         <div class="stat-rail-item">
           <div class="stat-rail-value stat-rail-value--gold">{{ pointsIssued?.totalPointsIssued ?? 0 }}</div>
@@ -49,9 +49,9 @@ const trainerCount = computed(() => (users.value || []).filter((u) => u.role ===
           <div class="admin-hub-title">Quản lý người dùng</div>
           <div class="admin-hub-desc">{{ employeeCount }} nhân viên · {{ trainerCount }} trainer</div>
         </RouterLink>
-        <RouterLink :to="{ name: 'admin-departments' }" class="card card--link admin-hub-card">
-          <div class="admin-hub-title">Quản lý phòng ban</div>
-          <div class="admin-hub-desc">{{ departments?.length ?? 0 }} phòng ban</div>
+        <RouterLink :to="{ name: 'admin-stores' }" class="card card--link admin-hub-card">
+          <div class="admin-hub-title">Quản lý siêu thị</div>
+          <div class="admin-hub-desc">{{ stores?.length ?? 0 }} siêu thị</div>
         </RouterLink>
         <RouterLink :to="{ name: 'manage-courses' }" class="card card--link admin-hub-card">
           <div class="admin-hub-title">Quản lý khoá học</div>

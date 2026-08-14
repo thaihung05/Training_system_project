@@ -4,10 +4,12 @@ import { useRouter } from 'vue-router'
 import { useLazyList } from '@/composables/useLazyList'
 import { useAsyncData } from '@/composables/useAsyncData'
 import courseService from '@/api/courseService'
-import departmentService from '@/api/departmentService'
+import chainService from '@/api/chainService'
+import regionService from '@/api/regionService'
 import uploadService from '@/api/uploadService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import { formatDate } from '@/utils/formatDate'
+import { scopeLabel } from '@/utils/courseScope'
 import { Pencil, BookOpen, ClipboardList, Users, Award, EyeOff, Eye } from '@lucide/vue'
 
 const router = useRouter()
@@ -21,17 +23,18 @@ const { items: courses, loading, loadingMore, hasMore, loadMore, reload } = useL
   (page, size) => courseService.getMyCourses(page, size),
   15,
 )
-const { data: departments } = useAsyncData(() => departmentService.getAll())
+const { data: chains } = useAsyncData(() => chainService.getAll())
+const { data: regions } = useAsyncData(() => regionService.getAll())
 
 const editingId = ref(null)
-const form = ref({ title: '', description: '', departmentId: null, isActive: true, imageUrl: null })
+const form = ref({ title: '', description: '', chainIds: [], regionIds: [], isActive: true, imageUrl: null })
 const saving = ref(false)
 const errorMsg = ref('')
 const uploadingImage = ref(false)
 
 function resetForm() {
   editingId.value = null
-  form.value = { title: '', description: '', departmentId: null, isActive: true, imageUrl: null }
+  form.value = { title: '', description: '', chainIds: [], regionIds: [], isActive: true, imageUrl: null }
   errorMsg.value = ''
 }
 
@@ -40,12 +43,14 @@ function editCourse(c) {
   form.value = {
     title: c.title,
     description: c.description,
-    departmentId: c.departmentId ? c.departmentId.id : null,
+    chainIds: (c.chains || []).map((ch) => ch.id),
+    regionIds: (c.regions || []).map((r) => r.id),
     isActive: c.isActive,
     imageUrl: c.imageUrl || null,
   }
   errorMsg.value = ''
 }
+
 
 async function onImageFileChange(e) {
   const file = e.target.files[0]
@@ -66,7 +71,8 @@ function buildPayload() {
   return {
     title: form.value.title,
     description: form.value.description,
-    departmentId: form.value.departmentId ? { id: form.value.departmentId } : null,
+    chains: form.value.chainIds.map((id) => ({ id })),
+    regions: form.value.regionIds.map((id) => ({ id })),
     isActive: form.value.isActive,
     imageUrl: form.value.imageUrl,
   }
@@ -100,7 +106,8 @@ async function reactivate(c) {
   await courseService.update(c.id, {
     title: c.title,
     description: c.description,
-    departmentId: c.departmentId ? { id: c.departmentId.id } : null,
+    chains: (c.chains || []).map((ch) => ({ id: ch.id })),
+    regions: (c.regions || []).map((r) => ({ id: r.id })),
     isActive: true,
     imageUrl: c.imageUrl,
   })
@@ -135,7 +142,7 @@ function goCertificates(c) {
       <div class="manage-table-wrap">
         <div class="manage-table-header">
           <div>TÊN KHOÁ HỌC</div>
-          <div>PHÒNG BAN</div>
+          <div>PHẠM VI</div>
           <div>NGƯỜI TẠO</div>
           <div>TRẠNG THÁI</div>
           <div>HÀNH ĐỘNG</div>
@@ -145,7 +152,7 @@ function goCertificates(c) {
         <template v-else>
           <div v-for="c in courses" :key="c.id" class="manage-row">
             <div class="manage-row-title">{{ c.title }}</div>
-            <div class="manage-row-dept">{{ c.departmentId ? c.departmentId.name : 'Toàn công ty' }}</div>
+            <div class="manage-row-dept">{{ scopeLabel(c) }}</div>
             <div class="manage-row-creator">
               <div v-if="c.createdBy">{{ c.createdBy.name }}</div>
               <div class="manage-row-creator-date">{{ formatDate(c.createdAt) }}</div>
@@ -179,11 +186,22 @@ function goCertificates(c) {
           <input v-model="form.title" type="text" class="input" placeholder="VD: Kỹ năng bán hàng nâng cao" />
         </div>
         <div class="form-field">
-          <label>Phòng ban</label>
-          <select v-model="form.departmentId" class="input">
-            <option :value="null">Toàn công ty</option>
-            <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
-          </select>
+          <label>Chuỗi được học (để trống = tất cả)</label>
+          <div class="manage-checkbox-list">
+            <label v-for="c in chains" :key="c.id" class="manage-checkbox">
+              <input type="checkbox" :value="c.id" v-model="form.chainIds" />
+              {{ c.name }}
+            </label>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Vùng được học (để trống = tất cả)</label>
+          <div class="manage-checkbox-list">
+            <label v-for="r in regions" :key="r.id" class="manage-checkbox">
+              <input type="checkbox" :value="r.id" v-model="form.regionIds" />
+              {{ r.name }}
+            </label>
+          </div>
         </div>
         <div class="form-field">
           <label>Mô tả ngắn</label>

@@ -10,7 +10,9 @@ const auth = useAuthStore()
 const navItems = [
   { name: 'admin-dashboard', label: 'Dashboard' },
   { name: 'admin-users', label: 'Quản lý người dùng' },
-  { name: 'admin-departments', label: 'Phòng ban' },
+  { name: 'admin-chains', label: 'Chuỗi' },
+  { name: 'admin-regions', label: 'Vùng' },
+  { name: 'admin-stores', label: 'Siêu thị' },
   { name: 'admin-point-rules', label: 'Quy tắc điểm' },
   { name: 'admin-badges', label: 'Huy hiệu' },
 ]

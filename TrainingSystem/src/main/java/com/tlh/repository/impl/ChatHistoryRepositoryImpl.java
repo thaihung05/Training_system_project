@@ -59,7 +59,7 @@ public class ChatHistoryRepositoryImpl implements ChatHistoryRepository{
     }
 
     @Override
-    public List<ChatHistory> getPending(Long departmentId, Integer page, Integer size) {
+    public List<ChatHistory> getPending(Long storeId, Integer page, Integer size) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<ChatHistory> q = b.createQuery(ChatHistory.class);
@@ -67,8 +67,8 @@ public class ChatHistoryRepositoryImpl implements ChatHistoryRepository{
 
         List<Predicate> predicates = new ArrayList<>();
         predicates.add(b.isNull(root.get("answer")));
-        if (departmentId != null) {
-            predicates.add(b.equal(root.get("userId").get("departmentId").get("id"), departmentId));
+        if (storeId != null) {
+            predicates.add(b.equal(root.get("userId").get("storeId").get("id"), storeId));
         }
         q.select(root).where(predicates.toArray(Predicate[]::new));
         q.orderBy(b.desc(root.get("id")));

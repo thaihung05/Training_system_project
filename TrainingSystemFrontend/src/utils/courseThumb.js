@@ -1,3 +1,5 @@
+import { scopeLabel } from '@/utils/courseScope'
+
 const THUMB_PALETTE = [
   { bg: '#E8EAF6', fg: '#2F3E82' },
   { bg: '#E3EDE8', fg: '#1F7A5C' },
@@ -8,7 +10,7 @@ const THUMB_PALETTE = [
 ]
 
 export function thumbFor(course) {
-  const label = course.departmentId ? course.departmentId.name : 'Toàn công ty'
+  const label = scopeLabel(course)
   let hash = 0
   for (let i = 0; i < label.length; i++) hash = (hash * 31 + label.charCodeAt(i)) | 0
   const palette = THUMB_PALETTE[Math.abs(hash) % THUMB_PALETTE.length]

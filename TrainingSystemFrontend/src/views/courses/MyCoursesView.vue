@@ -4,6 +4,7 @@ import { useLazyList } from '@/composables/useLazyList'
 import enrollmentService from '@/api/enrollmentService'
 import { formatDate } from '@/utils/formatDate'
 import { thumbFor } from '@/utils/courseThumb'
+import { scopeLabel } from '@/utils/courseScope'
 
 const { items: enrollments, loading, loadingMore, hasMore, loadMore, error } = useLazyList(
   (page, size) => enrollmentService.getMyEnrollments(page, size),
@@ -54,7 +55,7 @@ const filtered = computed(() => {
             </span>
           </div>
           <div class="mycourse-body">
-            <div class="mycourse-dept">{{ e.courseId.departmentId ? e.courseId.departmentId.name : 'Toàn công ty' }}</div>
+            <div class="mycourse-dept">{{ scopeLabel(e.courseId) }}</div>
             <div class="mycourse-title">{{ e.courseId.title }}</div>
             <div v-if="e.courseId.createdBy" class="mycourse-meta">
               Tạo bởi <strong>{{ e.courseId.createdBy.name }}</strong> · {{ formatDate(e.courseId.createdAt) }}

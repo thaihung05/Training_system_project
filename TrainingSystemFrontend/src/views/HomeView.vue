@@ -7,6 +7,7 @@ import enrollmentService from '@/api/enrollmentService'
 import pointService from '@/api/pointService'
 import notificationService from '@/api/notificationService'
 import { thumbFor } from '@/utils/courseThumb'
+import { scopeLabel } from '@/utils/courseScope'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -75,7 +76,7 @@ async function openNotification(n) {
               <div class="course-progress-info">
                 <div class="course-progress-title">{{ e.courseId.title }}</div>
                 <div class="course-progress-meta">
-                  {{ e.courseId.departmentId ? e.courseId.departmentId.name : 'Toàn công ty' }}
+                  {{ scopeLabel(e.courseId) }}
                 </div>
                 <div class="progress-track">
                   <div class="progress-fill" :style="{ width: e.progressPercent + '%' }"></div>

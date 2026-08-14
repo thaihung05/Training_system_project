@@ -14,7 +14,7 @@ import java.util.List;
 public interface ChatHistoryRepository {
     List<ChatHistory> getByUser(long userId, Integer page, Integer size);
     List<ChatHistory> getBySession(String sessionId);
-    List<ChatHistory> getPending(Long departmentId, Integer page, Integer size);
+    List<ChatHistory> getPending(Long storeId, Integer page, Integer size);
     ChatHistory getById(long id);
     void saveOrUpdate(ChatHistory c);
 }

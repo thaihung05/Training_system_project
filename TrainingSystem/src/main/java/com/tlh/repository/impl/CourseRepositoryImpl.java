@@ -44,9 +44,13 @@ public class CourseRepositoryImpl implements CourseRepository {
         if (kw != null && !kw.trim().isEmpty()) {
             predicates.add(b.like(b.lower(root.get("title")), "%" + kw.trim().toLowerCase() + "%"));
         }
-        String departmentId = params != null ? params.get("departmentId") : null;
-        if (departmentId != null && !departmentId.trim().isEmpty()) {
-            predicates.add(b.equal(root.get("departmentId").get("id"), Long.parseLong(departmentId)));
+        String chainId = params != null ? params.get("chainId") : null;
+        if (chainId != null && !chainId.trim().isEmpty()) {
+            predicates.add(b.equal(root.join("chains").get("id"), Long.parseLong(chainId)));
+        }
+        String regionId = params != null ? params.get("regionId") : null;
+        if (regionId != null && !regionId.trim().isEmpty()) {
+            predicates.add(b.equal(root.join("regions").get("id"), Long.parseLong(regionId)));
         }
         if (params != null && "true".equals(params.get("activeOnly"))) {
             predicates.add(b.isTrue(root.get("isActive")));

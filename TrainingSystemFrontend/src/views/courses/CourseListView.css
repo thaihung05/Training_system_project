@@ -6,6 +6,15 @@
   margin-bottom: var(--space-6);
 }
 
+.course-filter-selects {
+  display: flex;
+  gap: 10px;
+}
+
+.course-filter-selects select {
+  width: 170px;
+}
+
 .course-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

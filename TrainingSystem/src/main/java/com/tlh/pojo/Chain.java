@@ -28,13 +28,13 @@ import java.util.List;
  * @author LENOVO
  */
 @Entity
-@Table(name = "department")
+@Table(name = "chain")
 @NamedQueries({
-    @NamedQuery(name = "Department.findAll", query = "SELECT d FROM Department d"),
-    @NamedQuery(name = "Department.findById", query = "SELECT d FROM Department d WHERE d.id = :id"),
-    @NamedQuery(name = "Department.findByName", query = "SELECT d FROM Department d WHERE d.name = :name"),
-    @NamedQuery(name = "Department.findByCreatedAt", query = "SELECT d FROM Department d WHERE d.createdAt = :createdAt")})
-public class Department implements Serializable {
+    @NamedQuery(name = "Chain.findAll", query = "SELECT c FROM Chain c"),
+    @NamedQuery(name = "Chain.findById", query = "SELECT c FROM Chain c WHERE c.id = :id"),
+    @NamedQuery(name = "Chain.findByName", query = "SELECT c FROM Chain c WHERE c.name = :name"),
+    @NamedQuery(name = "Chain.findByCreatedAt", query = "SELECT c FROM Chain c WHERE c.createdAt = :createdAt")})
+public class Chain implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -51,20 +51,17 @@ public class Department implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
     @JsonIgnore
-    @OneToMany(mappedBy = "departmentId")
-    private List<Course> courseList;
-    @JsonIgnore
-    @OneToMany(mappedBy = "departmentId")
-    private List<User> userList;
+    @OneToMany(mappedBy = "chainId")
+    private List<Store> storeList;
 
-    public Department() {
+    public Chain() {
     }
 
-    public Department(Long id) {
+    public Chain(Long id) {
         this.id = id;
     }
 
-    public Department(Long id, String name) {
+    public Chain(Long id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -93,20 +90,12 @@ public class Department implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public List<Course> getCourseList() {
-        return courseList;
+    public List<Store> getStoreList() {
+        return storeList;
     }
 
-    public void setCourseList(List<Course> courseList) {
-        this.courseList = courseList;
-    }
-
-    public List<User> getUserList() {
-        return userList;
-    }
-
-    public void setUserList(List<User> userList) {
-        this.userList = userList;
+    public void setStoreList(List<Store> storeList) {
+        this.storeList = storeList;
     }
 
     @Override
@@ -119,10 +108,10 @@ public class Department implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Department)) {
+        if (!(object instanceof Chain)) {
             return false;
         }
-        Department other = (Department) object;
+        Chain other = (Chain) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -131,7 +120,7 @@ public class Department implements Serializable {
 
     @Override
     public String toString() {
-        return "com.tlh.pojo.Department[ id=" + id + " ]";
+        return "com.tlh.pojo.Chain[ id=" + id + " ]";
     }
-    
+
 }

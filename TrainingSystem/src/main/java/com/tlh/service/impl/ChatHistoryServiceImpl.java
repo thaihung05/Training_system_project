@@ -70,16 +70,16 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
     }
 
     private void notifyTrainersOfPendingQuestion(User asker) {
-        Long askerDeptId = asker.getDepartmentId() != null ? asker.getDepartmentId().getId() : null;
+        Long askerStoreId = asker.getStoreId() != null ? asker.getStoreId().getId() : null;
         List<User> trainers = this.userService.getUsersByRole("TRAINER");
         for (User t : trainers) {
             if (!t.getIsActive()) {
                 continue;
             }
-            boolean companyWide = t.getDepartmentId() == null;
-            boolean sameDept = askerDeptId != null && t.getDepartmentId() != null
-                    && t.getDepartmentId().getId().equals(askerDeptId);
-            if (companyWide || sameDept) {
+            boolean companyWide = t.getStoreId() == null;
+            boolean sameStore = askerStoreId != null && t.getStoreId() != null
+                    && t.getStoreId().getId().equals(askerStoreId);
+            if (companyWide || sameStore) {
                 this.notificationService.create(t.getId(), "Có câu hỏi mới cần trả lời",
                         asker.getName() + " vừa đặt 1 câu hỏi đang chờ hỗ trợ trả lời", "/chat/queue");
             }
@@ -98,11 +98,11 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
 
     @Override
     public List<ChatHistory> getPending(User caller, Integer page, Integer size) {
-        Long departmentId = null;
-        if ("TRAINER".equals(caller.getRole()) && caller.getDepartmentId() != null) {
-            departmentId = caller.getDepartmentId().getId();
+        Long storeId = null;
+        if ("TRAINER".equals(caller.getRole()) && caller.getStoreId() != null) {
+            storeId = caller.getStoreId().getId();
         }
-        return this.chatHistoryRepo.getPending(departmentId, page, size);
+        return this.chatHistoryRepo.getPending(storeId, page, size);
     }
 
     @Override
@@ -136,12 +136,12 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
         if (!"TRAINER".equals(caller.getRole())) {
             return false;
         }
-        if (caller.getDepartmentId() == null) {
+        if (caller.getStoreId() == null) {
             return true;
         }
         User asker = ch.getUserId();
-        return asker.getDepartmentId() != null
-                && asker.getDepartmentId().getId().equals(caller.getDepartmentId().getId());
+        return asker.getStoreId() != null
+                && asker.getStoreId().getId().equals(caller.getStoreId().getId());
     }
 
 }

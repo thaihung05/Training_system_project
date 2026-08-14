@@ -4,10 +4,10 @@
  */
 package com.tlh.service.impl;
 
-import com.tlh.pojo.Department;
+import com.tlh.pojo.Store;
 import com.tlh.pojo.User;
 import com.tlh.repository.UserRepository;
-import com.tlh.service.DepartmentService;
+import com.tlh.service.StoreService;
 import com.tlh.service.MailService;
 import com.tlh.service.UserService;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService{
     private UserRepository userRepo;
     
     @Autowired
-    private DepartmentService departmentService;
+    private StoreService storeService;
 
     @Autowired
     private MailService mailService;
@@ -73,8 +73,8 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public List<User> getUsersByDepartment(String departmentId) {
-        return this.userRepo.getUserByDepartment(departmentId);
+    public List<User> getUsersByStore(String storeId) {
+        return this.userRepo.getUserByStore(storeId);
     }
 
     @Override
@@ -96,9 +96,9 @@ public class UserServiceImpl implements UserService{
         } else if (!List.of("EMPLOYEE", "TRAINER").contains(u.getRole())) {
             throw new IllegalArgumentException("Vai trò không hợp lệ: " + u.getRole());
         }
-        if (u.getDepartmentId() != null && u.getDepartmentId().getId() != null
-                && this.departmentService.getDepartmentById(u.getDepartmentId().getId()) == null) {
-            throw new IllegalArgumentException("Phòng ban không tồn tại");
+        if (u.getStoreId() != null && u.getStoreId().getId() != null
+                && this.storeService.getStoreById(u.getStoreId().getId()) == null) {
+            throw new IllegalArgumentException("Siêu thị không tồn tại");
         }
 
         u.setEmail(u.getEmail().trim());
@@ -133,7 +133,7 @@ public class UserServiceImpl implements UserService{
                 String username = getCellString(formatter, row, 1);
                 String email = getCellString(formatter, row, 2);
                 String role = getCellString(formatter, row, 3);
-                String deptName = getCellString(formatter, row, 4);
+                String storeName = getCellString(formatter, row, 4);
 
                 if (name == null && username == null && email == null) {
                     continue;
@@ -150,18 +150,18 @@ public class UserServiceImpl implements UserService{
                     u.setRole(role == null ? "EMPLOYEE" : role.trim().toUpperCase());
                     u.setPassword(generateRandomPassword());
 
-                    if (deptName != null) {
-                        Department found = null;
-                        for (Department d : this.departmentService.getDepartments()) {
-                            if (d.getName() != null && d.getName().trim().equalsIgnoreCase(deptName)) {
-                                found = d;
+                    if (storeName != null) {
+                        Store found = null;
+                        for (Store st : this.storeService.getStores()) {
+                            if (st.getName() != null && st.getName().trim().equalsIgnoreCase(storeName)) {
+                                found = st;
                                 break;
                             }
                         }
                         if (found == null) {
-                            throw new IllegalArgumentException("Không tìm thấy phòng ban: " + deptName);
+                            throw new IllegalArgumentException("Không tìm thấy siêu thị: " + storeName);
                         }
-                        u.setDepartmentId(found);
+                        u.setStoreId(found);
                     }
 
                     this.createUser(u);
@@ -245,9 +245,9 @@ public class UserServiceImpl implements UserService{
         if (body.getRole() == null || !List.of("EMPLOYEE", "TRAINER").contains(body.getRole())) {
             throw new IllegalArgumentException("Vai trò không hợp lệ: " + body.getRole());
         }
-        if (body.getDepartmentId() != null && body.getDepartmentId().getId() != null
-                && this.departmentService.getDepartmentById(body.getDepartmentId().getId()) == null) {
-            throw new IllegalArgumentException("Phòng ban không tồn tại");
+        if (body.getStoreId() != null && body.getStoreId().getId() != null
+                && this.storeService.getStoreById(body.getStoreId().getId()) == null) {
+            throw new IllegalArgumentException("Siêu thị không tồn tại");
         }
 
         String newEmail = body.getEmail().trim();
@@ -259,7 +259,7 @@ public class UserServiceImpl implements UserService{
         existing.setName(body.getName().trim());
         existing.setEmail(newEmail);
         existing.setRole(body.getRole());
-        existing.setDepartmentId(body.getDepartmentId());
+        existing.setStoreId(body.getStoreId());
         this.userRepo.saveOrUpdate(existing);
         return existing;
     }

@@ -60,8 +60,8 @@ async function submit() {
           <span class="profile-info-value">{{ auth.user?.role }}</span>
         </div>
         <div class="profile-info-row">
-          <span class="profile-info-label">Phòng ban</span>
-          <span class="profile-info-value">{{ auth.user?.departmentId ? auth.user.departmentId.name : '—' }}</span>
+          <span class="profile-info-label">Siêu thị</span>
+          <span class="profile-info-value">{{ auth.user?.storeId ? auth.user.storeId.name : '—' }}</span>
         </div>
       </div>
 

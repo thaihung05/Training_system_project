@@ -106,9 +106,21 @@ const router = createRouter({
             meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
         },
         {
-            path: '/admin/departments',
-            name: 'admin-departments',
-            component: () => import('@/views/admin/DepartmentsManageView.vue'),
+            path: '/admin/chains',
+            name: 'admin-chains',
+            component: () => import('@/views/admin/ChainsManageView.vue'),
+            meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
+        },
+        {
+            path: '/admin/regions',
+            name: 'admin-regions',
+            component: () => import('@/views/admin/RegionsManageView.vue'),
+            meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
+        },
+        {
+            path: '/admin/stores',
+            name: 'admin-stores',
+            component: () => import('@/views/admin/StoresManageView.vue'),
             meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
         },
         {

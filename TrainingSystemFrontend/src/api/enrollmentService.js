@@ -13,8 +13,8 @@ export default {
     enrollUsers(courseId, userIds) {
         return http.post(`/api/secure/courses/${courseId}/enrollments`, { userIds });
     },
-    enrollByDepartment(courseId, departmentId) {
-        return http.post(`/api/secure/courses/${courseId}/enrollments/by-department`, { departmentId });
+    enrollByStore(courseId, storeId) {
+        return http.post(`/api/secure/courses/${courseId}/enrollments/by-store`, { storeId });
     },
     unenroll(id) {
         return http.delete(`/api/secure/enrollments/${id}`);

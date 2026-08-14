@@ -91,10 +91,10 @@ public class EnrollmentServiceImpl implements EnrollmentService{
     }
 
     @Override
-    public Map<String, Object> enrollDepartment(Course course, long departmentId) {
-        List<User> deptUsers = this.userService.getUsersByDepartment(String.valueOf(departmentId));
+    public Map<String, Object> enrollStore(Course course, long storeId) {
+        List<User> storeUsers = this.userService.getUsersByStore(String.valueOf(storeId));
         List<Long> employeeIds = new ArrayList<>();
-        for (User u : deptUsers) {
+        for (User u : storeUsers) {
             if ("EMPLOYEE".equals(u.getRole())) {
                 employeeIds.add(u.getId());
             }

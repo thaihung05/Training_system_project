@@ -19,7 +19,7 @@ public interface UserRepository {
     User getUserByEmail(String email);
     User getUserByUsername(String username);
     List<User> getUserByRole(String role);
-    List<User> getUserByDepartment(String departmentId);
+    List<User> getUserByStore(String storeId);
     void saveOrUpdate(User u);
     void deactivateUser(long id);
     boolean authenticate(String username, String rawPassword);

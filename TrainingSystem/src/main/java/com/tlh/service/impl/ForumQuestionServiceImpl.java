@@ -69,7 +69,7 @@ public class ForumQuestionServiceImpl implements ForumQuestionService{
         String link = "/courses/" + course.getId() + "?tab=forum";
         String content = asker.getName() + " vừa đặt câu hỏi trong diễn đàn khoá học " + course.getTitle();
 
-        if (course.getDepartmentId() == null) {
+        if (course.getChains().isEmpty() && course.getRegions().isEmpty()) {
             for (User t : this.userService.getUsersByRole("TRAINER")) {
                 if (t.getIsActive() && !t.getId().equals(asker.getId())) {
                     this.notificationService.create(t.getId(), "Có câu hỏi mới trong diễn đàn", content, link);
