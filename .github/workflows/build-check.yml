@@ -1,34 +1,80 @@
-name: Build Check
+name: CI
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend:
+    name: Backend build (Java 17)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: TrainingSystem
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Build backend
-        run: mvn -B compile
-        working-directory: TrainingSystem
+          cache: maven
+
+      - name: Verify backend
+        run: mvn --batch-mode --no-transfer-progress clean verify
 
   frontend:
+    name: Frontend build (Node 22)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: TrainingSystemFrontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: TrainingSystemFrontend/package-lock.json
+
       - name: Install dependencies
         run: npm ci
-        working-directory: TrainingSystemFrontend
+
       - name: Build frontend
         run: npm run build
-        working-directory: TrainingSystemFrontend
+
+  rag:
+    name: RAG syntax check (Python 3.11)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: RAG
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile Python source
+        run: python -m compileall -q app.py scripts src

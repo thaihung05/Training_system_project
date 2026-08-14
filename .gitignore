@@ -24,5 +24,14 @@ hs_err_pid*
 replay_pid*
 /TrainingSystem/target/
 
+# Frontend build output and local dependencies
+/TrainingSystemFrontend/node_modules/
+/TrainingSystemFrontend/dist/
+
+# Generated reports/artifacts and Office lock files
+/outputs/
+~$*.docx
+~$*.xlsx
+
 # Chứa mật khẩu DB + Cloudinary secret, không được commit
 /TrainingSystem/src/main/resources/databases.properties
