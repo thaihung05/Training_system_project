@@ -7,9 +7,12 @@ import courseService from '@/api/courseService'
 import testService from '@/api/testService'
 import questionService from '@/api/questionService'
 import questionOptionService from '@/api/questionOptionService'
+import enrollmentService from '@/api/enrollmentService'
+import testAttemptService from '@/api/testAttemptService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
 import FormModal from '@/components/common/FormModal.vue'
+import ImportProgressOverlay from '@/components/common/ImportProgressOverlay.vue'
 import { CirclePlus, FileSpreadsheet, Pencil, Plus, Power, Trash2 } from '@lucide/vue'
 
 const route = useRoute()
@@ -19,6 +22,15 @@ const testId = Number(route.params.testId)
 const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: tests } = useAsyncData(() => testService.getByCourse(courseId))
 const currentTest = computed(() => (tests.value || []).find((t) => t.id === testId) || null)
+const { data: roster } = useAsyncData(() => enrollmentService.getRoster(courseId))
+const { data: attempts } = useAsyncData(() => testAttemptService.getByTest(testId))
+
+const locked = computed(() => (roster.value || []).length > 0 || (attempts.value || []).length > 0)
+const lockedReason = computed(() => {
+  if ((roster.value || []).length > 0) return 'Khóa học đã có người ghi danh, không thể thay đổi câu hỏi.'
+  if ((attempts.value || []).length > 0) return 'Bài kiểm tra này đã có người làm bài, không thể thay đổi câu hỏi.'
+  return ''
+})
 
 const { items: questions, loading, loadingMore, hasMore, loadMore, reload: refresh } = useLazyList(
   (page, size) => questionService.getForCompose(testId, page, size),
@@ -175,6 +187,7 @@ async function onImportFileChange(e) {
 
 <template>
   <div class="page trainer-page">
+    <ImportProgressOverlay :active="importing" label="Đang nhập câu hỏi..." />
     <TrainerCourseNav :course="course" active="tests" />
     <div class="trainer-context-header">
       <div>
@@ -182,13 +195,15 @@ async function onImportFileChange(e) {
         <p>{{ questions?.length ?? 0 }} câu hỏi trong trang hiện tại.</p>
       </div>
       <div class="trainer-context-actions">
-        <button class="btn btn-secondary" :disabled="importing" @click="openImportPicker">
+        <button class="btn btn-secondary" :disabled="importing || locked" @click="openImportPicker">
           <FileSpreadsheet :size="16" /> {{ importing ? 'Đang nhập...' : 'Nhập từ Excel' }}
         </button>
-        <button class="btn btn-primary" @click="openQuestionForm"><Plus :size="16" /> Thêm câu hỏi</button>
+        <button class="btn btn-primary" :disabled="locked" :title="lockedReason" @click="openQuestionForm"><Plus :size="16" /> Thêm câu hỏi</button>
       </div>
       <input ref="importInput" type="file" accept=".xlsx" class="qmg-import-input" @change="onImportFileChange" />
     </div>
+
+    <p v-if="locked" class="alert alert-error qmg-locked-alert">{{ lockedReason }} Hãy tạo bài kiểm tra hoặc khóa học mới nếu cần thay đổi nội dung.</p>
 
     <div v-if="importResults" class="card qmg-import-results">
       <h2>Kết quả nhập file</h2>
@@ -214,9 +229,9 @@ async function onImportFileChange(e) {
                 </span>
               </div>
               <div class="row-action-group">
-                <button class="row-action-btn" @click="startEditQuestion(q)"><Pencil :size="13" /> Sửa</button>
-                <button class="row-action-btn" @click="toggleQuestionActive(q)"><Power :size="13" /> {{ q.isActive ? 'Tắt' : 'Bật' }}</button>
-                <button class="row-action-btn row-action-btn--danger" @click="removeQuestion(q)"><Trash2 :size="13" /> Xoá</button>
+                <button class="row-action-btn" :disabled="locked" @click="startEditQuestion(q)"><Pencil :size="13" /> Sửa</button>
+                <button class="row-action-btn" :disabled="locked" @click="toggleQuestionActive(q)"><Power :size="13" /> {{ q.isActive ? 'Tắt' : 'Bật' }}</button>
+                <button class="row-action-btn row-action-btn--danger" :disabled="locked" @click="removeQuestion(q)"><Trash2 :size="13" /> Xoá</button>
               </div>
             </div>
 
@@ -235,18 +250,19 @@ async function onImportFileChange(e) {
                   <strong>Danh sách đáp án</strong>
                   <span>Chọn một đáp án đúng bằng nút tròn bên dưới.</span>
                 </div>
-                <button class="btn btn-secondary btn-sm" @click="openOptionForm(q)"><CirclePlus :size="14" /> Thêm đáp án</button>
+                <button class="btn btn-secondary btn-sm" :disabled="locked" @click="openOptionForm(q)"><CirclePlus :size="14" /> Thêm đáp án</button>
               </div>
               <div v-if="!q.options?.length" class="qmg-options-empty">Chưa có đáp án. Thêm ít nhất hai đáp án trước khi mở bài kiểm tra.</div>
-              <div v-for="opt in q.options" :key="opt.id" class="qmg-option-row">
+              <div v-for="opt in q.options" :key="opt.id" class="qmg-option-row" :class="{ 'qmg-option-row--correct': opt.isCorrect }">
                 <input
                   type="radio"
                   :name="'correct-' + q.id"
                   :checked="opt.isCorrect"
+                  :disabled="locked"
                   @change="setCorrect(q, opt)"
                 />
                 <span class="qmg-option-text">{{ opt.optionText }}</span>
-                <button type="button" class="qmg-option-remove" @click="removeOption(opt)">Xoá</button>
+                <button type="button" class="qmg-option-remove" :disabled="locked" @click="removeOption(opt)">Xoá</button>
               </div>
             </div>
           </div>

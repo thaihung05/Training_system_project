@@ -196,6 +196,26 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     @Override
+    public long countByChain(long chainId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Course> root = q.from(Course.class);
+        q.select(b.count(root)).where(b.equal(root.join("chains").get("id"), chainId));
+        return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
+    public long countByRegion(long regionId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Course> root = q.from(Course.class);
+        q.select(b.count(root)).where(b.equal(root.join("regions").get("id"), regionId));
+        return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
     public void saveOrUpdate(Course c) {
         Session s = this.factory.getObject().getCurrentSession();
         if (c.getId() == null) {

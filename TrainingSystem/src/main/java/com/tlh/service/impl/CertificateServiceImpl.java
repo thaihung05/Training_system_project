@@ -20,6 +20,7 @@ import com.tlh.service.NotificationService;
 import com.tlh.service.PointTransactionService;
 import com.tlh.service.UserBadgeService;
 import com.tlh.utils.UrlUtils;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,27 @@ public class CertificateServiceImpl implements CertificateService{
     }
 
     @Override
+    public boolean hasCertificate(long userId, long courseId) {
+        return this.certificateRepo.getByUserAndCourse(userId, courseId) != null;
+    }
+
+    private List<Test> getRequiredTests(long courseId) {
+        List<Test> all = this.testRepo.getByCourse(courseId);
+        for (Test t : all) {
+            if (t.getIsActive() && t.getIsImportant()) {
+                return List.of(t);
+            }
+        }
+        List<Test> activeOnly = new ArrayList<>();
+        for (Test t : all) {
+            if (t.getIsActive()) {
+                activeOnly.add(t);
+            }
+        }
+        return activeOnly;
+    }
+
+    @Override
     public Certificate updatePdfUrl(long id, String pdfUrl) {
         String normalizedUrl = UrlUtils.normalizeHttpUrl(pdfUrl, "Link PDF", 500, true);
         Certificate c = this.certificateRepo.getById(id);
@@ -98,11 +120,8 @@ public class CertificateServiceImpl implements CertificateService{
             return existed;
         }
 
-        List<Test> tests = this.testRepo.getByCourse(courseId);
+        List<Test> tests = getRequiredTests(courseId);
         for (Test t : tests) {
-            if (!t.getIsActive()) {
-                continue;
-            }
             List<TestAttempt> attempts = this.testAttemptRepo.getByUserAndTest(userId, t.getId());
             boolean passedAny = false;
             for (TestAttempt a : attempts) {
@@ -116,26 +135,28 @@ public class CertificateServiceImpl implements CertificateService{
             }
         }
 
+        Course course = this.courseService.getCourseById(courseId);
+
         Certificate c = new Certificate();
         c.setUserId(new User(userId));
         c.setCourseId(new Course(courseId));
         c.setCertificateCode("CERT-" + courseId + "-" + userId + "-" + System.currentTimeMillis());
+        c.setPdfUrl(course != null ? course.getCertificatePdfUrl() : null);
         this.certificateRepo.saveOrUpdate(c);
 
-        Course course = this.courseService.getCourseById(courseId);
         String courseTitle = course != null ? course.getTitle() : "";
         this.notificationService.create(userId, "Chứng chỉ mới",
                 "Bạn đã hoàn thành khoá học " + courseTitle + " và nhận được chứng chỉ", "/my-certificates");
         this.pointTransactionService.awardPoints(userId, "COURSE_COMPLETED", "Hoàn thành khoá học: " + courseTitle);
 
         long total = this.certificateRepo.countByUser(userId);
-        if (total == 1) {
+        if (total >= 1) {
             this.userBadgeService.checkAndAward(userId, "CERT_1");
         }
-        if (total == 5) {
+        if (total >= 5) {
             this.userBadgeService.checkAndAward(userId, "CERT_5");
         }
-        if (total == 10) {
+        if (total >= 10) {
             this.userBadgeService.checkAndAward(userId, "CERT_10");
         }
 

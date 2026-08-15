@@ -1,0 +1,85 @@
+.import-overlay-backdrop {
+  position: fixed;
+  z-index: 1300;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(12, 29, 43, 0.7);
+  cursor: wait;
+}
+
+.import-overlay-card {
+  display: flex;
+  width: min(100%, 380px);
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 28px;
+  border-top: 4px solid #ffd400;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(12, 29, 43, 0.3);
+  color: var(--color-accent);
+  text-align: center;
+}
+
+.import-overlay-label {
+  color: var(--color-heading);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.import-overlay-track {
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-accent-light);
+}
+
+.import-overlay-fill {
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-accent);
+  animation: import-overlay-slide 1.1s ease-in-out infinite;
+}
+
+.import-overlay-note {
+  color: var(--color-text-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+@keyframes import-overlay-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+.import-overlay-enter-active,
+.import-overlay-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.import-overlay-enter-from,
+.import-overlay-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-overlay-fill {
+    width: 100%;
+    animation: none;
+  }
+
+  .import-overlay-enter-active,
+  .import-overlay-leave-active {
+    transition: none;
+  }
+}

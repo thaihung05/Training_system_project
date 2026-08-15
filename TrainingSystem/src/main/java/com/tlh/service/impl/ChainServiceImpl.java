@@ -6,6 +6,8 @@ package com.tlh.service.impl;
 
 import com.tlh.pojo.Chain;
 import com.tlh.repository.ChainRepository;
+import com.tlh.repository.CourseRepository;
+import com.tlh.repository.StoreRepository;
 import com.tlh.service.ChainService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,12 @@ public class ChainServiceImpl implements ChainService{
 
     @Autowired
     private ChainRepository chainRepo;
+
+    @Autowired
+    private StoreRepository storeRepo;
+
+    @Autowired
+    private CourseRepository courseRepo;
 
     @Override
     public List<Chain> getChains() {
@@ -51,6 +59,26 @@ public class ChainServiceImpl implements ChainService{
 
     @Override
     public void deleteChain(long id) {
+        Chain c = this.chainRepo.getChainById(id);
+        if (c == null) {
+            return;
+        }
+        long storeCount = this.storeRepo.countByChain(id);
+        long courseCount = this.courseRepo.countByChain(id);
+        if (storeCount > 0 || courseCount > 0) {
+            StringBuilder msg = new StringBuilder("Không thể xóa chuỗi \"" + c.getName() + "\" vì còn");
+            if (storeCount > 0) {
+                msg.append(" ").append(storeCount).append(" siêu thị");
+            }
+            if (storeCount > 0 && courseCount > 0) {
+                msg.append(" và");
+            }
+            if (courseCount > 0) {
+                msg.append(" ").append(courseCount).append(" khóa học");
+            }
+            msg.append(" đang sử dụng.");
+            throw new IllegalArgumentException(msg.toString());
+        }
         this.chainRepo.deleteChain(id);
     }
 

@@ -17,4 +17,5 @@ public interface CertificateService {
     List<Certificate> getByCourse(long courseId, Integer page, Integer size);
     Certificate updatePdfUrl(long id, String pdfUrl);
     Certificate checkAndIssue(Long userId, Long courseId);
+    boolean hasCertificate(long userId, long courseId);
 }

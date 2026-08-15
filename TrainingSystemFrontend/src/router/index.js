@@ -58,6 +58,12 @@ const router = createRouter({
             meta: { requiresAuth: true, roles: ['TRAINER', 'ADMIN'] },
         },
         {
+            path: '/manage/courses/:courseId/overview',
+            name: 'course-overview',
+            component: () => import('@/views/manage/CourseOverviewView.vue'),
+            meta: { requiresAuth: true, roles: ['TRAINER', 'ADMIN'] },
+        },
+        {
             path: '/manage/courses/:courseId/enrollments',
             name: 'course-enrollments',
             component: () => import('@/views/manage/EnrollmentManageView.vue'),
@@ -100,6 +106,12 @@ const router = createRouter({
             meta: { requiresAuth: true, roles: ['TRAINER', 'ADMIN'] },
         },
         {
+            path: '/manage/courses/:courseId/forum',
+            name: 'course-forum',
+            component: () => import('@/views/manage/CourseForumView.vue'),
+            meta: { requiresAuth: true, roles: ['TRAINER', 'ADMIN'] },
+        },
+        {
             path: '/admin',
             name: 'admin-dashboard',
             component: () => import('@/views/admin/AdminDashboardView.vue'),
@@ -112,22 +124,25 @@ const router = createRouter({
             meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
         },
         {
+            path: '/admin/organization',
+            name: 'admin-organization',
+            component: () => import('@/views/admin/OrgManageView.vue'),
+            meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
+        },
+        {
             path: '/admin/chains',
             name: 'admin-chains',
-            component: () => import('@/views/admin/ChainsManageView.vue'),
-            meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
+            redirect: { path: '/admin/organization', query: { tab: 'chains' } },
         },
         {
             path: '/admin/regions',
             name: 'admin-regions',
-            component: () => import('@/views/admin/RegionsManageView.vue'),
-            meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
+            redirect: { path: '/admin/organization', query: { tab: 'regions' } },
         },
         {
             path: '/admin/stores',
             name: 'admin-stores',
-            component: () => import('@/views/admin/StoresManageView.vue'),
-            meta: { requiresAuth: true, hideNavbar: true, roles: ['ADMIN'] },
+            redirect: { path: '/admin/organization', query: { tab: 'stores' } },
         },
         {
             path: '/admin/point-rules',

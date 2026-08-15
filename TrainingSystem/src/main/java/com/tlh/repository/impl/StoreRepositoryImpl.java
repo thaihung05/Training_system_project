@@ -61,6 +61,40 @@ public class StoreRepositoryImpl implements StoreRepository{
     }
 
     @Override
+    public Store getStoreByMaSt(String maSt) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Store> q = b.createQuery(Store.class);
+        Root<Store> root = q.from(Store.class);
+
+        q.select(root);
+        q.where(b.equal(root.get("maSt"), maSt));
+
+        List<Store> results = s.createQuery(q).getResultList();
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    @Override
+    public long countByChain(long chainId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Store> root = q.from(Store.class);
+        q.select(b.count(root)).where(b.equal(root.get("chainId").get("id"), chainId));
+        return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
+    public long countByRegion(long regionId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Store> root = q.from(Store.class);
+        q.select(b.count(root)).where(b.equal(root.get("regionId").get("id"), regionId));
+        return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
     public void saveOrUpdate(Store store) {
         Session s = this.factory.getObject().getCurrentSession();
         if (store.getId() == null)

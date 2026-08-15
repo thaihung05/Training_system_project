@@ -1,13 +1,13 @@
 .achv-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: var(--space-6);
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
 .achv-body {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   align-items: flex-start;
 }
 
@@ -27,7 +27,7 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .badge-grid {
@@ -50,7 +50,7 @@
 .badge-icon {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: 4px;
   background: var(--color-accent);
   color: #fff;
   display: flex;
@@ -85,7 +85,7 @@
 .cert-icon {
   width: 34px;
   height: 34px;
-  border-radius: 6px;
+  border-radius: 4px;
   background: rgba(184, 134, 11, 0.1);
   color: var(--color-warning);
   display: flex;

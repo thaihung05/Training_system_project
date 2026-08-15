@@ -1,13 +1,14 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import courseService from '@/api/courseService'
 import testService from '@/api/testService'
+import enrollmentService from '@/api/enrollmentService'
 import { showError } from '@/utils/alerts'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
 import FormModal from '@/components/common/FormModal.vue'
-import { BarChart3, ListChecks, Pencil, Plus, Power } from '@lucide/vue'
+import { BarChart3, ListChecks, Pencil, Plus, Power, Star } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +16,9 @@ const courseId = Number(route.params.courseId)
 
 const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: tests, loading, refresh } = useAsyncData(() => testService.getByCourse(courseId))
+const { data: roster } = useAsyncData(() => enrollmentService.getRoster(courseId))
+
+const locked = computed(() => (roster.value || []).length > 0)
 
 const editingId = ref(null)
 const formOpen = ref(false)
@@ -52,6 +56,7 @@ async function submit() {
         passScore: Number(form.value.passScore),
         maxAttempts: Number(form.value.maxAttempts),
         isActive: existing.isActive,
+        isImportant: existing.isImportant,
       })
     } else {
       await testService.create(courseId, {
@@ -76,6 +81,22 @@ async function toggleActive(t) {
       passScore: t.passScore,
       maxAttempts: t.maxAttempts,
       isActive: !t.isActive,
+      isImportant: t.isImportant,
+    })
+    refresh()
+  } catch (err) {
+    showError(err.response?.data || 'Có lỗi xảy ra.')
+  }
+}
+
+async function toggleImportant(t) {
+  try {
+    await testService.update(t.id, {
+      title: t.title,
+      passScore: t.passScore,
+      maxAttempts: t.maxAttempts,
+      isActive: t.isActive,
+      isImportant: !t.isImportant,
     })
     refresh()
   } catch (err) {
@@ -100,8 +121,15 @@ function goResults(t) {
         <h2>Bài kiểm tra</h2>
         <p>{{ tests?.length ?? 0 }} bài kiểm tra đang được thiết lập.</p>
       </div>
-      <button class="btn btn-primary" @click="openCreateForm"><Plus :size="16" /> Thêm bài kiểm tra</button>
+      <button class="btn btn-primary" :disabled="locked" :title="locked ? 'Khóa học đã có người ghi danh' : ''" @click="openCreateForm"><Plus :size="16" /> Thêm bài kiểm tra</button>
     </div>
+
+    <p v-if="locked" class="alert alert-error test-locked-alert">
+      Khóa học đã có người ghi danh: không thể thêm bài kiểm tra mới, và không thể đổi điểm đạt, số lần làm, trạng thái hoặc đánh dấu quan trọng của bài kiểm tra hiện có.
+    </p>
+    <p class="test-important-hint">
+      <Star :size="13" /> Đánh dấu 1 bài là "Quan trọng" để chỉ riêng bài đó quyết định việc cấp chứng chỉ — các bài còn lại chỉ mang tính tham khảo, không bắt buộc. Nếu không đánh dấu bài nào, hệ thống yêu cầu đạt tất cả các bài đang mở (như trước).
+    </p>
 
     <div class="manage-table-wrap trainer-panel">
         <div class="test-table-header">
@@ -115,7 +143,10 @@ function goResults(t) {
         <div v-else-if="tests.length === 0" class="empty-state">Chưa có bài kiểm tra nào.</div>
         <template v-else>
           <div v-for="t in tests" :key="t.id" class="test-row">
-            <div class="test-row-title">{{ t.title }}</div>
+            <div class="test-row-title">
+              {{ t.title }}
+              <span v-if="t.isImportant" class="badge badge-success test-important-badge"><Star :size="11" /> Quan trọng</span>
+            </div>
             <div class="test-row-mono">{{ t.passScore }}%</div>
             <div class="test-row-mono">{{ t.maxAttempts }}</div>
             <div>
@@ -127,7 +158,16 @@ function goResults(t) {
               <button class="row-action-btn" @click="editTest(t)"><Pencil :size="13" /> Sửa</button>
               <button class="row-action-btn" @click="goQuestions(t)"><ListChecks :size="13" /> Soạn câu hỏi</button>
               <button class="row-action-btn" @click="goResults(t)"><BarChart3 :size="13" /> Kết quả</button>
-              <button class="row-action-btn" @click="toggleActive(t)"><Power :size="13" /> {{ t.isActive ? 'Tắt' : 'Kích hoạt' }}</button>
+              <button
+                class="row-action-btn"
+                :class="{ 'row-action-btn--active': t.isImportant }"
+                :disabled="locked"
+                :title="locked ? 'Khóa học đã có người ghi danh' : ''"
+                @click="toggleImportant(t)"
+              >
+                <Star :size="13" /> {{ t.isImportant ? 'Bỏ quan trọng' : 'Đánh dấu quan trọng' }}
+              </button>
+              <button class="row-action-btn" :disabled="locked" :title="locked ? 'Khóa học đã có người ghi danh' : ''" @click="toggleActive(t)"><Power :size="13" /> {{ t.isActive ? 'Tắt' : 'Kích hoạt' }}</button>
             </div>
           </div>
         </template>
@@ -153,13 +193,14 @@ function goResults(t) {
         <div class="test-form-grid">
           <div class="form-field">
             <label for="test-score">Điểm đạt (%)</label>
-            <input id="test-score" v-model="form.passScore" type="number" min="0" max="100" class="input" required />
+            <input id="test-score" v-model="form.passScore" type="number" min="0" max="100" class="input" :disabled="editingId && locked" required />
           </div>
           <div class="form-field">
             <label for="test-attempts">Số lần làm tối đa</label>
-            <input id="test-attempts" v-model="form.maxAttempts" type="number" min="1" class="input" required />
+            <input id="test-attempts" v-model="form.maxAttempts" type="number" min="1" class="input" :disabled="editingId && locked" required />
           </div>
         </div>
+        <p v-if="editingId && locked" class="form-help">Khóa học đã có người ghi danh nên không thể đổi điểm đạt hoặc số lần làm.</p>
       </section>
     </FormModal>
   </div>

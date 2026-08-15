@@ -1,10 +1,11 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import courseService from '@/api/courseService'
 import lessonService from '@/api/lessonService'
 import uploadService from '@/api/uploadService'
+import enrollmentService from '@/api/enrollmentService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
 import FormModal from '@/components/common/FormModal.vue'
@@ -15,6 +16,9 @@ const courseId = Number(route.params.courseId)
 
 const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: lessons, loading, refresh } = useAsyncData(() => lessonService.getByCourse(courseId))
+const { data: roster } = useAsyncData(() => enrollmentService.getRoster(courseId))
+
+const locked = computed(() => (roster.value || []).length > 0)
 
 const editingId = ref(null)
 const formOpen = ref(false)
@@ -110,8 +114,12 @@ async function move(index, direction) {
         <h2>Bài học và tài liệu</h2>
         <p>{{ lessons?.length ?? 0 }} bài học, có thể kéo thứ tự bằng nút lên và xuống.</p>
       </div>
-      <button class="btn btn-primary" @click="openCreateForm"><Plus :size="16" /> Thêm bài học</button>
+      <button class="btn btn-primary" :disabled="locked" :title="locked ? 'Khóa học đã có người ghi danh' : ''" @click="openCreateForm"><Plus :size="16" /> Thêm bài học</button>
     </div>
+
+    <p v-if="locked" class="alert alert-error lessonmg-locked-alert">
+      Khóa học đã có người ghi danh, không thể thay đổi bài học. Hãy tạo khóa học mới nếu cần cập nhật nội dung.
+    </p>
 
     <div class="manage-table-wrap trainer-panel lessonmg-list-panel">
         <div class="trainer-panel-heading">
@@ -123,16 +131,16 @@ async function move(index, direction) {
         <template v-else>
           <div v-for="(l, index) in lessons" :key="l.id" class="lessonmg-row">
             <div class="lessonmg-order">
-              <button class="lessonmg-move" :disabled="index === 0" @click="move(index, -1)"><ChevronUp :size="13" /></button>
-              <button class="lessonmg-move" :disabled="index === lessons.length - 1" @click="move(index, 1)"><ChevronDown :size="13" /></button>
+              <button class="lessonmg-move" :disabled="locked || index === 0" @click="move(index, -1)"><ChevronUp :size="13" /></button>
+              <button class="lessonmg-move" :disabled="locked || index === lessons.length - 1" @click="move(index, 1)"><ChevronDown :size="13" /></button>
             </div>
             <div class="lessonmg-info">
               <div class="lessonmg-title">Bài {{ index + 1 }}: {{ l.title }}</div>
               <div class="lessonmg-pdf">{{ l.slidePdfUrl ? 'Đã có tài liệu PDF' : 'Chưa có tài liệu' }}</div>
             </div>
             <div class="row-action-group">
-              <button class="row-action-btn" @click="editLesson(l)"><Pencil :size="13" /> Sửa</button>
-              <button class="row-action-btn row-action-btn--danger" @click="removeLesson(l)"><Trash2 :size="13" /> Xoá</button>
+              <button class="row-action-btn" :disabled="locked" @click="editLesson(l)"><Pencil :size="13" /> Sửa</button>
+              <button class="row-action-btn row-action-btn--danger" :disabled="locked" @click="removeLesson(l)"><Trash2 :size="13" /> Xoá</button>
             </div>
           </div>
         </template>

@@ -20,6 +20,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
@@ -49,6 +50,11 @@ public class Store implements Serializable {
     @Size(min = 1, max = 100)
     @Column(name = "name")
     private String name;
+    @Basic(optional = false)
+    @NotNull
+    @Pattern(regexp = "\\d{4}")
+    @Column(name = "ma_st")
+    private String maSt;
     @Column(name = "created_at", insertable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -88,6 +94,14 @@ public class Store implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getMaSt() {
+        return maSt;
+    }
+
+    public void setMaSt(String maSt) {
+        this.maSt = maSt;
     }
 
     public Date getCreatedAt() {

@@ -91,6 +91,7 @@ public class TestServiceImpl implements TestService{
             throw new IllegalArgumentException("Khóa học đã có người ghi danh, không thể thêm bài kiểm tra. Hãy tạo khóa học mới nếu cần thay đổi nội dung.");
         }
         t.setIsActive(false);
+        t.setIsImportant(false);
         this.testRepo.saveOrUpdate(t);
         return t;
     }
@@ -106,17 +107,26 @@ public class TestServiceImpl implements TestService{
         boolean passScoreChanged = existing.getPassScore() != t.getPassScore();
         boolean maxAttemptsChanged = existing.getMaxAttempts() != t.getMaxAttempts();
         boolean activeChanged = existing.getIsActive() != t.getIsActive();
+        boolean importantChanged = existing.getIsImportant() != t.getIsImportant();
 
         if (this.testAttemptRepo.hasAttempts(t.getId())
-                && (passScoreChanged || maxAttemptsChanged || activeChanged)) {
-            throw new IllegalArgumentException("Bài kiểm tra đã có lượt làm bài, không thể đổi điểm đạt, số lần làm hoặc trạng thái.");
+                && (passScoreChanged || maxAttemptsChanged || activeChanged || importantChanged)) {
+            throw new IllegalArgumentException("Bài kiểm tra đã có lượt làm bài, không thể đổi điểm đạt, số lần làm, trạng thái hoặc đánh dấu quan trọng.");
         }
         if (this.enrollmentRepo.hasEnrollments(existing.getCourseId().getId())
-                && (passScoreChanged || maxAttemptsChanged || activeChanged)) {
+                && (passScoreChanged || maxAttemptsChanged || activeChanged || importantChanged)) {
             throw new IllegalArgumentException("Khóa học đã có người ghi danh, không thể thay đổi cấu hình bài kiểm tra.");
         }
         if (t.getIsActive()) {
             validateForActivation(t.getId());
+        }
+        if (importantChanged && t.getIsImportant()) {
+            for (Test other : this.testRepo.getByCourse(existing.getCourseId().getId())) {
+                if (!other.getId().equals(t.getId()) && other.getIsImportant()) {
+                    other.setIsImportant(false);
+                    this.testRepo.saveOrUpdate(other);
+                }
+            }
         }
         this.testRepo.saveOrUpdate(t);
         return t;

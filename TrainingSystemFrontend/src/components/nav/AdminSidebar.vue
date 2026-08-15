@@ -18,9 +18,9 @@ const navGroups = [
   {
     label: 'Cơ cấu bán lẻ',
     items: [
-      { name: 'admin-chains', label: 'Chuỗi', icon: Network },
-      { name: 'admin-regions', label: 'Vùng', icon: Map },
-      { name: 'admin-stores', label: 'Siêu thị', icon: Store },
+      { name: 'admin-organization', query: { tab: 'stores' }, label: 'Siêu thị', icon: Store },
+      { name: 'admin-organization', query: { tab: 'chains' }, label: 'Chuỗi', icon: Network },
+      { name: 'admin-organization', query: { tab: 'regions' }, label: 'Vùng', icon: Map },
     ],
   },
   {
@@ -52,10 +52,10 @@ function handleLogout() {
         <div class="admin-sidebar-group-label">{{ group.label }}</div>
         <RouterLink
           v-for="item in group.items"
-          :key="item.name"
-          :to="{ name: item.name }"
+          :key="item.label"
+          :to="{ name: item.name, query: item.query }"
           class="admin-sidebar-link"
-          :class="{ 'admin-sidebar-link--active': route.name === item.name }"
+          :class="{ 'admin-sidebar-link--active': route.name === item.name && (!item.query || route.query.tab === item.query.tab) }"
         >
           <component :is="item.icon" :size="17" />
           <span>{{ item.label }}</span>

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/secure/chains")
-public class ApiSecureChainController {
+public class ApiChainController {
     @Autowired
     private ChainService chainService;
 

@@ -15,6 +15,9 @@ public interface StoreRepository {
     List<Store> getStores();
     Store getStoreById(long id);
     Store getStoreByName(String name);
+    Store getStoreByMaSt(String maSt);
+    long countByChain(long chainId);
+    long countByRegion(long regionId);
     void saveOrUpdate(Store s);
     void deleteStore(long id);
 }

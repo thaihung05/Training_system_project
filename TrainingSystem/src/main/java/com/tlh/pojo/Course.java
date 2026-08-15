@@ -61,6 +61,9 @@ public class Course implements Serializable {
     @Size(max = 500)
     @Column(name = "image_url")
     private String imageUrl;
+    @Size(max = 500)
+    @Column(name = "certificate_pdf_url")
+    private String certificatePdfUrl;
     @Basic(optional = false)
     @NotNull
     @Column(name = "is_active")
@@ -130,6 +133,14 @@ public class Course implements Serializable {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getCertificatePdfUrl() {
+        return certificatePdfUrl;
+    }
+
+    public void setCertificatePdfUrl(String certificatePdfUrl) {
+        this.certificatePdfUrl = certificatePdfUrl;
     }
 
     public boolean getIsActive() {

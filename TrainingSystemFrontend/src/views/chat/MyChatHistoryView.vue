@@ -2,6 +2,7 @@
 import { useLazyList } from '@/composables/useLazyList'
 import chatService from '@/api/chatService'
 import { formatDateTime as formatDate } from '@/utils/formatDate'
+import { renderChatAnswer } from '@/utils/chatMarkdown'
 
 const { items: history, loading, loadingMore, hasMore, loadMore } = useLazyList(
   (page, size) => chatService.getMy(page, size),
@@ -23,7 +24,7 @@ const { items: history, loading, loadingMore, hasMore, loadMore } = useLazyList(
         <div v-for="h in history" :key="h.id" class="card mychat-card">
           <div class="mychat-date">{{ formatDate(h.createdAt) }}</div>
           <div class="mychat-question">{{ h.question }}</div>
-          <div v-if="h.answer" class="mychat-answer">{{ h.answer }}</div>
+          <div v-if="h.answer" class="mychat-answer" v-html="renderChatAnswer(h.answer)"></div>
           <div v-else class="mychat-pending">Đang chờ trả lời...</div>
         </div>
       </div>

@@ -112,6 +112,15 @@ public class ChatHistoryServiceImpl implements ChatHistoryService{
     }
 
     @Override
+    public List<ChatHistory> getAnswered(User caller, Integer page, Integer size) {
+        Long storeId = null;
+        if ("TRAINER".equals(caller.getRole()) && caller.getStoreId() != null) {
+            storeId = caller.getStoreId().getId();
+        }
+        return this.chatHistoryRepo.getAnswered(storeId, page, size);
+    }
+
+    @Override
     public ChatHistory getById(long id) {
         return this.chatHistoryRepo.getById(id);
     }

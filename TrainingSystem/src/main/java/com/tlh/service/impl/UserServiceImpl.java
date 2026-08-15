@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +108,9 @@ public class UserServiceImpl implements UserService{
                 && this.storeService.getStoreById(u.getStoreId().getId()) == null) {
             throw new IllegalArgumentException("Siêu thị không tồn tại");
         }
+        if ("EMPLOYEE".equals(u.getRole()) && (u.getStoreId() == null || u.getStoreId().getId() == null)) {
+            throw new IllegalArgumentException("Nhân viên phải thuộc một siêu thị");
+        }
 
         u.setEmail(u.getEmail().trim());
         u.setName(u.getName().trim());
@@ -133,6 +137,13 @@ public class UserServiceImpl implements UserService{
         if (file.getSize() > MAX_IMPORT_SIZE) {
             throw new IllegalArgumentException("File Excel tối đa 10 MB");
         }
+        Map<String, Store> storesByMaSt = new HashMap<>();
+        for (Store st : this.storeService.getStores()) {
+            if (st.getMaSt() != null) {
+                storesByMaSt.put(st.getMaSt().trim(), st);
+            }
+        }
+
         List<Map<String, Object>> results = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
         try (InputStream is = file.getInputStream(); Workbook wb = new XSSFWorkbook(is)) {
@@ -143,7 +154,7 @@ public class UserServiceImpl implements UserService{
                 String username = getCellString(formatter, row, 1);
                 String email = getCellString(formatter, row, 2);
                 String role = getCellString(formatter, row, 3);
-                String storeName = getCellString(formatter, row, 4);
+                String storeMaSt = getCellString(formatter, row, 4);
 
                 if (name == null && username == null && email == null) {
                     continue;
@@ -160,18 +171,13 @@ public class UserServiceImpl implements UserService{
                     u.setRole(role == null ? "EMPLOYEE" : role.trim().toUpperCase());
                     u.setPassword(generateRandomPassword());
 
-                    if (storeName != null) {
-                        Store found = null;
-                        for (Store st : this.storeService.getStores()) {
-                            if (st.getName() != null && st.getName().trim().equalsIgnoreCase(storeName)) {
-                                found = st;
-                                break;
-                            }
-                        }
+                    if (storeMaSt != null) {
+                        Store found = storesByMaSt.get(storeMaSt.trim());
                         if (found == null) {
-                            throw new IllegalArgumentException("Không tìm thấy siêu thị: " + storeName);
+                            throw new IllegalArgumentException("Không tìm thấy siêu thị có mã: " + storeMaSt);
                         }
                         u.setStoreId(found);
+                        rowResult.put("store", found.getName());
                     }
 
                     this.createUser(u);
@@ -264,6 +270,9 @@ public class UserServiceImpl implements UserService{
         if (body.getStoreId() != null && body.getStoreId().getId() != null
                 && this.storeService.getStoreById(body.getStoreId().getId()) == null) {
             throw new IllegalArgumentException("Siêu thị không tồn tại");
+        }
+        if ("EMPLOYEE".equals(body.getRole()) && (body.getStoreId() == null || body.getStoreId().getId() == null)) {
+            throw new IllegalArgumentException("Nhân viên phải thuộc một siêu thị");
         }
 
         String newEmail = body.getEmail().trim();

@@ -1,7 +1,7 @@
 .page {
-  max-width: 1100px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: var(--space-8) var(--space-4);
+  padding: 28px 24px 48px;
 }
 
 .trainer-page {
@@ -11,7 +11,7 @@
   --trainer-amber: #ffd400;
   --trainer-paper: #f3f5f7;
   --trainer-display: var(--font-display);
-  max-width: 1200px;
+  max-width: 1240px;
   min-height: calc(100vh - var(--header-height));
 }
 
@@ -33,13 +33,15 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .trainer-page-header h1 {
   margin: 0 0 4px;
   font-family: var(--trainer-display);
-  font-size: 28px;
+  font-size: 27px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -61,7 +63,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: #fff;
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .trainer-panel-heading {
@@ -69,14 +71,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 20px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--color-border);
+  background: #f7f8f9;
 }
 
 .trainer-panel-heading h2 {
   margin: 0;
   font-family: var(--trainer-display);
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
 }
 
@@ -116,6 +119,10 @@
 }
 
 @media (max-width: 720px) {
+  .page {
+    padding: 20px 14px 36px;
+  }
+
   .trainer-page {
     padding-top: 20px;
   }
@@ -131,10 +138,22 @@
   .trainer-context-actions {
     width: 100%;
   }
+
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 .page-header {
-  margin-bottom: var(--space-6);
+  display: flex;
+  min-height: 48px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .page-subtitle {
@@ -155,8 +174,8 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: none;
-  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  padding: 18px;
 }
 
 .card--link {
@@ -174,9 +193,10 @@
   justify-content: center;
   gap: var(--space-2);
   border: 1px solid transparent;
+  min-height: 36px;
   border-radius: var(--radius-sm);
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  padding: 7px 14px;
+  font-size: 0.78rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -216,20 +236,21 @@
 }
 
 .btn-sm {
-  padding: 0.3rem 0.65rem;
-  font-size: 0.82rem;
+  min-height: 30px;
+  padding: 5px 10px;
+  font-size: 0.72rem;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 6px;
   margin-bottom: var(--space-4);
 }
 
 .form-field label {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .input,
@@ -237,8 +258,9 @@ select.input,
 textarea.input {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+  min-height: 40px;
   padding: 0.55rem 0.75rem;
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   font-family: inherit;
   color: var(--color-text);
   background: var(--color-surface);
@@ -254,7 +276,7 @@ textarea.input {
 .table-wrap {
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
 }
 
@@ -265,7 +287,7 @@ textarea.input {
 
 .table th {
   text-align: left;
-  font-size: 0.78rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--color-text-muted);
@@ -286,9 +308,10 @@ textarea.input {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
+  padding: 3px 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  font-size: 0.66rem;
   font-weight: 600;
 }
 .badge-success { background: var(--color-success-light); color: var(--color-success); }
@@ -296,7 +319,9 @@ textarea.input {
 .badge-neutral { background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 
 .alert {
-  border-radius: var(--radius-md);
+  border: 1px solid currentColor;
+  border-left-width: 4px;
+  border-radius: 3px;
   padding: var(--space-3) var(--space-4);
   font-size: 0.9rem;
 }
@@ -312,8 +337,9 @@ textarea.input {
   text-align: center;
   color: var(--color-text-muted);
   padding: var(--space-8) var(--space-4);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #f8f9fa;
 }
 
 .stat-rail {
@@ -322,10 +348,12 @@ textarea.input {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-rail-item {
   flex: 1;
+  min-height: 92px;
   padding: var(--space-4) var(--space-5);
   border-left: 1px solid var(--color-border);
 }
@@ -337,7 +365,7 @@ textarea.input {
 .stat-rail-value {
   font-family: var(--font-mono);
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-heading);
   line-height: 1.2;
 }
@@ -409,7 +437,7 @@ textarea.input {
 .progress-track {
   width: 100%;
   height: 6px;
-  border-radius: 999px;
+  border-radius: 1px;
   background: var(--color-bg);
   overflow: hidden;
 }
@@ -417,7 +445,7 @@ textarea.input {
 .progress-fill {
   height: 100%;
   background: var(--color-accent);
-  border-radius: 999px;
+  border-radius: 1px;
 }
 
 .list-item {
@@ -479,13 +507,13 @@ textarea.input {
 }
 
 .filter-chip {
-  height: 42px;
-  padding: 0 16px;
-  border-radius: 8px;
+  height: 36px;
+  padding: 0 15px;
+  border-radius: 3px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -578,7 +606,8 @@ textarea.input {
   min-width: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   overflow-x: auto;
 }
 
@@ -604,8 +633,9 @@ textarea.input {
 }
 
 .row-action-btn {
-  height: 28px;
-  padding: 0 10px;
+  min-height: 29px;
+  height: auto;
+  padding: 5px 9px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
@@ -615,7 +645,7 @@ textarea.input {
   align-items: center;
   gap: 5px;
   font-family: inherit;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;

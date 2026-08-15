@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/secure/courses")
-public class ApiSecureCourseController {
+public class ApiCourseController {
 
     @Autowired
     private CourseService courseService;

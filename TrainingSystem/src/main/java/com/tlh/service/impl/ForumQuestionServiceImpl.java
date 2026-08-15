@@ -57,6 +57,9 @@ public class ForumQuestionServiceImpl implements ForumQuestionService{
         if (course == null) {
             throw new IllegalArgumentException("Không tìm thấy khoá học");
         }
+        if (this.hasPendingQuestion(courseId, caller.getId())) {
+            throw new IllegalArgumentException("Bạn đang có câu hỏi chưa được trả lời trong khoá học này, vui lòng chờ trainer phản hồi trước khi đặt câu hỏi mới");
+        }
         ForumQuestion q = new ForumQuestion();
         q.setCourseId(course);
         q.setUserId(caller);
@@ -115,6 +118,15 @@ public class ForumQuestionServiceImpl implements ForumQuestionService{
     @Override
     public ForumQuestion getById(long id) {
         return this.forumQuestionRepo.getById(id);
+    }
+
+    @Override
+    public boolean hasPendingQuestion(long courseId, long userId) {
+        ForumQuestion latest = this.forumQuestionRepo.getLatestByCourseAndUser(courseId, userId);
+        if (latest == null) {
+            return false;
+        }
+        return this.forumAnswerRepo.getByQuestion(latest.getId()).isEmpty();
     }
 
 }

@@ -15,4 +15,5 @@ public interface ForumQuestionRepository {
     List<ForumQuestion> getByCourse(long courseId, Integer page, Integer size);
     ForumQuestion getById(long id);
     void saveOrUpdate(ForumQuestion q);
+    ForumQuestion getLatestByCourseAndUser(long courseId, long userId);
 }

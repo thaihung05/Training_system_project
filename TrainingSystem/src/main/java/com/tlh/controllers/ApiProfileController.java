@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/secure")
-public class ApiSecureController {
+public class ApiProfileController {
 
     @Autowired
     private UserService userService;

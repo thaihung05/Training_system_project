@@ -6,6 +6,10 @@
   margin-bottom: 16px;
 }
 
+.qmg-locked-alert {
+  margin-bottom: 16px;
+}
+
 .qmg-import-row {
   display: flex;
   align-items: center;
@@ -35,13 +39,14 @@
 .qmg-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .qmg-card {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-radius: var(--radius-md);
 }
 
 .qmg-card-header {
@@ -51,7 +56,7 @@
   gap: 16px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--color-border);
-  background: #f8f9fa;
+  background: #f2f4f6;
 }
 
 .qmg-card-identity {
@@ -61,9 +66,12 @@
 }
 
 .qmg-card-number {
+  padding: 4px 7px;
+  border-radius: 3px;
+  background: #dfeef8;
   color: var(--color-accent);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-family: var(--font-display);
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -94,7 +102,7 @@
 .qmg-options {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   border-top: 1px solid var(--color-border);
   padding: 14px 18px 18px;
 }
@@ -125,7 +133,7 @@
 
 .qmg-options-empty {
   padding: 11px 12px;
-  border: 1px dashed var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: #f8f9fa;
   color: var(--color-text-muted);
@@ -138,16 +146,17 @@
   gap: 10px;
   min-height: 40px;
   padding: 8px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border: 0;
+  border-bottom: 1px solid #e6eaee;
+  border-radius: 0;
   background: #fff;
   font-size: 12.5px;
   color: var(--color-text);
 }
 
-.qmg-option-row:has(input:checked) {
-  border-color: #b9d8ed;
-  background: var(--color-accent-light);
+.qmg-option-row--correct {
+  border-left: 3px solid var(--color-success);
+  background: #f2faf6;
 }
 
 .qmg-option-row input {

@@ -13,6 +13,9 @@ export default {
     getPending(page, size) {
         return http.get('/api/secure/chat-history/pending', { params: { page, size } });
     },
+    getAnswered(page, size) {
+        return http.get('/api/secure/chat-history/answered', { params: { page, size } });
+    },
     answer(id, answerText) {
         return http.put(`/api/secure/chat-history/${id}/answer`, { answer: answerText });
     }

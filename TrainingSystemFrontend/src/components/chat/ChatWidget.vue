@@ -2,6 +2,7 @@
 import { ref, nextTick } from 'vue'
 import { MessageCircle, X, Send } from '@lucide/vue'
 import chatService from '@/api/chatService'
+import { renderChatAnswer } from '@/utils/chatMarkdown'
 
 function getSessionId() {
   let id = localStorage.getItem('chat_session_id')
@@ -90,7 +91,7 @@ async function sendQuestion() {
             <div v-if="m.pending" class="chat-bubble chat-bubble--typing">
               <span class="dot"></span><span class="dot"></span><span class="dot"></span>
             </div>
-            <div v-else-if="m.answer" class="chat-bubble chat-bubble--bot">{{ m.answer }}</div>
+            <div v-else-if="m.answer" class="chat-bubble chat-bubble--bot" v-html="renderChatAnswer(m.answer)"></div>
             <div v-else class="chat-bubble chat-bubble--pending">
               Trợ lý ảo chưa tìm thấy câu trả lời cho câu hỏi này. Câu hỏi của bạn đã được chuyển cho trainer, sẽ được phản hồi sớm nhất.
             </div>

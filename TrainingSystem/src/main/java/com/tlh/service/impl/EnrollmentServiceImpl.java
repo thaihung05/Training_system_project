@@ -236,6 +236,22 @@ public class EnrollmentServiceImpl implements EnrollmentService{
         return this.enrollmentRepo.getByCourseAndUser(courseId, userId) != null;
     }
 
+    private List<Test> getRequiredTests(long courseId) {
+        List<Test> all = this.testRepo.getByCourse(courseId);
+        for (Test t : all) {
+            if (t.getIsActive() && t.getIsImportant()) {
+                return List.of(t);
+            }
+        }
+        List<Test> activeOnly = new ArrayList<>();
+        for (Test t : all) {
+            if (t.getIsActive()) {
+                activeOnly.add(t);
+            }
+        }
+        return activeOnly;
+    }
+
     @Override
     public void recalcProgress(long enrollmentId) {
         Enrollment e = this.enrollmentRepo.getById(enrollmentId);
@@ -250,11 +266,8 @@ public class EnrollmentServiceImpl implements EnrollmentService{
             }
         }
 
-        List<Test> tests = this.testRepo.getByCourse(e.getCourseId().getId());
+        List<Test> tests = getRequiredTests(e.getCourseId().getId());
         for (Test test : tests) {
-            if (!test.getIsActive()) {
-                continue;
-            }
             totalUnits++;
             List<TestAttempt> attempts = this.testAttemptRepo.getByUserAndTest(e.getUserId().getId(), test.getId());
             boolean passed = false;
@@ -274,7 +287,8 @@ public class EnrollmentServiceImpl implements EnrollmentService{
         boolean justCompleted = totalUnits > 0 && percent == 100 && e.getCompletedAt() == null;
         if (justCompleted) {
             e.setCompletedAt(new Date());
-        } else if (percent < 100 && e.getCompletedAt() != null) {
+        } else if (percent < 100 && e.getCompletedAt() != null
+                && !this.certificateService.hasCertificate(e.getUserId().getId(), e.getCourseId().getId())) {
             e.setCompletedAt(null);
         }
         this.enrollmentRepo.saveOrUpdate(e);
@@ -282,5 +296,5 @@ public class EnrollmentServiceImpl implements EnrollmentService{
             this.certificateService.checkAndIssue(e.getUserId().getId(), e.getCourseId().getId());
         }
     }
-    
+
 }

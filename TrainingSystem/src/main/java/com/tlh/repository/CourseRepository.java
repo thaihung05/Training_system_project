@@ -19,6 +19,8 @@ public interface CourseRepository {
     Course getCourseById(long id);
     Course getCourseByIdForUpdate(long id);
     List<Course> getCoursesByCreator(long userId, Integer page, Integer size);
+    long countByChain(long chainId);
+    long countByRegion(long regionId);
     void saveOrUpdate(Course c);
     void deactivateCourse(long id);
 }

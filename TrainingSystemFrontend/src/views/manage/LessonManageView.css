@@ -2,12 +2,25 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
+  min-height: 58px;
+  padding: 12px 16px;
   border-top: 1px solid var(--color-border);
+}
+
+.lessonmg-row:nth-child(odd) {
+  background: #fbfcfd;
+}
+
+.lessonmg-row:hover {
+  background: #f2f8fc;
 }
 
 .lessonmg-list-panel {
   width: 100%;
+}
+
+.lessonmg-locked-alert {
+  margin-bottom: 14px;
 }
 
 .manage-table-wrap .lessonmg-row:first-child {
@@ -88,7 +101,7 @@
   padding: 16px;
   border: 1px dashed #aeb9c4;
   border-radius: var(--radius-md);
-  background: #f8f9fa;
+  background: #f8fafb;
   color: var(--color-accent);
 }
 

@@ -86,6 +86,18 @@ public class ApiChatHistoryController {
         return new ResponseEntity<>(this.chatHistoryService.getPending(caller, page, size), HttpStatus.OK);
     }
     
+    @GetMapping("/answered")
+    public ResponseEntity<?> answered(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            Principal principal) {
+        User caller = currentUser(principal);
+        if (!"TRAINER".equals(caller.getRole()) && !"ADMIN".equals(caller.getRole())) {
+            return new ResponseEntity<>("Bạn không có quyền xem danh sách này", HttpStatus.FORBIDDEN);
+        }
+        return new ResponseEntity<>(this.chatHistoryService.getAnswered(caller, page, size), HttpStatus.OK);
+    }
+
     @PutMapping("/{id}/answer")
     public ResponseEntity<?> answer(
             @PathVariable(value = "id") long id,

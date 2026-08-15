@@ -86,6 +86,7 @@ public class ApiForumController {
         List<Map<String, Object>> questions = this.forumQuestionService.getByCourse(courseId, page, size);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("canAnswer", this.courseService.canAnswerForum(caller, course));
+        result.put("hasPendingQuestion", this.forumQuestionService.hasPendingQuestion(courseId, caller.getId()));
         result.put("questions", questions);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -100,7 +101,8 @@ public class ApiForumController {
         if (question == null) {
             return new ResponseEntity<>("Không tìm thấy câu hỏi", HttpStatus.NOT_FOUND);
         }
-        if (!this.courseService.canAnswerForum(caller, question.getCourseId())) {
+        boolean isAsker = question.getUserId().getId().equals(caller.getId());
+        if (!isAsker && !this.courseService.canAnswerForum(caller, question.getCourseId())) {
             return new ResponseEntity<>("Bạn không có quyền trả lời câu hỏi này", HttpStatus.FORBIDDEN);
         }
         ForumAnswer created = this.forumAnswerService.answer(questionId, caller, body.get("content"));

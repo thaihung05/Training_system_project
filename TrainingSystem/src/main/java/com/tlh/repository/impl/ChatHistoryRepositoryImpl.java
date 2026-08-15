@@ -83,6 +83,30 @@ public class ChatHistoryRepositoryImpl implements ChatHistoryRepository{
     }
 
     @Override
+    public List<ChatHistory> getAnswered(Long storeId, Integer page, Integer size) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<ChatHistory> q = b.createQuery(ChatHistory.class);
+        Root<ChatHistory> root = q.from(ChatHistory.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.isNotNull(root.get("answer")));
+        if (storeId != null) {
+            predicates.add(b.equal(root.get("userId").get("storeId").get("id"), storeId));
+        }
+        q.select(root).where(predicates.toArray(Predicate[]::new));
+        q.orderBy(b.desc(root.get("id")));
+
+        var query = s.createQuery(q);
+        if (page != null && size != null) {
+            int p = Math.max(page, 1);
+            query.setFirstResult((p - 1) * size);
+            query.setMaxResults(size);
+        }
+        return query.getResultList();
+    }
+
+    @Override
     public ChatHistory getById(long id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.get(ChatHistory.class, id);

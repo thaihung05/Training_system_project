@@ -82,6 +82,16 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
+    public long countByStore(long storeId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<User> root = q.from(User.class);
+        q.select(b.count(root)).where(b.equal(root.get("storeId").get("id"), storeId));
+        return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
     public User getUserById(long id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.get(User.class, id);

@@ -17,4 +17,5 @@ public interface ForumQuestionService {
     ForumQuestion ask(long courseId, User caller, String content);
     List<Map<String, Object>> getByCourse(long courseId, Integer page, Integer size);
     ForumQuestion getById(long id);
+    boolean hasPendingQuestion(long courseId, long userId);
 }

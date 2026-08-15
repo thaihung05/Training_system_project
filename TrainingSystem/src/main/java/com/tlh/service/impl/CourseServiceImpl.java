@@ -129,6 +129,7 @@ public class CourseServiceImpl implements CourseService {
         }
 
         c.setImageUrl(UrlUtils.normalizeHttpUrl(c.getImageUrl(), "Link ảnh", 500, false));
+        c.setCertificatePdfUrl(UrlUtils.normalizeHttpUrl(c.getCertificatePdfUrl(), "Link PDF chứng chỉ", 500, false));
 
         if (c.getChains() != null) {
             for (Chain ch : c.getChains()) {

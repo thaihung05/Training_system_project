@@ -57,18 +57,21 @@
 
 .course-studio-card {
   overflow: hidden;
-  border-top: 3px solid #0068b3;
-  transition: border-color 0.15s ease;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .course-studio-card:hover {
-  border-top-color: #ffd400;
+  border-color: #91bad7;
+  box-shadow: 0 5px 15px rgba(16, 54, 82, 0.1);
 }
 
 .course-studio-cover {
   position: relative;
   display: grid;
-  height: 138px;
+  height: auto;
+  aspect-ratio: 16 / 8.5;
   place-items: center;
   overflow: hidden;
   background: #e7f3fb;
@@ -86,20 +89,21 @@
   top: 10px;
   right: 10px;
   padding: 4px 8px;
-  border-radius: 4px;
-  background: #0068b3;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 3px;
+  background: rgba(16, 92, 67, 0.9);
   color: #fff;
   font-size: 10px;
   font-weight: 600;
 }
 
 .course-studio-status--hidden {
-  background: #667382;
+  background: rgba(64, 73, 82, 0.88);
 }
 
 .course-studio-card-body {
   min-height: 174px;
-  padding: 16px;
+  padding: 14px 15px 12px;
 }
 
 .course-studio-card-meta {
@@ -113,7 +117,7 @@
   overflow: hidden;
   margin: 7px 0 6px;
   color: var(--color-heading);
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 700;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -131,11 +135,13 @@
 }
 
 .course-studio-scope {
-  display: inline-flex;
+  display: block;
   max-width: 100%;
   margin-top: 11px;
   overflow: hidden;
-  padding: 0;
+  padding: 7px 8px;
+  border-left: 3px solid #ffd400;
+  background: #f5f7f8;
   color: var(--color-text-muted);
   font-size: 10.5px;
   font-weight: 600;
@@ -145,7 +151,7 @@
 
 .course-studio-actions {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
   background: #f8f9fa;
@@ -154,7 +160,7 @@
 .course-studio-actions button {
   display: flex;
   min-width: 0;
-  min-height: 48px;
+  min-height: 54px;
   align-items: center;
   justify-content: center;
   gap: 5px;
@@ -246,9 +252,10 @@
   overflow: hidden;
   flex-direction: column;
   border: 1px solid #bdc7d1;
-  border-radius: 9px;
+  border-top: 4px solid #ffd400;
+  border-radius: 5px;
   background: #fff;
-  box-shadow: 0 12px 30px rgba(18, 31, 43, 0.2);
+  box-shadow: 0 18px 48px rgba(12, 29, 43, 0.24);
 }
 
 .course-editor-header {
@@ -334,7 +341,7 @@
 .course-scope-column {
   overflow: hidden;
   border: 1px solid var(--color-border);
-  border-radius: 7px;
+  border-radius: 4px;
   background: #f8f9fa;
 }
 
@@ -379,8 +386,8 @@
   max-height: 180px;
   overflow-y: auto;
   flex-direction: column;
-  gap: 3px;
-  padding: 7px;
+  gap: 0;
+  padding: 0;
 }
 
 .course-scope-options button {
@@ -389,7 +396,8 @@
   gap: 7px;
   padding: 7px 8px;
   border: 0;
-  border-radius: 4px;
+  border-bottom: 1px solid #e8ecef;
+  border-radius: 0;
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
@@ -427,9 +435,10 @@
   gap: 8px;
   margin-top: 10px;
   padding: 9px 11px;
-  border: 1px solid var(--color-border);
-  border-radius: 5px;
-  background: #f8f9fa;
+  border: 0;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0;
+  background: #f1f6fa;
   color: var(--color-text);
   font-size: 10.5px;
 }
@@ -457,7 +466,7 @@
   place-items: center;
   overflow: hidden;
   border: 1px solid var(--color-border);
-  border-radius: 7px;
+  border-radius: 3px;
   background: #e7f3fb;
   color: #0068b3;
 }
@@ -470,6 +479,32 @@
 
 .course-editor-preview .btn {
   width: 100%;
+}
+
+.course-editor-certificate {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.course-editor-certificate .course-editor-section-title {
+  margin-bottom: 0;
+}
+
+.course-editor-certificate-file {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: #fff;
+  color: #0068b3;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .course-editor-remove-image {
@@ -487,7 +522,7 @@
   gap: 9px;
   padding: 12px;
   border: 1px solid var(--color-border);
-  border-radius: 7px;
+  border-radius: 4px;
   background: #fff;
   cursor: pointer;
 }

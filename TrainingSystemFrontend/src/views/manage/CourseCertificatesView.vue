@@ -10,7 +10,7 @@ import uploadService from '@/api/uploadService'
 import { showError } from '@/utils/alerts'
 import { formatDate } from '@/utils/formatDate'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
-import { Award, Download, Upload } from '@lucide/vue'
+import { Award, Download, FileText, Upload } from '@lucide/vue'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -59,6 +59,20 @@ async function handleFileChange(event) {
       </div>
     </div>
 
+    <div class="certmg-template trainer-panel">
+      <div class="certmg-template-info">
+        <FileText :size="17" />
+        <div>
+          <strong>Mẫu chứng chỉ khóa học</strong>
+          <p v-if="course?.certificatePdfUrl">File này sẽ tự động cấp cho nhân viên đạt điều kiện hoàn thành khóa học.</p>
+          <p v-else>Chưa thiết lập file PDF mẫu. Vào phần chỉnh sửa khóa học để tải lên.</p>
+        </div>
+      </div>
+      <a v-if="course?.certificatePdfUrl" :href="course.certificatePdfUrl" target="_blank" rel="noopener" class="row-action-btn">
+        <Download :size="13" /> Xem mẫu
+      </a>
+    </div>
+
     <div class="manage-table-wrap trainer-panel">
       <div class="trainer-panel-heading">
         <div><h2>Danh sách chứng chỉ</h2><p>Mã chứng chỉ, ngày cấp và file PDF.</p></div>
@@ -81,7 +95,7 @@ async function handleFileChange(event) {
           <div class="certmg-file">
             <a v-if="c.pdfUrl" :href="c.pdfUrl" target="_blank" rel="noopener" class="row-action-btn"><Download :size="13" /> Tải về</a>
             <span v-else class="certmg-empty">Chưa có file</span>
-            <div v-if="auth.isAdmin" class="certmg-upload">
+            <div v-if="auth.isTrainerOrAdmin" class="certmg-upload">
               <button class="row-action-btn" :disabled="uploadingId === c.id" @click="openPdfPicker(c)">
                 <Upload :size="13" /> {{ uploadingId === c.id ? 'Đang tải...' : c.pdfUrl ? 'Đổi file' : 'Tải file lên' }}
               </button>

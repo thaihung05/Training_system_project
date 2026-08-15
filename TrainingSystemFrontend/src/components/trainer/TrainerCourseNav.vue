@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { scopeLabel } from '@/utils/courseScope'
-import { ArrowLeft, BookOpen, ClipboardCheck, LayoutDashboard, Users, Award } from '@lucide/vue'
+import { ArrowLeft, Award, BookOpen, ClipboardCheck, LayoutDashboard, MessageSquare, Users } from '@lucide/vue'
 
 const props = defineProps({
   course: { type: Object, default: null },
@@ -9,11 +9,12 @@ const props = defineProps({
 })
 
 const steps = computed(() => [
-  { key: 'overview', label: 'Tổng quan', icon: LayoutDashboard, to: { name: 'manage-courses' } },
+  { key: 'overview', label: 'Tổng quan', icon: LayoutDashboard, to: { name: 'course-overview', params: { courseId: props.course?.id } } },
   { key: 'lessons', label: 'Bài học', icon: BookOpen, to: { name: 'manage-lessons', params: { courseId: props.course?.id } } },
   { key: 'tests', label: 'Kiểm tra', icon: ClipboardCheck, to: { name: 'manage-tests', params: { courseId: props.course?.id } } },
   { key: 'enrollments', label: 'Ghi danh', icon: Users, to: { name: 'course-enrollments', params: { courseId: props.course?.id } } },
   { key: 'certificates', label: 'Chứng chỉ', icon: Award, to: { name: 'course-certificates', params: { courseId: props.course?.id } } },
+  { key: 'forum', label: 'Diễn đàn', icon: MessageSquare, to: { name: 'course-forum', params: { courseId: props.course?.id } } },
 ])
 </script>
 

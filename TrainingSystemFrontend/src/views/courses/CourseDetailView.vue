@@ -10,12 +10,14 @@ import lessonProgressService from '@/api/lessonProgressService'
 import testService from '@/api/testService'
 import testAttemptService from '@/api/testAttemptService'
 import forumService from '@/api/forumService'
+import { useAuthStore } from '@/stores/auth'
 import { showError } from '@/utils/alerts'
 import { formatDate, formatDateTime as formatForumDate } from '@/utils/formatDate'
-import { ChevronLeft, ChevronRight, Check, CheckCheck, FileText, ExternalLink } from '@lucide/vue'
+import { ChevronLeft, ChevronRight, Check, CheckCheck, Download, ExternalLink } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 const courseId = Number(route.params.id)
 
 const VALID_TABS = ['lessons', 'tests', 'forum']
@@ -52,6 +54,9 @@ const activeIndex = computed(() =>
   (lessons.value || []).findIndex((l) => l.id === activeLessonId.value),
 )
 const activeLesson = computed(() => (lessons.value || [])[activeIndex.value] || null)
+const activeLessonPdfSrc = computed(() =>
+  activeLesson.value?.slidePdfUrl ? `${activeLesson.value.slidePdfUrl}#toolbar=0&navpanes=0&view=FitH` : null,
+)
 
 function progressFor(lessonId) {
   return progressList.value.find((p) => p.lessonId.id === lessonId) || null
@@ -83,6 +88,7 @@ async function markComplete() {
 
 const { data: tests, loading: testsLoading, error: testsError } = useAsyncData(() => testService.getByCourse(courseId))
 const { data: myAttempts } = useAsyncData(() => testAttemptService.getMy())
+const visibleTests = computed(() => (tests.value || []).filter((t) => t.isActive))
 
 function attemptsForTest(testId) {
   return (myAttempts.value || []).filter((a) => a.testId.id === testId)
@@ -113,10 +119,12 @@ function resumeTest(t) {
 }
 
 const canAnswerForum = ref(false)
+const hasPendingQuestion = ref(false)
 const { items: forumQuestions, loading: forumLoading, loadingMore: forumLoadingMore, hasMore: forumHasMore, error: forumError, loadMore: loadMoreForum, reload: reloadForum } = useLazyList(
   async (page, size) => {
     const res = await forumService.getByCourse(courseId, page, size)
     canAnswerForum.value = res.data.canAnswer
+    hasPendingQuestion.value = res.data.hasPendingQuestion
     return { data: res.data.questions }
   },
   8,
@@ -145,6 +153,17 @@ async function askQuestion() {
 const answerDrafts = reactive({})
 const answering = reactive({})
 const answerErrors = reactive({})
+
+const expandedAnswers = reactive({})
+function isLongThread(q) {
+  return q.answers.length > 1 || q.answers.some((a) => a.content.length > 220)
+}
+function toggleAnswers(questionId) {
+  expandedAnswers[questionId] = !expandedAnswers[questionId]
+}
+function canReply(q) {
+  return canAnswerForum.value || q.userId.id === auth.user?.id
+}
 
 async function submitAnswer(questionId) {
   const content = (answerDrafts[questionId] || '').trim()
@@ -196,13 +215,25 @@ async function submitAnswer(questionId) {
       <div v-else class="detail-body">
         <div v-if="activeLesson" class="lesson-main">
           <div class="lesson-viewer">
-            <a v-if="activeLesson.slidePdfUrl" :href="activeLesson.slidePdfUrl" target="_blank" rel="noopener" class="lesson-pdf-link">
-              <FileText :size="15" /> Mở tài liệu bài học <ExternalLink :size="13" />
-            </a>
+            <iframe
+              v-if="activeLessonPdfSrc"
+              :key="activeLesson.id"
+              :src="activeLessonPdfSrc"
+              class="lesson-pdf-frame"
+              title="Tài liệu bài học"
+            ></iframe>
             <span v-else class="lesson-pdf-empty">Bài học chưa có tài liệu.</span>
           </div>
           <div class="lesson-info-card">
             <div class="lesson-info-title">Bài {{ activeIndex + 1 }}: {{ activeLesson.title }}</div>
+            <div v-if="activeLesson.slidePdfUrl" class="lesson-pdf-actions">
+              <a :href="activeLesson.slidePdfUrl" target="_blank" rel="noopener" class="lesson-pdf-action">
+                <ExternalLink :size="13" /> Mở trong tab mới
+              </a>
+              <a :href="activeLesson.slidePdfUrl" target="_blank" rel="noopener" download class="lesson-pdf-action">
+                <Download :size="13" /> Tải xuống
+              </a>
+            </div>
           </div>
           <div class="lesson-nav">
             <button class="btn btn-secondary" :disabled="activeIndex <= 0" @click="goPrev">
@@ -253,11 +284,14 @@ async function submitAnswer(questionId) {
     <template v-else-if="activeTab === 'tests'">
       <p v-if="testsLoading" class="state-text">Đang tải...</p>
       <p v-else-if="testsError" class="alert alert-error">{{ testsError.response?.data || 'Không tải được danh sách bài kiểm tra.' }}</p>
-      <div v-else-if="tests.length === 0" class="empty-state">Khoá học chưa có bài kiểm tra nào.</div>
+      <div v-else-if="visibleTests.length === 0" class="empty-state">Khoá học chưa có bài kiểm tra nào.</div>
       <div v-else class="test-tab-list">
-        <div v-for="t in tests" :key="t.id" class="card test-tab-card">
+        <div v-for="t in visibleTests" :key="t.id" class="card test-tab-card">
           <div class="test-tab-header">
-            <div class="test-tab-title">{{ t.title }}</div>
+            <div class="test-tab-title">
+              {{ t.title }}
+              <span v-if="t.isImportant" class="badge badge-success">Bắt buộc để nhận chứng chỉ</span>
+            </div>
             <span v-if="hasPassed(t.id)" class="badge badge-success">Đã đạt</span>
           </div>
           <div class="test-tab-meta">
@@ -281,7 +315,10 @@ async function submitAnswer(questionId) {
     </template>
 
     <template v-if="activeTab === 'forum'">
-      <div class="forum-ask card">
+      <div v-if="hasPendingQuestion" class="forum-ask-done card">
+        Bạn đang có câu hỏi chưa được trả lời. Vui lòng chờ trainer phản hồi trước khi đặt câu hỏi mới.
+      </div>
+      <div v-else class="forum-ask card">
         <textarea
           v-model="questionDraft"
           class="input forum-ask-input"
@@ -307,23 +344,31 @@ async function submitAnswer(questionId) {
             </div>
             <div class="forum-question-content">{{ q.content }}</div>
 
-            <div v-if="q.answers.length > 0" class="forum-answer-list">
-              <div v-for="a in q.answers" :key="a.id" class="forum-answer-row">
-                <div class="forum-answer-head">
-                  <span class="forum-author forum-author--trainer">{{ a.userId.name }}</span>
-                  <span class="forum-date">{{ formatForumDate(a.createdAt) }}</span>
+            <template v-if="q.answers.length > 0">
+              <div
+                class="forum-answer-list"
+                :class="{ 'forum-answer-list--collapsed': isLongThread(q) && !expandedAnswers[q.id] }"
+              >
+                <div v-for="a in q.answers" :key="a.id" class="forum-answer-row">
+                  <div class="forum-answer-head">
+                    <span class="forum-author" :class="{ 'forum-author--trainer': a.userId.id !== q.userId.id }">{{ a.userId.name }}</span>
+                    <span class="forum-date">{{ formatForumDate(a.createdAt) }}</span>
+                  </div>
+                  <div class="forum-answer-content">{{ a.content }}</div>
                 </div>
-                <div class="forum-answer-content">{{ a.content }}</div>
               </div>
-            </div>
+              <button v-if="isLongThread(q)" type="button" class="forum-toggle-btn" @click="toggleAnswers(q.id)">
+                {{ expandedAnswers[q.id] ? 'Thu gọn câu trả lời' : `Xem đầy đủ câu trả lời (${q.answers.length})` }}
+              </button>
+            </template>
             <div v-else class="forum-pending">Chưa có câu trả lời.</div>
 
-            <div v-if="canAnswerForum" class="forum-answer-form">
+            <div v-if="canReply(q)" class="forum-answer-form">
               <input
                 v-model="answerDrafts[q.id]"
                 type="text"
                 class="input"
-                placeholder="Trả lời câu hỏi này..."
+                :placeholder="canAnswerForum ? 'Trả lời câu hỏi này...' : 'Nhắn thêm cho trainer...'"
                 @keyup.enter="submitAnswer(q.id)"
               />
               <button

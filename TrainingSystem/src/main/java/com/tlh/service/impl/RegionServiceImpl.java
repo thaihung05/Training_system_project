@@ -5,7 +5,9 @@
 package com.tlh.service.impl;
 
 import com.tlh.pojo.Region;
+import com.tlh.repository.CourseRepository;
 import com.tlh.repository.RegionRepository;
+import com.tlh.repository.StoreRepository;
 import com.tlh.service.RegionService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,12 @@ public class RegionServiceImpl implements RegionService{
 
     @Autowired
     private RegionRepository regionRepo;
+
+    @Autowired
+    private StoreRepository storeRepo;
+
+    @Autowired
+    private CourseRepository courseRepo;
 
     @Override
     public List<Region> getRegions() {
@@ -51,6 +59,26 @@ public class RegionServiceImpl implements RegionService{
 
     @Override
     public void deleteRegion(long id) {
+        Region r = this.regionRepo.getRegionById(id);
+        if (r == null) {
+            return;
+        }
+        long storeCount = this.storeRepo.countByRegion(id);
+        long courseCount = this.courseRepo.countByRegion(id);
+        if (storeCount > 0 || courseCount > 0) {
+            StringBuilder msg = new StringBuilder("Không thể xóa vùng \"" + r.getName() + "\" vì còn");
+            if (storeCount > 0) {
+                msg.append(" ").append(storeCount).append(" siêu thị");
+            }
+            if (storeCount > 0 && courseCount > 0) {
+                msg.append(" và");
+            }
+            if (courseCount > 0) {
+                msg.append(" ").append(courseCount).append(" khóa học");
+            }
+            msg.append(" đang sử dụng.");
+            throw new IllegalArgumentException(msg.toString());
+        }
         this.regionRepo.deleteRegion(id);
     }
 

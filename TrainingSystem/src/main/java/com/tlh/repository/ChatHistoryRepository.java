@@ -15,6 +15,7 @@ public interface ChatHistoryRepository {
     List<ChatHistory> getByUser(long userId, Integer page, Integer size);
     List<ChatHistory> getBySession(String sessionId);
     List<ChatHistory> getPending(Long storeId, Integer page, Integer size);
+    List<ChatHistory> getAnswered(Long storeId, Integer page, Integer size);
     ChatHistory getById(long id);
     void saveOrUpdate(ChatHistory c);
 }

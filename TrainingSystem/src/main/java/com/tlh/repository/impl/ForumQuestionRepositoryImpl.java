@@ -46,6 +46,20 @@ public class ForumQuestionRepositoryImpl implements ForumQuestionRepository{
     }
 
     @Override
+    public ForumQuestion getLatestByCourseAndUser(long courseId, long userId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<ForumQuestion> q = b.createQuery(ForumQuestion.class);
+        Root<ForumQuestion> root = q.from(ForumQuestion.class);
+        q.select(root).where(
+                b.equal(root.get("courseId").get("id"), courseId),
+                b.equal(root.get("userId").get("id"), userId));
+        q.orderBy(b.desc(root.get("id")));
+        List<ForumQuestion> result = s.createQuery(q).setMaxResults(1).getResultList();
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    @Override
     public ForumQuestion getById(long id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.get(ForumQuestion.class, id);

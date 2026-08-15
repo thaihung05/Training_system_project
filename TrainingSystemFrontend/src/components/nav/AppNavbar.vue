@@ -54,7 +54,10 @@ const navItems = computed(() => {
   return items
 })
 
-const brandSub = computed(() => (auth.isTrainer ? 'Không gian giảng viên' : 'Đào tạo nội bộ'))
+const brandSub = computed(() => (
+    auth.isTrainer ? 'Không gian giảng viên' : 'Đào tạo nội bộ'
+  )
+)
 
 function isNavActive(item) {
   if (item.name === 'manage-courses') return route.path.startsWith('/manage/courses')

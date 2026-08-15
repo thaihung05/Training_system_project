@@ -1,8 +1,12 @@
 .profile-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
+  gap: 16px;
   align-items: start;
+}
+
+.profile-body .card {
+  border-top: 3px solid var(--color-accent);
 }
 
 .profile-info-row {

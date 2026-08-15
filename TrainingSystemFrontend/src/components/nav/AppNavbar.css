@@ -1,12 +1,13 @@
 .navbar {
   height: var(--header-height);
   background: #0068b3;
-  border-bottom: 4px solid #ffd400;
+  border-bottom: 3px solid #ffd400;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
-  gap: 24px;
+  padding: 0 26px;
+  gap: 22px;
+  box-shadow: 0 1px 4px rgba(0, 48, 82, 0.18);
 }
 
 .navbar--trainer {
@@ -27,12 +28,12 @@
 }
 
 .navbar-role-pill {
-  padding: 4px 8px;
+  padding: 3px 7px;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
+  border-radius: 3px;
   background: rgba(0, 55, 96, 0.25);
   color: #fff;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -47,14 +48,14 @@
 }
 
 .navbar-mark {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   background: #ffd400;
   color: #005796;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,7 +71,7 @@
 .navbar-brand-name {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   color: #fff;
 }
 
@@ -84,16 +85,17 @@
 .navbar-nav {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 24px;
   flex: 1;
 }
 
 .navbar-link {
-  font-size: 14px;
+  height: 55px;
+  font-size: 12.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.86);
-  padding: 19px 0 17px;
-  border-bottom: 2px solid transparent;
+  padding: 18px 0 14px;
+  border-bottom: 3px solid transparent;
   white-space: nowrap;
 }
 
@@ -112,8 +114,8 @@
 
 .navbar-bell {
   position: relative;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   background: rgba(0, 55, 96, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -148,7 +150,7 @@
 }
 
 .navbar-user-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #fff;
   white-space: nowrap;
@@ -229,9 +231,9 @@
 }
 
 .navbar-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
   background: #ffd400;
   color: #005796;
   font-size: 12px;

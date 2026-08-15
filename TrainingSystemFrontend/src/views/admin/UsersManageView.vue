@@ -5,8 +5,11 @@ import { useAsyncData } from '@/composables/useAsyncData'
 import { useLazyList } from '@/composables/useLazyList'
 import AdminSidebar from '@/components/nav/AdminSidebar.vue'
 import FormModal from '@/components/common/FormModal.vue'
+import ImportProgressOverlay from '@/components/common/ImportProgressOverlay.vue'
 import userService from '@/api/userService'
 import storeService from '@/api/storeService'
+import chainService from '@/api/chainService'
+import regionService from '@/api/regionService'
 import pointService from '@/api/pointService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import { formatDateTime as formatDate } from '@/utils/formatDate'
@@ -20,6 +23,8 @@ const { items: users, loading, loadingMore, hasMore, loadMore, reload } = useLaz
   20,
 )
 const { data: stores } = useAsyncData(() => storeService.getAll())
+const { data: chains } = useAsyncData(() => chainService.getAll())
+const { data: regions } = useAsyncData(() => regionService.getAll())
 
 let debounceTimer = null
 function onSearchInput() {
@@ -27,10 +32,37 @@ function onSearchInput() {
   debounceTimer = setTimeout(reload, 400)
 }
 
-const storeFilter = ref(null)
+const filterChainId = ref(null)
+const filterRegionId = ref(null)
+const filterStoreId = ref(null)
 
-watch(storeFilter, async (val) => {
-  if (val === null) return
+const filterRegions = computed(() => {
+  const matching = filterChainId.value
+    ? (stores.value || []).filter((s) => s.chainId && s.chainId.id === filterChainId.value)
+    : stores.value || []
+  const ids = new Set(matching.map((s) => s.regionId && s.regionId.id))
+  return (regions.value || []).filter((r) => ids.has(r.id))
+})
+
+const filterStores = computed(() => {
+  return (stores.value || []).filter((s) => {
+    if (filterChainId.value && (!s.chainId || s.chainId.id !== filterChainId.value)) return false
+    if (filterRegionId.value && (!s.regionId || s.regionId.id !== filterRegionId.value)) return false
+    return true
+  })
+})
+
+watch(filterChainId, () => {
+  if (!filterRegions.value.some((r) => r.id === filterRegionId.value)) filterRegionId.value = null
+  filterStoreId.value = null
+})
+watch(filterRegionId, () => {
+  filterStoreId.value = null
+})
+
+const anyStoreFilterActive = computed(() => !!(filterChainId.value || filterRegionId.value || filterStoreId.value))
+watch(anyStoreFilterActive, async (active) => {
+  if (!active) return
   while (hasMore.value) {
     await loadMore()
   }
@@ -38,9 +70,13 @@ watch(storeFilter, async (val) => {
 
 const filteredUsers = computed(() => {
   const list = users.value || []
-  if (storeFilter.value === null) return list
-  if (storeFilter.value === 'none') return list.filter((u) => !u.storeId)
-  return list.filter((u) => u.storeId && u.storeId.id === storeFilter.value)
+  if (filterStoreId.value === 'none') return list.filter((u) => !u.storeId)
+  if (filterStoreId.value) return list.filter((u) => u.storeId && u.storeId.id === filterStoreId.value)
+  return list.filter((u) => {
+    if (filterChainId.value && (!u.storeId || !u.storeId.chainId || u.storeId.chainId.id !== filterChainId.value)) return false
+    if (filterRegionId.value && (!u.storeId || !u.storeId.regionId || u.storeId.regionId.id !== filterRegionId.value)) return false
+    return true
+  })
 })
 
 const editingId = ref(null)
@@ -49,8 +85,32 @@ const form = ref({ name: '', username: '', email: '', password: '', role: 'EMPLO
 const saving = ref(false)
 const errorMsg = ref('')
 
+const formChainId = ref(null)
+const formRegionId = ref(null)
+
+const storesForForm = computed(() => {
+  return (stores.value || []).filter((s) => {
+    if (formChainId.value && (!s.chainId || s.chainId.id !== formChainId.value)) return false
+    if (formRegionId.value && (!s.regionId || s.regionId.id !== formRegionId.value)) return false
+    return true
+  })
+})
+
+watch(formChainId, () => {
+  if (form.value.storeId && !storesForForm.value.some((s) => s.id === form.value.storeId)) {
+    form.value.storeId = null
+  }
+})
+watch(formRegionId, () => {
+  if (form.value.storeId && !storesForForm.value.some((s) => s.id === form.value.storeId)) {
+    form.value.storeId = null
+  }
+})
+
 function openCreateForm() {
   editingId.value = null
+  formChainId.value = null
+  formRegionId.value = null
   form.value = { name: '', username: '', email: '', password: '', role: 'EMPLOYEE', storeId: null }
   errorMsg.value = ''
   showForm.value = true
@@ -58,6 +118,9 @@ function openCreateForm() {
 
 function openEditForm(u) {
   editingId.value = u.id
+  form.value = { name: '', username: '', email: '', password: '', role: 'EMPLOYEE', storeId: null }
+  formChainId.value = u.storeId && u.storeId.chainId ? u.storeId.chainId.id : null
+  formRegionId.value = u.storeId && u.storeId.regionId ? u.storeId.regionId.id : null
   form.value = {
     name: u.name,
     username: u.username,
@@ -167,6 +230,7 @@ async function viewPoints(u) {
 <template>
   <div class="admin-layout">
     <AdminSidebar />
+    <ImportProgressOverlay :active="importing" label="Đang nhập danh sách người dùng..." />
     <div class="admin-content">
       <div class="manage-header">
         <div><h1>Người dùng</h1><p>Quản lý tài khoản, vai trò, đơn vị làm việc và trạng thái truy cập hệ thống.</p></div>
@@ -184,6 +248,7 @@ async function viewPoints(u) {
         <div v-for="r in importResults" :key="r.row" class="users-import-row">
           <span class="users-import-row-num">Dòng {{ r.row }}</span>
           <span class="users-import-row-user">{{ r.username }}</span>
+          <span v-if="r.status === 'success' && r.store" class="users-import-row-store">{{ r.store }}</span>
           <span class="badge" :class="r.status === 'success' ? 'badge-success' : 'badge-danger'">
             {{ r.status === 'success' ? 'Thành công' : r.message }}
           </span>
@@ -195,10 +260,18 @@ async function viewPoints(u) {
         <div class="search-bar">
           <input v-model="keyword" type="text" placeholder="Tìm theo tên hoặc email..." @input="onSearchInput" />
         </div>
-        <select v-model="storeFilter" class="input users-dept-select">
+        <select v-model="filterChainId" class="input users-dept-select">
+          <option :value="null">Tất cả chuỗi</option>
+          <option v-for="c in chains" :key="c.id" :value="c.id">{{ c.name }}</option>
+        </select>
+        <select v-model="filterRegionId" class="input users-dept-select">
+          <option :value="null">Tất cả vùng</option>
+          <option v-for="r in filterRegions" :key="r.id" :value="r.id">{{ r.name }}</option>
+        </select>
+        <select v-model="filterStoreId" class="input users-dept-select">
           <option :value="null">Tất cả siêu thị</option>
           <option value="none">Không thuộc siêu thị</option>
-          <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
+          <option v-for="s in filterStores" :key="s.id" :value="s.id">{{ s.name }}</option>
         </select>
         <span class="admin-toolbar-meta">{{ filteredUsers.length }} người đang hiển thị</span>
       </div>
@@ -210,7 +283,7 @@ async function viewPoints(u) {
         description="Thiết lập thông tin đăng nhập, vai trò và siêu thị làm việc."
         :submit-label="editingId ? 'Lưu thay đổi' : 'Thêm người dùng'"
         :saving="saving"
-        :disabled="!form.name.trim() || !form.email.trim() || (!editingId && (!form.username.trim() || !form.password))"
+        :disabled="!form.name.trim() || !form.email.trim() || (!editingId && (!form.username.trim() || !form.password)) || (form.role === 'EMPLOYEE' && !form.storeId)"
         @close="closeForm"
         @submit="submit"
       >
@@ -246,12 +319,27 @@ async function viewPoints(u) {
             </select>
           </div>
           <div class="form-field">
-            <label for="user-store">Siêu thị làm việc</label>
+            <label for="user-store-chain">Chuỗi<span class="form-label-optional"> (lọc)</span></label>
+            <select id="user-store-chain" v-model="formChainId" class="input">
+              <option :value="null">Tất cả chuỗi</option>
+              <option v-for="c in chains" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="user-store-region">Vùng<span class="form-label-optional"> (lọc)</span></label>
+            <select id="user-store-region" v-model="formRegionId" class="input">
+              <option :value="null">Tất cả vùng</option>
+              <option v-for="r in regions" :key="r.id" :value="r.id">{{ r.name }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="user-store">Siêu thị làm việc<span v-if="form.role === 'EMPLOYEE'" class="form-label-optional"> (bắt buộc)</span></label>
             <select id="user-store" v-model="form.storeId" class="input">
               <option :value="null">Không thuộc siêu thị</option>
-              <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
+              <option v-for="s in storesForForm" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
-            <small class="form-help">Người không thuộc siêu thị sẽ chỉ thấy dữ liệu được phép theo luật phạm vi.</small>
+            <small v-if="form.role === 'EMPLOYEE'" class="form-help">Nhân viên bắt buộc phải thuộc một siêu thị.</small>
+            <small v-else class="form-help">Trainer để trống sẽ phụ trách toàn tập đoàn.</small>
           </div></div>
         </section>
       </FormModal>
@@ -300,8 +388,8 @@ async function viewPoints(u) {
             <div class="row-action-group">
               <button class="row-action-btn" @click="viewPoints(u)"><Coins :size="13" /> Xem điểm</button>
               <button v-if="auth.isAdmin && u.role !== 'ADMIN'" class="row-action-btn" @click="openEditForm(u)"><Pencil :size="13" /> Sửa</button>
-              <button v-if="auth.isAdmin && u.isActive" class="row-action-btn row-action-btn--danger" @click="deactivate(u)"><Lock :size="13" /> Khoá</button>
-              <button v-if="auth.isAdmin && !u.isActive" class="row-action-btn" @click="reactivate(u)"><Unlock :size="13" /> Kích hoạt lại</button>
+              <button v-if="auth.isAdmin && u.role !== 'ADMIN' && u.isActive" class="row-action-btn row-action-btn--danger" @click="deactivate(u)"><Lock :size="13" /> Khoá</button>
+              <button v-if="auth.isAdmin && u.role !== 'ADMIN' && !u.isActive" class="row-action-btn" @click="reactivate(u)"><Unlock :size="13" /> Kích hoạt lại</button>
             </div>
           </div>
         </template>

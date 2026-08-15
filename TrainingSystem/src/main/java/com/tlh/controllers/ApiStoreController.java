@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/secure/stores")
-public class ApiSecureStoreController {
+public class ApiStoreController {
     @Autowired
     private StoreService storeService;
 

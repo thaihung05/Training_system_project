@@ -35,3 +35,11 @@ replay_pid*
 
 # Chứa mật khẩu DB + Cloudinary secret, không được commit
 /TrainingSystem/src/main/resources/databases.properties
+
+# Ghi chú trao đổi với AI và script SQL chạy tay, không cần lưu vào repo
+/TrainingSystem/ghichu_ban_giao_ui_02.md
+/TrainingSystem/baocao_chinhsua_hethong.md
+/TrainingSystem/database/
+/them_cot_certificate_pdf.sql
+/them_cot_important.sql
+/them_cot_maST.sql

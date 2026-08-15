@@ -18,17 +18,21 @@ import {
   ClipboardList,
   Eye,
   EyeOff,
+  FileText,
   ImagePlus,
+  LayoutDashboard,
   MapPinned,
   Pencil,
   Plus,
   Search,
+  Upload,
   Users,
   X,
 } from '@lucide/vue'
 
 const router = useRouter()
 const imageInput = ref(null)
+const pdfInput = ref(null)
 
 const { items: courses, loading, loadingMore, hasMore, loadMore, reload } = useLazyList(
   (page, size) => courseService.getMyCourses(page, size),
@@ -40,10 +44,11 @@ const { data: regions } = useAsyncData(() => regionService.getAll())
 const editingId = ref(null)
 const formOpen = ref(false)
 const courseSearch = ref('')
-const form = ref({ title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null })
+const form = ref({ title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null, certificatePdfUrl: null })
 const saving = ref(false)
 const errorMsg = ref('')
 const uploadingImage = ref(false)
+const uploadingPdf = ref(false)
 
 const visibleCourses = computed(() => {
   const keyword = courseSearch.value.trim().toLowerCase()
@@ -61,7 +66,7 @@ const selectedRegionNames = computed(() =>
 )
 
 function blankForm() {
-  return { title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null }
+  return { title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null, certificatePdfUrl: null }
 }
 
 function resetForm() {
@@ -89,6 +94,7 @@ function editCourse(course) {
     regionIds: (course.regions || []).map((region) => region.id),
     isActive: course.isActive,
     imageUrl: course.imageUrl || null,
+    certificatePdfUrl: course.certificatePdfUrl || null,
   }
   errorMsg.value = ''
   formOpen.value = true
@@ -118,6 +124,25 @@ async function onImageFileChange(event) {
   }
 }
 
+function openPdfPicker() {
+  pdfInput.value?.click()
+}
+
+async function onPdfFileChange(event) {
+  const file = event.target.files[0]
+  event.target.value = ''
+  if (!file) return
+  uploadingPdf.value = true
+  try {
+    const response = await uploadService.uploadPdf(file)
+    form.value.certificatePdfUrl = response.data.url
+  } catch (error) {
+    showError(error.response?.data || 'Tải file PDF thất bại.')
+  } finally {
+    uploadingPdf.value = false
+  }
+}
+
 function buildPayload() {
   return {
     title: form.value.title,
@@ -126,6 +151,7 @@ function buildPayload() {
     regions: form.value.regionIds.map((id) => ({ id })),
     isActive: form.value.isActive,
     imageUrl: form.value.imageUrl,
+    certificatePdfUrl: form.value.certificatePdfUrl,
   }
 }
 
@@ -159,6 +185,7 @@ async function reactivate(course) {
       regions: (course.regions || []).map((region) => ({ id: region.id })),
       isActive: true,
       imageUrl: course.imageUrl,
+      certificatePdfUrl: course.certificatePdfUrl,
     })
     reload()
   } catch (error) {
@@ -221,6 +248,7 @@ function go(routeName, course) {
         </div>
 
         <div class="course-studio-actions">
+          <button @click="go('course-overview', course)"><LayoutDashboard :size="15" /><span>Quản lý</span></button>
           <button @click="go('manage-lessons', course)"><BookOpen :size="15" /><span>Bài học</span></button>
           <button @click="go('manage-tests', course)"><ClipboardList :size="15" /><span>Kiểm tra</span></button>
           <button @click="go('course-enrollments', course)"><Users :size="15" /><span>Ghi danh</span></button>
@@ -329,6 +357,18 @@ function go(routeName, course) {
                 </button>
                 <button v-if="form.imageUrl && !uploadingImage" type="button" class="course-editor-remove-image" @click="form.imageUrl = null">Bỏ ảnh hiện tại</button>
                 <input ref="imageInput" type="file" accept="image/jpeg,image/png,image/webp" class="hidden-file-input" @change="onImageFileChange" />
+              </section>
+
+              <section class="course-editor-section course-editor-certificate">
+                <div class="course-editor-section-title"><div><h3>Mẫu chứng chỉ</h3><p>File PDF sẽ tự động cấp cho nhân viên đạt điều kiện hoàn thành khóa học.</p></div></div>
+                <a v-if="form.certificatePdfUrl" :href="form.certificatePdfUrl" target="_blank" rel="noopener" class="course-editor-certificate-file">
+                  <FileText :size="16" /> Xem file PDF hiện tại
+                </a>
+                <button type="button" class="btn btn-secondary" :disabled="uploadingPdf" @click="openPdfPicker">
+                  <Upload :size="15" /> {{ uploadingPdf ? 'Đang tải PDF…' : form.certificatePdfUrl ? 'Đổi file PDF' : 'Tải file PDF chứng chỉ' }}
+                </button>
+                <button v-if="form.certificatePdfUrl && !uploadingPdf" type="button" class="course-editor-remove-image" @click="form.certificatePdfUrl = null">Bỏ file hiện tại</button>
+                <input ref="pdfInput" type="file" accept="application/pdf" class="hidden-file-input" @change="onPdfFileChange" />
               </section>
 
               <label v-if="editingId" class="course-editor-switch">

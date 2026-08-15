@@ -6,7 +6,6 @@ package com.tlh.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -59,7 +58,7 @@ public class Badge implements Serializable {
     @Column(name = "icon_url")
     private String iconUrl;
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "badgeId")
+    @OneToMany(mappedBy = "badgeId")
     private List<UserBadge> userBadgeList;
 
     public Badge() {

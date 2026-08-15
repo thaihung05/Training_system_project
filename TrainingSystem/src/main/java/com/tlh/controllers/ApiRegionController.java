@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/secure/regions")
-public class ApiSecureRegionController {
+public class ApiRegionController {
     @Autowired
     private RegionService regionService;
 

@@ -6,6 +6,7 @@ package com.tlh.service.impl;
 
 import com.tlh.pojo.Store;
 import com.tlh.repository.StoreRepository;
+import com.tlh.repository.UserRepository;
 import com.tlh.service.ChainService;
 import com.tlh.service.RegionService;
 import com.tlh.service.StoreService;
@@ -22,6 +23,9 @@ public class StoreServiceImpl implements StoreService{
 
     @Autowired
     private StoreRepository storeRepo;
+
+    @Autowired
+    private UserRepository userRepo;
 
     @Autowired
     private ChainService chainService;
@@ -49,6 +53,11 @@ public class StoreServiceImpl implements StoreService{
         }
         s.setName(s.getName().trim());
 
+        if (s.getMaSt() == null || !s.getMaSt().trim().matches("\\d{4}")) {
+            throw new IllegalArgumentException("Mã siêu thị phải gồm đúng 4 chữ số");
+        }
+        s.setMaSt(s.getMaSt().trim());
+
         if (s.getChainId() == null || this.chainService.getChainById(s.getChainId().getId()) == null) {
             throw new IllegalArgumentException("Chuỗi không tồn tại");
         }
@@ -60,12 +69,25 @@ public class StoreServiceImpl implements StoreService{
         if (existed != null && !existed.getId().equals(s.getId())) {
             throw new IllegalArgumentException("Tên siêu thị đã tồn tại: " + s.getName());
         }
+        Store existedMaSt = this.storeRepo.getStoreByMaSt(s.getMaSt());
+        if (existedMaSt != null && !existedMaSt.getId().equals(s.getId())) {
+            throw new IllegalArgumentException("Mã siêu thị đã tồn tại: " + s.getMaSt());
+        }
         this.storeRepo.saveOrUpdate(s);
         return s;
     }
 
     @Override
     public void deleteStore(long id) {
+        Store existing = this.storeRepo.getStoreById(id);
+        if (existing == null) {
+            return;
+        }
+        long userCount = this.userRepo.countByStore(id);
+        if (userCount > 0) {
+            throw new IllegalArgumentException("Không thể xóa siêu thị \"" + existing.getName()
+                    + "\" vì còn " + userCount + " người dùng đang gắn với siêu thị này.");
+        }
         this.storeRepo.deleteStore(id);
     }
 

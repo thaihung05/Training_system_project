@@ -61,6 +61,10 @@ public class Test implements Serializable {
     @NotNull
     @Column(name = "is_active")
     private boolean isActive;
+    @Basic(optional = false)
+    @NotNull
+    @Column(name = "is_important")
+    private boolean isImportant;
     @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "testId")
     private List<Question> questionList;
@@ -124,6 +128,14 @@ public class Test implements Serializable {
 
     public void setIsActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public boolean getIsImportant() {
+        return isImportant;
+    }
+
+    public void setIsImportant(boolean isImportant) {
+        this.isImportant = isImportant;
     }
 
     public List<Question> getQuestionList() {
