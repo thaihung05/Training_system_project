@@ -378,7 +378,7 @@ async function viewPoints(u) {
           <div v-for="u in filteredUsers" :key="u.id" class="users-row">
             <div class="users-row-name">{{ u.name }}</div>
             <div class="users-row-email">{{ u.email }}</div>
-            <div class="users-row-dept">{{ u.storeId ? u.storeId.name : '—' }}</div>
+            <div class="users-row-dept">{{ u.storeId ? u.storeId.name : '-' }}</div>
             <div class="users-row-role">{{ u.role }}</div>
             <div>
               <span class="badge" :class="u.isActive ? 'badge-success' : 'badge-neutral'">

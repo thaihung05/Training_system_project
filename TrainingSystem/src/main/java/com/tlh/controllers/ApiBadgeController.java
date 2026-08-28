@@ -64,6 +64,7 @@ public class ApiBadgeController {
         if (this.badgeService.getById(id) == null) {
             return new ResponseEntity<>("Không tìm thấy huy hiệu", HttpStatus.NOT_FOUND);
         }
+        
         body.setId(id);
         Badge updated = this.badgeService.updateBadge(body);
         return new ResponseEntity<>(updated, HttpStatus.OK);

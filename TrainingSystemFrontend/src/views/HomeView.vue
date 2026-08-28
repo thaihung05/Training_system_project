@@ -25,7 +25,7 @@ const completedCount = computed(
 )
 
 const stats = computed(() => [
-  { label: 'Khoá học của tôi', value: enrollments.value?.length ?? '—' },
+  { label: 'Khoá học của tôi', value: enrollments.value?.length ?? '-' },
   { label: 'Điểm tích luỹ', value: pointsData.value?.totalPoints ?? 0 },
   { label: 'Hoàn thành', value: completedCount.value },
   { label: 'Thông báo mới', value: (notifications.value || []).filter((n) => !n.isRead).length },

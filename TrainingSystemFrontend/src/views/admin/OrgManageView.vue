@@ -251,7 +251,7 @@ async function removeRegion(r) {
     <AdminSidebar />
     <div class="admin-content">
       <div class="manage-header">
-        <div><h1>Cơ cấu bán lẻ</h1><p>Quản lý Chuỗi, Vùng và Siêu thị — nền tảng để phân phạm vi khóa học và phân quyền Trainer.</p></div>
+        <div><h1>Cơ cấu bán lẻ</h1><p>Quản lý Chuỗi, Vùng và Siêu thị - nền tảng để phân phạm vi khóa học và phân quyền Trainer.</p></div>
       </div>
 
       <div class="org-tabs">

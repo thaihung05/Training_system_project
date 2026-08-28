@@ -61,7 +61,7 @@ async function submit() {
         </div>
         <div class="profile-info-row">
           <span class="profile-info-label">Siêu thị</span>
-          <span class="profile-info-value">{{ auth.user?.storeId ? auth.user.storeId.name : '—' }}</span>
+          <span class="profile-info-value">{{ auth.user?.storeId ? auth.user.storeId.name : '-' }}</span>
         </div>
       </div>
 

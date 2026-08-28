@@ -128,7 +128,7 @@ function goResults(t) {
       Khóa học đã có người ghi danh: không thể thêm bài kiểm tra mới, và không thể đổi điểm đạt, số lần làm, trạng thái hoặc đánh dấu quan trọng của bài kiểm tra hiện có.
     </p>
     <p class="test-important-hint">
-      <Star :size="13" /> Đánh dấu 1 bài là "Quan trọng" để chỉ riêng bài đó quyết định việc cấp chứng chỉ — các bài còn lại chỉ mang tính tham khảo, không bắt buộc. Nếu không đánh dấu bài nào, hệ thống yêu cầu đạt tất cả các bài đang mở (như trước).
+      <Star :size="13" /> Đánh dấu 1 bài là "Quan trọng" để chỉ riêng bài đó quyết định việc cấp chứng chỉ - các bài còn lại chỉ mang tính tham khảo, không bắt buộc. Nếu không đánh dấu bài nào, hệ thống yêu cầu đạt tất cả các bài đang mở (như trước).
     </p>
 
     <div class="manage-table-wrap trainer-panel">

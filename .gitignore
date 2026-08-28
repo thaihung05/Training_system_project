@@ -1,16 +1,11 @@
-# Compiled class file
 *.class
 
-# Log file
 *.log
 
-# BlueJ files
 *.ctxt
 
-# Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
 *.jar
 *.war
 *.nar
@@ -19,27 +14,28 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
 /TrainingSystem/target/
 
-# Frontend build output and local dependencies
 /TrainingSystemFrontend/node_modules/
 /TrainingSystemFrontend/dist/
 
-# Generated reports/artifacts and Office lock files
 /outputs/
 ~$*.docx
 ~$*.xlsx
 
-# Chứa mật khẩu DB + Cloudinary secret, không được commit
 /TrainingSystem/src/main/resources/databases.properties
 
-# Ghi chú trao đổi với AI và script SQL chạy tay, không cần lưu vào repo
+/baocao_draft/
 /TrainingSystem/ghichu_ban_giao_ui_02.md
 /TrainingSystem/baocao_chinhsua_hethong.md
 /TrainingSystem/database/
 /them_cot_certificate_pdf.sql
 /them_cot_important.sql
 /them_cot_maST.sql
+
+/TrainingSystem/output/
+/TrainingSystem/tmp/
+/TrainingSystem/tools/
+/_backup_before_history_rewrite_20260828/

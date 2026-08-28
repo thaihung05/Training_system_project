@@ -20,7 +20,7 @@ const { data: certificates, error: certificatesError } = useAsyncData(() => cert
 const myRank = computed(() => {
   const list = leaderboard.value || []
   const idx = list.findIndex((row) => row.userId === auth.user?.id)
-  return idx === -1 ? '—' : `#${idx + 1}`
+  return idx === -1 ? '-' : `#${idx + 1}`
 })
 
 function isEarned(badgeId) {

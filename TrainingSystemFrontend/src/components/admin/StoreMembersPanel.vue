@@ -5,12 +5,24 @@ import FormModal from '@/components/common/FormModal.vue'
 import { ArrowRightLeft, Trash2, Users, UserPlus, X } from '@lucide/vue'
 
 const props = defineProps({
-  storeId: { type: Number, required: true },
-  storeName: { type: String, default: '' },
-  users: { type: Array, default: () => [] },
-  stores: { type: Array, default: () => [] },
-  chains: { type: Array, default: () => [] },
-  regions: { type: Array, default: () => [] },
+  storeId: { 
+    type: Number, required: true 
+  },
+  storeName: { 
+    type: String, default: '' 
+  },
+  users: { 
+    type: Array, default: () => [] 
+  },
+  stores: { 
+    type: Array, default: () => [] 
+  },
+  chains: { 
+    type: Array, default: () => [] 
+  },
+  regions: { 
+    type: Array, default: () => [] 
+  },
 })
 const emit = defineEmits(['refresh', 'close'])
 
@@ -20,9 +32,7 @@ const errorMsg = ref('')
 
 const members = computed(() =>
   props.users
-    .filter((u) => u.storeId && u.storeId.id === props.storeId)
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name)),
+    .filter((u) => u.storeId && u.storeId.id === props.storeId).slice().sort((a, b) => a.name.localeCompare(b.name)),
 )
 
 const available = computed(() => {

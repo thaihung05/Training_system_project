@@ -26,9 +26,9 @@ const avgProgress = computed(() => {
 })
 
 const stats = computed(() => [
-  { label: 'Bài học', value: lessons.value?.length ?? '—' },
-  { label: 'Bài kiểm tra', value: tests.value?.length ?? '—' },
-  { label: 'Học viên', value: roster.value?.length ?? '—' },
+  { label: 'Bài học', value: lessons.value?.length ?? '-' },
+  { label: 'Bài kiểm tra', value: tests.value?.length ?? '-' },
+  { label: 'Học viên', value: roster.value?.length ?? '-' },
   { label: 'Đã hoàn thành', value: `${completedCount.value}/${roster.value?.length ?? 0}` },
   { label: 'Tiến độ trung bình', value: `${avgProgress.value}%` },
 ])
@@ -50,11 +50,11 @@ const stats = computed(() => [
     <section class="trainer-panel course-overview-info">
       <h2>Thông tin khóa học</h2>
       <p class="course-overview-desc">{{ course?.description || 'Chưa có mô tả cho khóa học này.' }}</p>
-      <div class="course-overview-row"><span>Người tạo</span><strong>{{ course?.createdBy?.name || '—' }}</strong></div>
+      <div class="course-overview-row"><span>Người tạo</span><strong>{{ course?.createdBy?.name || '-' }}</strong></div>
       <div class="course-overview-row"><span>Chuỗi áp dụng</span><strong>{{ course?.chains?.length ? course.chains.map((c) => c.name).join(', ') : 'Toàn bộ chuỗi' }}</strong></div>
       <div class="course-overview-row"><span>Vùng áp dụng</span><strong>{{ course?.regions?.length ? course.regions.map((r) => r.name).join(', ') : 'Toàn bộ vùng' }}</strong></div>
-      <div class="course-overview-row"><span>Ngày tạo</span><strong>{{ course ? formatDate(course.createdAt) : '—' }}</strong></div>
-      <div class="course-overview-row"><span>Cập nhật gần nhất</span><strong>{{ course ? formatDate(course.updatedAt) : '—' }}</strong></div>
+      <div class="course-overview-row"><span>Ngày tạo</span><strong>{{ course ? formatDate(course.createdAt) : '-' }}</strong></div>
+      <div class="course-overview-row"><span>Cập nhật gần nhất</span><strong>{{ course ? formatDate(course.updatedAt) : '-' }}</strong></div>
       <div class="course-overview-row"><span>Trạng thái</span><strong>{{ course?.isActive ? 'Đang mở' : 'Đang ẩn' }}</strong></div>
     </section>
   </div>

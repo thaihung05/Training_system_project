@@ -143,7 +143,7 @@ async function unenroll(e) {
     </div>
 
     <p v-if="course && !course.isActive" class="alert alert-error">
-      Khoá học đang bị ẩn — hãy mở lại khoá học ở trang Quản lý khoá học trước khi ghi danh thêm người.
+      Khoá học đang bị ẩn - hãy mở lại khoá học ở trang Quản lý khoá học trước khi ghi danh thêm người.
     </p>
     <p v-if="resultMsg" class="alert alert-success">{{ resultMsg }}</p>
     <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
@@ -165,7 +165,7 @@ async function unenroll(e) {
         <template v-else>
           <div v-for="e in roster" :key="e.id" class="roster-row">
             <div class="roster-row-name">{{ e.userId.name }}</div>
-            <div class="roster-row-dept">{{ e.userId.storeId ? e.userId.storeId.name : '—' }}</div>
+            <div class="roster-row-dept">{{ e.userId.storeId ? e.userId.storeId.name : '-' }}</div>
             <div class="roster-row-progress">{{ e.progressPercent }}%</div>
             <div class="row-action-group">
               <button class="row-action-btn row-action-btn--danger" @click="unenroll(e)"><UserMinus :size="13" /> Huỷ ghi danh</button>
@@ -244,7 +244,7 @@ async function unenroll(e) {
               <label v-for="u in filteredAvailableEmployees" :key="u.id" class="employee-pick-row">
                 <input type="checkbox" :value="u.id" v-model="selectedUserIds" :disabled="!course?.isActive" />
                 <span>{{ u.name }}</span>
-                <span class="employee-pick-dept">{{ u.storeId ? u.storeId.name : '—' }}</span>
+                <span class="employee-pick-dept">{{ u.storeId ? u.storeId.name : '-' }}</span>
               </label>
             </div>
             <button
