@@ -46,7 +46,7 @@ onUnmounted(() => {
               <h2>{{ title }}</h2>
               <p v-if="description">{{ description }}</p>
             </div>
-            <button type="button" class="form-modal-close" aria-label="Đóng" @click="emit('close')">
+            <button type="button" class="form-modal-close" @click="emit('close')">
               <X :size="20" />
             </button>
           </header>

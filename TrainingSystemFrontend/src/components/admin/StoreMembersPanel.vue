@@ -32,7 +32,8 @@ const errorMsg = ref('')
 
 const members = computed(() =>
   props.users
-    .filter((u) => u.storeId && u.storeId.id === props.storeId).slice().sort((a, b) => a.name.localeCompare(b.name)),
+  .filter((u) => u.storeId && u.storeId.id === props.storeId)
+  .slice().sort((a, b) => a.name.localeCompare(b.name)),
 )
 
 const available = computed(() => {
@@ -137,7 +138,7 @@ async function submitReassign() {
   <div class="store-members">
     <div class="store-members-header">
       <span class="store-members-title"><Users :size="14" /> Thành viên · {{ storeName }}</span>
-      <button class="store-members-close" aria-label="Đóng" @click="emit('close')"><X :size="15" /></button>
+      <button class="store-members-close" @click="emit('close')"><X :size="15" /></button>
     </div>
 
     <p v-if="errorMsg" class="alert alert-error store-members-error">{{ errorMsg }}</p>

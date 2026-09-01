@@ -114,7 +114,9 @@ async function move(index, direction) {
         <h2>Bài học và tài liệu</h2>
         <p>{{ lessons?.length ?? 0 }} bài học, có thể kéo thứ tự bằng nút lên và xuống.</p>
       </div>
-      <button class="btn btn-primary" :disabled="locked" :title="locked ? 'Khóa học đã có người ghi danh' : ''" @click="openCreateForm"><Plus :size="16" /> Thêm bài học</button>
+      <button class="btn btn-primary" :disabled="locked" :title="locked ? 'Khóa học đã có người ghi danh' : ''" @click="openCreateForm">
+        <Plus :size="16" /> Thêm bài học
+      </button>
     </div>
 
     <p v-if="locked" class="alert alert-error lessonmg-locked-alert">
@@ -149,7 +151,6 @@ async function move(index, direction) {
     <FormModal
       v-if="formOpen"
       :title="editingId ? 'Chỉnh sửa bài học' : 'Thêm bài học mới'"
-      description="Đặt tên dễ nhận biết và đính kèm tài liệu PDF để nhân viên học theo đúng thứ tự."
       :submit-label="editingId ? 'Lưu thay đổi' : 'Thêm bài học'"
       :saving="saving"
       :disabled="uploading || !form.title.trim()"
@@ -159,7 +160,6 @@ async function move(index, direction) {
       <section class="lessonmg-form-section">
         <div class="lessonmg-section-heading">
           <h3>Thông tin bài học</h3>
-          <p>Tên bài học sẽ xuất hiện trong lộ trình của nhân viên.</p>
         </div>
         <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
         <div class="form-field">

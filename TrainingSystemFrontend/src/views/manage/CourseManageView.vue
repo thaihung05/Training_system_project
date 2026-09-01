@@ -10,7 +10,7 @@ import uploadService from '@/api/uploadService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import { formatDate } from '@/utils/formatDate'
 import { scopeLabel } from '@/utils/courseScope'
-import {
+import { 
   ArrowRight,
   Award,
   BookOpen,
@@ -44,7 +44,9 @@ const { data: regions } = useAsyncData(() => regionService.getAll())
 const editingId = ref(null)
 const formOpen = ref(false)
 const courseSearch = ref('')
-const form = ref({ title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null, certificatePdfUrl: null })
+const form = ref(
+  { title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null, certificatePdfUrl: null }
+)
 const saving = ref(false)
 const errorMsg = ref('')
 const uploadingImage = ref(false)
@@ -57,13 +59,6 @@ const visibleCourses = computed(() => {
     [course.title, course.description, scopeLabel(course)].some((value) => value?.toLowerCase().includes(keyword)),
   )
 })
-
-const selectedChainNames = computed(() =>
-  (chains.value || []).filter((item) => form.value.chainIds.includes(item.id)).map((item) => item.name),
-)
-const selectedRegionNames = computed(() =>
-  (regions.value || []).filter((item) => form.value.regionIds.includes(item.id)).map((item) => item.name),
-)
 
 function blankForm() {
   return { title: '', description: '', chainIds: [], regionIds: [], isActive: false, imageUrl: null, certificatePdfUrl: null }
@@ -230,7 +225,7 @@ function go(routeName, course) {
     </div>
     <div v-else-if="visibleCourses.length === 0" class="empty-state">Không có khóa học phù hợp từ khóa.</div>
 
-    <section v-else class="course-studio-grid" aria-label="Danh sách khóa học phụ trách">
+    <section v-else class="course-studio-grid" >
       <article v-for="course in visibleCourses" :key="course.id" class="course-studio-card trainer-panel">
         <div class="course-studio-cover" :class="{ 'course-studio-cover--blank': !course.imageUrl }">
           <img v-if="course.imageUrl" :src="course.imageUrl" :alt="course.title" />
@@ -275,9 +270,8 @@ function go(routeName, course) {
           <header class="course-editor-header">
             <div>
               <h2>{{ editingId ? 'Chỉnh sửa khóa học' : 'Tạo khóa học mới' }}</h2>
-              <p>Thông tin rõ ràng và phạm vi chính xác giúp ghi danh đúng nhân viên.</p>
             </div>
-            <button type="button" class="course-editor-close" aria-label="Đóng" @click="closeForm"><X :size="20" /></button>
+            <button type="button" class="course-editor-close" @click="closeForm"><X :size="20" /></button>
           </header>
 
           <div class="course-editor-body">
@@ -285,7 +279,11 @@ function go(routeName, course) {
               <p v-if="errorMsg" class="alert alert-error">{{ errorMsg }}</p>
 
               <section class="course-editor-section">
-                <div class="course-editor-section-title"><div><h3>Thông tin cơ bản</h3><p>Tên ngắn gọn, dễ nhận biết trong danh mục.</p></div></div>
+                <div class="course-editor-section-title">
+                  <div>
+                    <h3>Thông tin cơ bản</h3>
+                  </div>
+                </div>
                 <div class="form-field">
                   <label for="course-title">Tên khóa học</label>
                   <input id="course-title" v-model="form.title" type="text" class="input" placeholder="Ví dụ: Kỹ năng tư vấn sản phẩm mới" required />
@@ -297,7 +295,11 @@ function go(routeName, course) {
               </section>
 
               <section class="course-editor-section">
-                <div class="course-editor-section-title"><div><h3>Phạm vi áp dụng</h3><p>Chuỗi và Vùng kết hợp theo điều kiện AND. Để trống cả hai nghĩa là áp dụng cho toàn tập đoàn.</p></div></div>
+                <div class="course-editor-section-title">
+                  <div>
+                    <h3>Phạm vi áp dụng</h3>
+                  </div>
+                </div>
 
                 <div class="course-scope-builder">
                   <div class="course-scope-column">
@@ -336,13 +338,6 @@ function go(routeName, course) {
                     </div>
                   </div>
                 </div>
-
-                <div class="course-scope-summary">
-                  <strong>Nhân viên được áp dụng</strong>
-                  <span>{{ selectedChainNames.length ? selectedChainNames.join(', ') : 'Tất cả Chuỗi' }}</span>
-                  <ArrowRight :size="14" />
-                  <span>{{ selectedRegionNames.length ? selectedRegionNames.join(', ') : 'Tất cả Vùng' }}</span>
-                </div>
               </section>
             </div>
 
@@ -360,7 +355,11 @@ function go(routeName, course) {
               </section>
 
               <section class="course-editor-section course-editor-certificate">
-                <div class="course-editor-section-title"><div><h3>Mẫu chứng chỉ</h3><p>File PDF sẽ tự động cấp cho nhân viên đạt điều kiện hoàn thành khóa học.</p></div></div>
+                <div class="course-editor-section-title">
+                  <div>
+                    <h3>Mẫu chứng chỉ</h3>
+                  </div>
+                </div>
                 <a v-if="form.certificatePdfUrl" :href="form.certificatePdfUrl" target="_blank" rel="noopener" class="course-editor-certificate-file">
                   <FileText :size="16" /> Xem file PDF hiện tại
                 </a>
@@ -378,8 +377,7 @@ function go(routeName, course) {
               </label>
 
               <div v-else class="course-editor-lifecycle">
-                <strong>Khóa học sẽ được tạo ở trạng thái chưa mở</strong>
-                <p>Thêm ít nhất một bài học hoặc một bài kiểm tra hợp lệ, sau đó mở khóa học từ danh sách.</p>
+                <strong><i>Lưu ý:</i></strong> <p>Khóa học sẽ tạo ở trạng thái chưa mở</p>
               </div>
 
             </aside>

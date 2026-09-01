@@ -36,7 +36,7 @@ const steps = computed(() => [
       </div>
     </div>
 
-    <nav v-if="course" class="trainer-course-steps" aria-label="Các bước quản lý khóa học">
+    <nav v-if="course" class="trainer-course-steps" >
       <RouterLink
         v-for="step in steps"
         :key="step.key"

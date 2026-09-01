@@ -55,7 +55,6 @@ async function handleFileChange(event) {
     <div class="trainer-context-header">
       <div>
         <h2>Chứng chỉ đã cấp</h2>
-        <p>{{ certificates?.length ?? 0 }} chứng chỉ trong danh sách hiện tại.</p>
       </div>
     </div>
 
@@ -75,7 +74,7 @@ async function handleFileChange(event) {
 
     <div class="manage-table-wrap trainer-panel">
       <div class="trainer-panel-heading">
-        <div><h2>Danh sách chứng chỉ</h2><p>Mã chứng chỉ, ngày cấp và file PDF.</p></div>
+        <div><h2>Danh sách chứng chỉ</h2></div>
         <Award :size="19" />
       </div>
       <div class="certmg-table-header">

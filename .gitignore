@@ -1,11 +1,7 @@
 *.class
-
 *.log
-
 *.ctxt
-
 .mtj.tmp/
-
 *.jar
 *.war
 *.nar
@@ -13,31 +9,25 @@
 *.zip
 *.tar.gz
 *.rar
-
 hs_err_pid*
 replay_pid*
 /TrainingSystem/target/
-
 /TrainingSystemFrontend/node_modules/
 /TrainingSystemFrontend/dist/
-
-/outputs/
 ~$*.docx
 ~$*.xlsx
-
 /TrainingSystem/src/main/resources/databases.properties
-
-/baocao_draft/
-/TrainingSystem/ghichu_ban_giao_ui_02.md
-/TrainingSystem/baocao_chinhsua_hethong.md
-/TrainingSystem/database/
-/them_cot_certificate_pdf.sql
-/them_cot_important.sql
-/them_cot_maST.sql
 
 /TrainingSystem/output/
 /TrainingSystem/tmp/
 /TrainingSystem/tools/
-/_backup_before_history_rewrite_20260828/
-/TrainingSystem/ghichu_ke_hoach_ky_thuat_01.md
+/TrainingSystem/database/
+
+/TrainingSystem/baocao_chinhsua_hethong.md
 /TrainingSystem/ghichu_ban_giao_01.md
+/TrainingSystem/ghichu_ban_giao_ui_02.md
+/TrainingSystem/ghichu_ke_hoach_ky_thuat_01.md
+/TrainingSystem/nangcap.md
+
+/Báo cáo.docx
+/Bao cao Do an.pdf

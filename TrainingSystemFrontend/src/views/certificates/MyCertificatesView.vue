@@ -32,7 +32,7 @@ const { items: certificates, loading, loadingMore, hasMore, loadMore, error } = 
       <RouterLink :to="{ name: 'my-courses' }" class="btn btn-primary">Tiếp tục học</RouterLink>
     </div>
 
-    <section v-else class="certificate-list" aria-label="Danh sách chứng chỉ">
+    <section v-else class="certificate-list" >
       <article v-for="certificate in certificates" :key="certificate.id" class="certificate-row">
         <div class="certificate-mark" aria-hidden="true"><Award :size="24" /></div>
         <div class="certificate-info">
