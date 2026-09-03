@@ -12,12 +12,13 @@ import enrollmentService from '@/api/enrollmentService'
 import { confirmDialog } from '@/utils/alerts'
 import { isStoreInCourseScope } from '@/utils/courseScope'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import { Building2, MapPinned, Store, UserMinus, Users } from '@lucide/vue'
 
 const route = useRoute()
 const courseId = Number(route.params.courseId)
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
 const { items: roster, loading: rosterLoading, loadingMore: rosterLoadingMore, hasMore: rosterHasMore, loadMore: loadMoreRoster, reload: refreshRoster } = useLazyList(
   (page, size) => enrollmentService.getRoster(courseId, page, size),
   20,
@@ -132,7 +133,8 @@ async function unenroll(e) {
 </script>
 
 <template>
-  <div class="page trainer-page enrollment-workspace">
+  <CourseAccessError v-if="courseError" :message="courseError.response?.data" />
+  <div v-else class="page trainer-page enrollment-workspace">
     <TrainerCourseNav :course="course" active="enrollments" />
 
     <div class="trainer-context-header">

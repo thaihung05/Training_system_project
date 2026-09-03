@@ -6,13 +6,14 @@ import { useLazyList } from '@/composables/useLazyList'
 import courseService from '@/api/courseService'
 import forumService from '@/api/forumService'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import { formatDateTime as formatForumDate } from '@/utils/formatDate'
 import { MessageSquare } from '@lucide/vue'
 
 const route = useRoute()
 const courseId = Number(route.params.courseId)
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
 
 const canAnswer = ref(false)
 const { items: questions, loading, loadingMore, hasMore, error, loadMore, reload } = useLazyList(
@@ -54,7 +55,8 @@ async function submitAnswer(questionId) {
 </script>
 
 <template>
-  <div class="page trainer-page">
+  <CourseAccessError v-if="courseError" :message="courseError.response?.data" />
+  <div v-else class="page trainer-page">
     <TrainerCourseNav :course="course" active="forum" />
 
     <div class="trainer-context-header">

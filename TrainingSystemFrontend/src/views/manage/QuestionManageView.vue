@@ -11,6 +11,7 @@ import enrollmentService from '@/api/enrollmentService'
 import testAttemptService from '@/api/testAttemptService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import ImportProgressOverlay from '@/components/common/ImportProgressOverlay.vue'
 import { CirclePlus, FileSpreadsheet, Pencil, Plus, Power, Trash2 } from '@lucide/vue'
@@ -19,7 +20,7 @@ const route = useRoute()
 const courseId = Number(route.params.courseId)
 const testId = Number(route.params.testId)
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: tests } = useAsyncData(() => testService.getByCourse(courseId))
 const currentTest = computed(() => (tests.value || []).find((t) => t.id === testId) || null)
 const { data: roster } = useAsyncData(() => enrollmentService.getRoster(courseId))
@@ -186,7 +187,8 @@ async function onImportFileChange(e) {
 </script>
 
 <template>
-  <div class="page trainer-page">
+  <CourseAccessError v-if="courseError" :message="courseError.response?.data" />
+  <div v-else class="page trainer-page">
     <ImportProgressOverlay :active="importing" label="Đang nhập câu hỏi..." />
     <TrainerCourseNav :course="course" active="tests" />
     <div class="trainer-context-header">

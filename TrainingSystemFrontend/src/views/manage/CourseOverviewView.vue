@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAsyncData } from '@/composables/useAsyncData'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import courseService from '@/api/courseService'
 import lessonService from '@/api/lessonService'
 import testService from '@/api/testService'
@@ -12,7 +13,7 @@ import { formatDate } from '@/utils/formatDate'
 const route = useRoute()
 const courseId = Number(route.params.courseId)
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: lessons } = useAsyncData(() => lessonService.getByCourse(courseId))
 const { data: tests } = useAsyncData(() => testService.getByCourse(courseId))
 const { data: roster } = useAsyncData(() => enrollmentService.getRoster(courseId))
@@ -35,7 +36,8 @@ const stats = computed(() => [
 </script>
 
 <template>
-  <div class="page trainer-page">
+  <CourseAccessError v-if="courseError" :message="courseError.response?.data" />
+  <div v-else class="page trainer-page">
     <TrainerCourseNav :course="course" active="overview" />
 
     <div class="trainer-panel course-overview-stats">

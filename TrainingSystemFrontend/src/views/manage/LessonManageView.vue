@@ -8,13 +8,14 @@ import uploadService from '@/api/uploadService'
 import enrollmentService from '@/api/enrollmentService'
 import { confirmDialog, showError } from '@/utils/alerts'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import { ChevronUp, ChevronDown, FileText, Pencil, Plus, Trash2, Upload } from '@lucide/vue'
 
 const route = useRoute()
 const courseId = Number(route.params.courseId)
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: lessons, loading, refresh } = useAsyncData(() => lessonService.getByCourse(courseId))
 const { data: roster } = useAsyncData(() => enrollmentService.getRoster(courseId))
 
@@ -107,7 +108,8 @@ async function move(index, direction) {
 </script>
 
 <template>
-  <div class="page trainer-page">
+  <CourseAccessError v-if="courseError" :message="courseError.response?.data" />
+  <div v-else class="page trainer-page">
     <TrainerCourseNav :course="course" active="lessons" />
     <div class="trainer-context-header">
       <div>
@@ -129,7 +131,7 @@ async function move(index, direction) {
           <FileText :size="19" />
         </div>
         <p v-if="loading" class="state-text">Đang tải...</p>
-        <div v-else-if="lessons.length === 0" class="empty-state">Chưa có bài học nào.</div>
+        <div v-else-if="!lessons || lessons.length === 0" class="empty-state">Chưa có bài học nào.</div>
         <template v-else>
           <div v-for="(l, index) in lessons" :key="l.id" class="lessonmg-row">
             <div class="lessonmg-order">

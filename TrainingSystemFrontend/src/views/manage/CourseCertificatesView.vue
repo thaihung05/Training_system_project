@@ -10,13 +10,14 @@ import uploadService from '@/api/uploadService'
 import { showError } from '@/utils/alerts'
 import { formatDate } from '@/utils/formatDate'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import { Award, Download, FileText, Upload } from '@lucide/vue'
 
 const route = useRoute()
 const auth = useAuthStore()
 const courseId = Number(route.params.courseId)
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
 const { items: certificates, loading, loadingMore, hasMore, loadMore, error, reload } = useLazyList(
   (page, size) => certificateService.getByCourse(courseId, page, size),
   15,
@@ -50,7 +51,8 @@ async function handleFileChange(event) {
 </script>
 
 <template>
-  <div class="page trainer-page">
+  <CourseAccessError v-if="courseError" :message="courseError.response?.data" />
+  <div v-else class="page trainer-page">
     <TrainerCourseNav :course="course" active="certificates" />
     <div class="trainer-context-header">
       <div>

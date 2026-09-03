@@ -8,13 +8,14 @@ import testService from '@/api/testService'
 import testAttemptService from '@/api/testAttemptService'
 import { formatDateTime } from '@/utils/formatDate'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import { BarChart3 } from '@lucide/vue'
 
 const route = useRoute()
 const courseId = Number(route.params.courseId)
 const testId = Number(route.params.testId)
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: tests } = useAsyncData(() => testService.getByCourse(courseId))
 const currentTest = computed(() => (tests.value || []).find((t) => t.id === testId) || null)
 
@@ -30,7 +31,8 @@ function formatDate(ms) {
 </script>
 
 <template>
-  <div class="page trainer-page">
+  <CourseAccessError v-if="courseError" :message="courseError.response?.data" />
+  <div v-else class="page trainer-page">
     <TrainerCourseNav :course="course" active="tests" />
     <div class="trainer-context-header">
       <div>

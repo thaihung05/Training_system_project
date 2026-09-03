@@ -7,6 +7,7 @@ import testService from '@/api/testService'
 import enrollmentService from '@/api/enrollmentService'
 import { showError } from '@/utils/alerts'
 import TrainerCourseNav from '@/components/trainer/TrainerCourseNav.vue'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import { BarChart3, ListChecks, Pencil, Plus, Power, Star } from '@lucide/vue'
 
@@ -14,7 +15,7 @@ const route = useRoute()
 const router = useRouter()
 const courseId = Number(route.params.courseId)
 
-const { data: course } = useAsyncData(() => courseService.getCourseById(courseId))
+const { data: course, error: courseError } = useAsyncData(() => courseService.getCourseById(courseId))
 const { data: tests, loading, refresh } = useAsyncData(() => testService.getByCourse(courseId))
 const { data: roster } = useAsyncData(() => enrollmentService.getRoster(courseId))
 
@@ -114,7 +115,8 @@ function goResults(t) {
 </script>
 
 <template>
-  <div class="page trainer-page">
+  <CourseAccessError v-if="courseError" :message="courseError.response?.data" />
+  <div v-else class="page trainer-page">
     <TrainerCourseNav :course="course" active="tests" />
     <div class="trainer-context-header">
       <div>
