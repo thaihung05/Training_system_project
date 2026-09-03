@@ -89,3 +89,7 @@ a:hover {
   font-family: var(--font-body);
   border-radius: var(--radius-lg);
 }
+
+.swal2-container {
+  z-index: 1250;
+}

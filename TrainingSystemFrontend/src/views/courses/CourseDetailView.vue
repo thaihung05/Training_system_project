@@ -11,6 +11,7 @@ import testService from '@/api/testService'
 import testAttemptService from '@/api/testAttemptService'
 import forumService from '@/api/forumService'
 import { useAuthStore } from '@/stores/auth'
+import CourseAccessError from '@/components/trainer/CourseAccessError.vue'
 import { showError } from '@/utils/alerts'
 import { formatDate, formatDateTime as formatForumDate } from '@/utils/formatDate'
 import { ChevronLeft, ChevronRight, Check, CheckCheck, Download, ExternalLink } from '@lucide/vue'
@@ -184,8 +185,13 @@ async function submitAnswer(questionId) {
 </script>
 
 <template>
-  <div class="page">
-    <p v-if="courseError" class="alert alert-error">{{ courseError.response?.data || 'Không tải được thông tin khoá học.' }}</p>
+  <CourseAccessError
+    v-if="courseError"
+    :message="courseError.response?.data"
+    to-name="courses"
+    to-label="Quay lại danh mục khoá học"
+  />
+  <div v-else class="page">
     <div class="detail-header">
       <button class="back-btn" @click="router.back()"><ChevronLeft :size="18" /></button>
       <div class="detail-heading">

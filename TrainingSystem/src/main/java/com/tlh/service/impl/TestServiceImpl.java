@@ -47,8 +47,8 @@ public class TestServiceImpl implements TestService{
         if (t.getTitle().trim().length() > 200)
             throw new IllegalArgumentException("Tên bài kiểm tra tối đa 200 ký tự");
         t.setTitle(t.getTitle().trim());
-        if (t.getPassScore() < 0 || t.getPassScore() > 100)
-            throw new IllegalArgumentException("Điểm đạt phải trong khoảng 0-100");
+        if (t.getPassScore() <= 0 || t.getPassScore() > 100)
+            throw new IllegalArgumentException("Điểm đạt phải trong khoảng 1-100");
         if (t.getMaxAttempts() < 1)
             throw new IllegalArgumentException("Số lần làm bài tối đa phải từ 1 trở lên");
     }
