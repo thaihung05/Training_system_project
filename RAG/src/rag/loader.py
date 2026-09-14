@@ -37,8 +37,6 @@ def load_documents(raw_dir: Path) -> list[Document]:
 
         text = text.strip()
         if text:
-            documents.append(
-                Document(source=str(path.relative_to(raw_dir)), text=text)
-            )
+            documents.append(Document(source=str(path.relative_to(raw_dir)), text=text))
 
     return documents

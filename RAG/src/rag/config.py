@@ -28,7 +28,7 @@ def load_settings() -> Settings:
     api_key = os.getenv("GEMINI_API_KEY","").strip()
     if not api_key:
         raise RuntimeError(
-            "Thiếu GEMINI_API_KEY.\n Hãy sao chép .env.example thành .env và thêm GEMINI_API_KEY của bạn vào đó."
+            "Thiếu GEMINI_API_KEY."
         )
 
     data_dir = PROJECT_ROOT / "data"

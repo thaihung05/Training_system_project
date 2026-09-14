@@ -30,9 +30,7 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> list[str]:
     return chunks
 
 
-def chunk_documents(
-    documents: list[Document], chunk_size: int, overlap: int
-) -> list[Chunk]:
+def chunk_documents(documents: list[Document], chunk_size: int, overlap: int) -> list[Chunk]:
     all_chunks: list[Chunk] = []
     for doc in documents:
         for i, piece in enumerate(chunk_text(doc.text, chunk_size, overlap)):
